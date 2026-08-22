@@ -39,8 +39,8 @@ h3 {
 
 p,
 li {
-  font-size: 0.92rem;
-  line-height: 1.85;
+  font-size: clamp(1.06rem, 1.1vw, 1.19rem);
+  line-height: 1.75;
   letter-spacing: 0.02em;
 }
 
