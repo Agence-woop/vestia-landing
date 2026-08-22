@@ -1,0 +1,81 @@
+---
+/*
+ * Bouton « le trait qui se referme » — variante D4.
+ * CSS de référence : assets-source/vestia-boutons-v3.html
+ * Filet or 1 px en dégradé masqué incliné à 52°, fondu plus tôt en haut
+ * qu'en bas ; au survol/toucher, l'anneau se complète en champagne.
+ */
+interface Props {
+  href: string;
+}
+
+const { href } = Astro.props;
+---
+
+<a class="cta" href={href}><slot /></a>
+
+<style>
+  .cta {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 2.4rem;
+    border-radius: 999px;
+    color: var(--texte);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em;
+    text-transform: uppercase;
+    transition: color var(--duree-theme) ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cta::before,
+  .cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .cta::before {
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+  }
+
+  .cta::after {
+    background: linear-gradient(
+      90deg,
+      var(--or-ferme-a) 0%,
+      var(--or-ferme-b) 40%,
+      var(--or-ferme-a) 100%
+    );
+    opacity: 0;
+  }
+
+  .cta:hover::after,
+  .cta:active::after,
+  .cta:focus-visible::after {
+    opacity: 1;
+  }
+
+  .cta:hover::before,
+  .cta:active::before,
+  .cta:focus-visible::before {
+    opacity: 0;
+  }
+
+  .cta:active {
+    color: var(--or-ferme-a);
+  }
+</style>

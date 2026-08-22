@@ -1,0 +1,283 @@
+---
+import Cta from './Cta.astro';
+
+/*
+ * Mission 1 — Le hero et la soie.
+ * La soie vidéo couvre l'écran en fond fixe ; le défilement pilote
+ * `currentTime` sur toute la hauteur de page (scroll-scrubbing).
+ * Replis : lecture en boucle simple si la page ne défile pas encore,
+ * si le scrubbing manque de fluidité, ou sans JavaScript ;
+ * image fixe si `prefers-reduced-motion`.
+ * La soie reste nuit pétrole dans les deux thèmes.
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<div class="soie" aria-hidden="true">
+  <video
+    id="soie-video"
+    muted
+    playsinline
+    autoplay
+    loop
+    preload="auto"
+    poster={`${base}/soie-poster.jpg`}
+  >
+    <source src={`${base}/soie-nuit-petrole.mp4`} type="video/mp4" />
+  </video>
+  <div class="scrim"></div>
+</div>
+
+<section class="hero">
+  <p class="kicker">Services à domicile</p>
+  <h1 class="wordmark" data-text="Vestia">Vestia</h1>
+  <div class="divider"></div>
+  <p class="tagline">L'intendance de votre quotidien</p>
+  <div class="action">
+    <Cta href="#reserver">Réserver une cueillette</Cta>
+  </div>
+  <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Port</p>
+  <p class="fleche" aria-hidden="true">↓</p>
+</section>
+
+<style>
+  /* ---------- la soie ---------- */
+  .soie {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-color: #091e35;
+  }
+
+  .soie video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      180deg,
+      rgba(9, 30, 53, 0.55) 0%,
+      rgba(9, 30, 53, 0.18) 32%,
+      rgba(9, 30, 53, 0.18) 62%,
+      rgba(9, 30, 53, 0.6) 100%
+    );
+  }
+
+  /* ---------- le hero ---------- */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    color: #faf7f0;
+  }
+
+  .kicker {
+    opacity: 0.55;
+    font-size: 0.62rem;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    margin-bottom: 2.2rem;
+  }
+
+  .wordmark {
+    position: relative;
+    font-family: var(--police-embleme);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(3rem, 13.5vw, 7rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background-image: linear-gradient(
+      168deg,
+      #8e7429 0%,
+      #c4a03c 26%,
+      #f1da80 50%,
+      #c4a03c 74%,
+      #8e7429 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Le reflet balayant de l'emblème */
+  .wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      105deg,
+      transparent 42%,
+      rgba(255, 248, 225, 0.9) 50%,
+      transparent 58%
+    );
+    background-size: 320% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 7s ease-in-out infinite;
+  }
+
+  @keyframes sheen {
+    0% {
+      background-position: 120% 0;
+    }
+    32% {
+      background-position: -120% 0;
+    }
+    100% {
+      background-position: -120% 0;
+    }
+  }
+
+  .divider {
+    width: 3.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c4a03c, transparent);
+    margin: 2.1rem 0 1.7rem;
+  }
+
+  .tagline {
+    font-size: clamp(0.72rem, 2.8vw, 0.95rem);
+    letter-spacing: 0.42em;
+    margin-right: -0.42em;
+    text-transform: uppercase;
+    line-height: 2;
+  }
+
+  .action {
+    margin-top: 2.6rem;
+  }
+
+  /* Sur la soie, le bouton garde l'ivoire dans les deux thèmes */
+  .action :global(.cta) {
+    color: #faf7f0;
+  }
+
+  .quartiers {
+    margin-top: 2.4rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    opacity: 0.6;
+  }
+
+  .fleche {
+    position: absolute;
+    bottom: 1.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #c4a03c;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    animation: descente 2.6s ease-in-out infinite;
+  }
+
+  .hero {
+    position: relative;
+  }
+
+  @keyframes descente {
+    0%,
+    100% {
+      transform: translate(-50%, 0);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translate(-50%, 0.4rem);
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark::after {
+      animation: none;
+      content: none;
+    }
+
+    .fleche {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  const video = document.getElementById('soie-video') as HTMLVideoElement | null;
+
+  if (video) {
+    const mouvementReduit = matchMedia('(prefers-reduced-motion: reduce)');
+
+    const enBoucle = () => {
+      video.loop = true;
+      video.play().catch(() => {});
+    };
+
+    const demarrer = () => {
+      /* Image fixe pour qui préfère un mouvement réduit */
+      if (mouvementReduit.matches) {
+        video.pause();
+        video.currentTime = 0;
+        return;
+      }
+
+      /* Tant que la page ne défile pas, la soie ondule en boucle simple */
+      const portee = document.documentElement.scrollHeight - window.innerHeight;
+      if (portee < 200) {
+        enBoucle();
+        return;
+      }
+
+      /* Scroll-scrubbing : le défilement pilote currentTime sur toute la page */
+      video.loop = false;
+      /* Un aller-retour lecture/pause force le décodage sur iOS */
+      video.play().then(() => video.pause()).catch(() => {});
+
+      gsap.registerPlugin(ScrollTrigger);
+      const scrub = gsap.to(video, {
+        currentTime: video.duration,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: document.body,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.5,
+        },
+      });
+
+      /* Repli : si les seeks sont trop lents (mobile bas de gamme), boucle simple */
+      let debutSeek = 0;
+      let cumul = 0;
+      let mesures = 0;
+      video.addEventListener('seeking', () => {
+        debutSeek = performance.now();
+      });
+      video.addEventListener('seeked', () => {
+        cumul += performance.now() - debutSeek;
+        mesures += 1;
+        if (mesures >= 12 && cumul / mesures > 200) {
+          scrub.scrollTrigger?.kill();
+          scrub.kill();
+          enBoucle();
+        }
+      });
+    };
+
+    if (video.readyState >= 1) {
+      demarrer();
+    } else {
+      video.addEventListener('loadedmetadata', demarrer, { once: true });
+    }
+  }
+</script>
