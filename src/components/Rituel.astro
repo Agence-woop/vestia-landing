@@ -50,23 +50,47 @@ import Cta from './Cta.astro';
   .gestes {
     list-style: none;
     margin-top: 1.8rem;
-    max-width: 46rem;
   }
 
   .gestes li {
     display: flex;
-    gap: 1.2rem;
-    padding: 1.15rem 0;
+    align-items: center;
+    gap: clamp(1.75rem, 3vw, 3rem);
+    padding: 1.5rem 0;
     border-top: 1px solid var(--filet);
   }
 
   .numero {
+    position: relative;
+    flex-shrink: 0;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
     font-family: var(--police-voix);
     color: var(--or-trait);
-    font-size: 1.05rem;
-    line-height: 1.6;
-    min-width: 1.6rem;
-    transition: color var(--duree-theme) ease;
+    font-size: 1.15rem;
+  }
+
+  /* Le pourtour, dans l'esprit du bouton D4 : filet or 1 px fondu
+     vers le transparent, le trait s'éteignant vers le haut-droit */
+  .numero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+    pointer-events: none;
   }
 
   .gestes h3 {

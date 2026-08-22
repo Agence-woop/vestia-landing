@@ -19,7 +19,7 @@
   position: relative;
   background: transparent;
   color: var(--texte);
-  padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1.5rem, 5vw, 4rem);
+  padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1.25rem, 4vw, 3rem);
 }
 
 /* Voile dégradé local pour les blocs denses — léger, jamais opaque */
@@ -34,7 +34,7 @@
 }
 
 .section__inner {
-  max-width: 72rem;
+  max-width: 81.25rem;
   margin: 0 auto;
 }
 
