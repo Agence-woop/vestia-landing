@@ -1,0 +1,79 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<!-- Page provisoire de Mission 0 : vérifie tokens, thèmes et polices.
+     Le hero définitif (soie vidéo, scroll-scrubbing) arrive en Mission 1. -->
+<Base>
+  <main class="hero">
+    <p class="kicker">Services à domicile</p>
+    <h1 class="wordmark">Vestia</h1>
+    <div class="divider"></div>
+    <p class="tagline">L'intendance de votre quotidien</p>
+    <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Port</p>
+  </main>
+</Base>
+
+<style>
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-image: radial-gradient(ellipse 120% 65% at 50% -10%, var(--halo), transparent 60%);
+  }
+
+  .kicker {
+    opacity: 0.5;
+    font-size: 0.62rem;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    margin-bottom: 2.2rem;
+  }
+
+  .wordmark {
+    font-family: var(--police-embleme);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(3rem, 13.5vw, 7rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background-image: linear-gradient(
+      168deg,
+      var(--met-1) 0%,
+      var(--met-2) 26%,
+      var(--met-3) 50%,
+      var(--met-2) 74%,
+      var(--met-1) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .divider {
+    width: 3.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--or-trait), transparent);
+    margin: 2.1rem 0 1.7rem;
+  }
+
+  .tagline {
+    font-size: clamp(0.72rem, 2.8vw, 0.95rem);
+    letter-spacing: 0.42em;
+    margin-right: -0.42em;
+    text-transform: uppercase;
+    line-height: 2;
+  }
+
+  .quartiers {
+    margin-top: 2.6rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    opacity: 0.55;
+  }
+</style>

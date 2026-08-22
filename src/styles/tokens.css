@@ -1,0 +1,62 @@
+/*
+ * VESTIA — Variables du design system.
+ * Source de vérité visuelle : assets-source/vestia-brandboard-v1.html
+ * Bascule nuit/jour : assets-source/vestia-nuit-jour.html
+ * Règle d'or : l'or est une lumière, jamais une surface.
+ */
+
+:root {
+  /* ------- mode nuit (défaut) ------- */
+  --fond: #091e35;          /* Nuit pétrole — fond principal */
+  --fond-alt: #0c2540;      /* Encre profonde — sections alternées */
+  --surface: #102d4c;       /* Voile — cartes, éléments surélevés */
+  --texte: #faf7f0;         /* Ivoire — tous les textes courants */
+
+  /* Or métallisé — emblème et grands moments seulement */
+  --met-1: #8e7429;
+  --met-2: #c4a03c;
+  --met-3: #f1da80;
+
+  /* Or aplat — filets, prix, bordures, petits textes */
+  --or-trait: #c4a03c;
+
+  /* Fermeture du bouton en champagne */
+  --or-ferme-a: #f1da80;
+  --or-ferme-b: #c4a03c;
+
+  --sheen: rgba(255, 248, 225, 0.9);
+  --halo: rgba(250, 247, 240, 0.06);
+  --filet: rgba(250, 247, 240, 0.08);
+
+  /* ------- typographie ------- */
+  /* Bodoni Moda : emblème VESTIA seulement, jamais en texte courant */
+  --police-embleme: 'Bodoni Moda', 'Didot', 'Bodoni 72', Georgia, serif;
+  /* Libre Baskerville : titres et phrases éditoriales */
+  --police-voix: 'Libre Baskerville', Baskerville, Georgia, serif;
+  /* Figtree : textes courants, interface, étiquettes */
+  --police-courant: 'Figtree', 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
+
+  /* ------- mouvement ------- */
+  --duree-theme: 0.7s;
+}
+
+html[data-theme='jour'] {
+  /* ------- mode jour : l'or transposé vers le bronze ------- */
+  --fond: #faf7f0;
+  --fond-alt: #f2ecdd;
+  --surface: #fffdf7;
+  --texte: #091e35;
+
+  --met-1: #5e4712;
+  --met-2: #8e7429;
+  --met-3: #c4a03c;
+
+  --or-trait: #8e7429;
+
+  --or-ferme-a: #c4a03c;
+  --or-ferme-b: #8e7429;
+
+  --sheen: rgba(241, 218, 128, 0.95);
+  --halo: rgba(9, 30, 53, 0.045);
+  --filet: rgba(9, 30, 53, 0.1);
+}
