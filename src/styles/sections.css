@@ -22,6 +22,12 @@
   padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1.25rem, 4vw, 3rem);
 }
 
+/* Départ rapproché : la section commence avec un padding-top modéré,
+   pour que son amorce apparaisse sous la section précédente */
+.section--amorce {
+  padding-top: clamp(2rem, 5vh, 3rem);
+}
+
 /* Voile dégradé local pour les blocs denses — léger, jamais opaque */
 .section--voile {
   background-image: linear-gradient(
@@ -62,7 +68,7 @@
   border-bottom: 1px solid var(--filet);
   color: var(--texte);
   font: inherit;
-  font-size: 0.92rem;
+  font-size: 1rem;
   letter-spacing: 0.05em;
   padding: 0.65rem 0.1rem;
   border-radius: 0;
@@ -76,7 +82,7 @@
 
 .champ::placeholder {
   color: var(--texte);
-  opacity: 0.35;
+  opacity: 0.45;
 }
 
 /* ---------- bouton secondaire ---------- */
@@ -87,7 +93,7 @@
   border: 1px solid var(--or-trait);
   background: transparent;
   color: var(--texte);
-  font-size: 0.66rem;
+  font-size: 0.7rem;
   letter-spacing: 0.24em;
   margin-right: -0.24em;
   text-transform: uppercase;

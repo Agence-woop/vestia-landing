@@ -18,10 +18,13 @@
 </section>
 
 <style>
+  /* min-height contenu : l'amorce du rituel reste visible en bas
+     d'écran — le visiteur devine qu'il y a une suite */
   .section {
     display: flex;
     align-items: center;
-    min-height: 88svh;
+    min-height: 80svh;
+    padding-block: clamp(2.5rem, 6vh, 4rem);
     text-align: center;
   }
 
