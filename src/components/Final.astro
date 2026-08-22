@@ -1,14 +1,10 @@
 ---
 import Cta from './Cta.astro';
-/*
- * Section 7 — Le final. Deux mots, un bouton, sur la soie parfaitement
- * tendue : la section est transparente pour laisser voir l'aboutissement
- * du scroll-scrubbing. La soie restant nuit pétrole dans les deux thèmes,
- * le texte y demeure ivoire.
- */
+/* Section 7 — Le final. Deux mots, un bouton, sur la soie parfaitement
+   tendue — aboutissement du scroll-scrubbing. */
 ---
 
-<section class="section section--soie" id="final">
+<section class="section" id="final">
   <div class="section__inner">
     <h2 class="mot">Prêt-à-porter.</h2>
     <div class="section__action">
@@ -26,12 +22,7 @@ import Cta from './Cta.astro';
   }
 
   .mot {
-    font-size: clamp(2.2rem, 9.5vw, 3.6rem);
+    font-size: clamp(2.4rem, 6.5vw, 4.2rem);
     margin-bottom: 0;
-  }
-
-  /* Sur la soie, le bouton garde l'ivoire dans les deux thèmes */
-  .section :global(.cta) {
-    color: #faf7f0;
   }
 </style>

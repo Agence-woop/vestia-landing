@@ -3,7 +3,7 @@ import Cta from './Cta.astro';
 /* Section 4 — La grille. Trois cartes sobres + une carte voilée. Prix en or aplat. */
 ---
 
-<section class="section" id="grille">
+<section class="section section--voile" id="grille">
   <div class="section__inner">
     <h2>Des prix sans surprise</h2>
 
@@ -58,24 +58,18 @@ import Cta from './Cta.astro';
 <style>
   .cartes {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
     gap: 0.9rem;
     margin-top: 1.6rem;
   }
 
-  @media (min-width: 46rem) {
-    .cartes {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
   .carte {
     background-color: var(--surface);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     border: 1px solid var(--filet);
     border-radius: 0.4rem;
     padding: 1.3rem 1.4rem;
-    transition:
-      background-color var(--duree-theme) ease,
-      border-color var(--duree-theme) ease;
   }
 
   .titre {
@@ -161,6 +155,8 @@ import Cta from './Cta.astro';
     text-align: center;
     font-size: 0.74rem;
     line-height: 1.8;
-    opacity: 0.45;
+    opacity: 0.5;
+    max-width: 62ch;
+    margin-inline: auto;
   }
 </style>
