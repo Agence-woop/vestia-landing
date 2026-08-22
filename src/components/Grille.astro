@@ -1,0 +1,166 @@
+---
+import Cta from './Cta.astro';
+/* Section 4 — La grille. Trois cartes sobres + une carte voilée. Prix en or aplat. */
+---
+
+<section class="section" id="grille">
+  <div class="section__inner">
+    <h2>Des prix sans surprise</h2>
+
+    <div class="cartes">
+      <article class="carte">
+        <p class="titre">Pièce simple <span class="prix">5&nbsp;$</span></p>
+        <p class="detail">T-shirt, camisole, legging, vêtement sans structure</p>
+      </article>
+      <article class="carte">
+        <p class="titre">Pièce standard <span class="prix">8&nbsp;$</span></p>
+        <p class="detail">Chemise, blouse, pantalon, jean, jupe, polo</p>
+      </article>
+      <article class="carte">
+        <p class="titre">Pièce complexe <span class="prix">12&nbsp;$</span></p>
+        <p class="detail">Robe, chemise en lin, pièce plissée, veston</p>
+      </article>
+
+      <article class="carte carte--voilee">
+        <p class="titre">
+          <span class="pastille" aria-hidden="true"></span>Bientôt
+        </p>
+        <p class="detail">Linge de maison · Manteaux &amp; trenchs<br />Le service s'étend.</p>
+        <!-- Branché sur Formspree en Mission 4 -->
+        <form class="prevenir" data-formulaire="prevenez-moi">
+          <label class="visually-hidden" for="courriel-bientot">Votre courriel</label>
+          <input
+            class="champ"
+            type="email"
+            id="courriel-bientot"
+            name="courriel"
+            placeholder="Votre courriel"
+            autocomplete="email"
+          />
+          <button class="btn-secondaire" type="submit">Prévenez-moi</button>
+        </form>
+      </article>
+    </div>
+
+    <p class="conditions">Minimum de 8 pièces · Cueillette et livraison toujours incluses</p>
+
+    <p class="egards">
+      Nous déclinons avec égards le cachemire, la laine et la maille tricotée, ainsi que les pièces
+      de haute couture — ces étoffes méritent leur propre spécialiste.
+    </p>
+
+    <div class="section__action">
+      <Cta href="#reserver">Réserver une cueillette</Cta>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cartes {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.6rem;
+  }
+
+  @media (min-width: 46rem) {
+    .cartes {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .carte {
+    background-color: var(--surface);
+    border: 1px solid var(--filet);
+    border-radius: 0.4rem;
+    padding: 1.3rem 1.4rem;
+    transition:
+      background-color var(--duree-theme) ease,
+      border-color var(--duree-theme) ease;
+  }
+
+  .titre {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 500;
+    font-size: 0.86rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .prix {
+    font-family: var(--police-voix);
+    color: var(--or-trait);
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    transition: color var(--duree-theme) ease;
+  }
+
+  .detail {
+    margin-top: 0.5rem;
+    font-size: 0.84rem;
+    opacity: 0.72;
+  }
+
+  /* ---------- la carte voilée ---------- */
+  .carte--voilee {
+    border-style: dashed;
+    background-color: transparent;
+  }
+
+  .carte--voilee .titre {
+    justify-content: flex-start;
+    gap: 0.6rem;
+    color: var(--or-trait);
+    transition: color var(--duree-theme) ease;
+  }
+
+  .pastille {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--or-trait);
+    align-self: center;
+    transition: background-color var(--duree-theme) ease;
+  }
+
+  .prevenir {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: flex-end;
+    margin-top: 1.1rem;
+  }
+
+  .prevenir .champ {
+    flex: 1;
+    min-width: 11rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .conditions {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    opacity: 0.65;
+  }
+
+  .egards {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.74rem;
+    line-height: 1.8;
+    opacity: 0.45;
+  }
+</style>

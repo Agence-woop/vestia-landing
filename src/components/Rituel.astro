@@ -1,0 +1,83 @@
+---
+import Cta from './Cta.astro';
+/* Section 3 — Le rituel. Trois gestes, numérotés en or. */
+---
+
+<section class="section section--alt" id="rituel">
+  <div class="section__inner">
+    <h2>Le rituel Vestia</h2>
+
+    <ol class="gestes">
+      <li>
+        <span class="numero" aria-hidden="true">I</span>
+        <div>
+          <h3>La cueillette</h3>
+          <p>
+            Choisissez votre créneau. Nous passons à votre porte, comptons chaque pièce avec vous,
+            et prenons le relais.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="numero" aria-hidden="true">II</span>
+        <div>
+          <h3>Le soin</h3>
+          <p>
+            Chaque vêtement est repassé à la main, un à un, avec la minutie d'un atelier.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="numero" aria-hidden="true">III</span>
+        <div>
+          <h3>Le retour</h3>
+          <p>
+            Vos pièces reviennent sur cintre et sous housse de protection, à l'abri jusqu'à votre
+            penderie. Cueillies avant 9&nbsp;h, elles rentrent le soir même&nbsp;; sinon, dès le
+            lendemain. Un message annonce notre arrivée.
+          </p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="section__action">
+      <Cta href="#reserver">Réserver une cueillette</Cta>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gestes {
+    list-style: none;
+    margin-top: 1.8rem;
+  }
+
+  .gestes li {
+    display: flex;
+    gap: 1.2rem;
+    padding: 1.15rem 0;
+    border-top: 1px solid var(--filet);
+  }
+
+  .numero {
+    font-family: var(--police-voix);
+    color: var(--or-trait);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    min-width: 1.6rem;
+    transition: color var(--duree-theme) ease;
+  }
+
+  .gestes h3 {
+    font-family: var(--police-courant);
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .gestes p {
+    opacity: 0.78;
+  }
+</style>

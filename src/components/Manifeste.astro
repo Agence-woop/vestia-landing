@@ -1,0 +1,42 @@
+---
+/* Section 2 — Le manifeste. Trois phrases en Baskerville, rien d'autre. */
+---
+
+<section class="section" id="manifeste">
+  <div class="section__inner">
+    <p class="phrase">
+      Il y a des heures qu'on ne rattrape pas.<br />
+      Celles passées derrière une planche à repasser en font partie.
+    </p>
+    <p class="phrase">
+      Vestia les reprend pour vous&nbsp;: votre garde-robe,<br />
+      prise en charge de la porte à la penderie.
+    </p>
+  </div>
+</section>
+
+<style>
+  .section {
+    display: flex;
+    align-items: center;
+    min-height: 88svh;
+    text-align: center;
+  }
+
+  .phrase {
+    font-family: var(--police-voix);
+    font-size: clamp(1.1rem, 4.6vw, 1.5rem);
+    line-height: 1.85;
+    opacity: 0.92;
+  }
+
+  .phrase + .phrase {
+    margin-top: 2.2rem;
+  }
+
+  @media (max-width: 40rem) {
+    .phrase br {
+      display: none;
+    }
+  }
+</style>
