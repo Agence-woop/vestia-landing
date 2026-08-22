@@ -1,0 +1,51 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Vestia — Repassage et cueillette à domicile | Griffintown, Montréal',
+  description = 'Cueillette à votre porte, repassage à la main, retour sur cintre le soir même ou le lendemain. Griffintown, Cité du Multimédia, Vieux-Port.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr" data-theme="nuit">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#091E35" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz@6..96&family=Figtree:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+
+    <script is:inline>
+      /* Thème appliqué avant le premier rendu : choix mémorisé, sinon préférence système. */
+      (() => {
+        try {
+          const memorise = localStorage.getItem('vestia-theme');
+          const systeme = matchMedia('(prefers-color-scheme: light)').matches ? 'jour' : 'nuit';
+          document.documentElement.dataset.theme =
+            memorise === 'jour' || memorise === 'nuit' ? memorise : systeme;
+        } catch {
+          document.documentElement.dataset.theme = 'nuit';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

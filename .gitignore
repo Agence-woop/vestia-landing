@@ -1,0 +1,16 @@
+# dépendances
+node_modules/
+
+# sorties de build
+dist/
+.astro/
+
+# journaux
+npm-debug.log*
+
+# environnement
+.env
+.env.*
+
+# système
+.DS_Store
