@@ -37,7 +37,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <Cta href="#reserver">Réserver une cueillette</Cta>
   </div>
   <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Port</p>
-  <p class="fleche" aria-hidden="true">↓</p>
+  <div class="indicateur" aria-hidden="true"></div>
 </section>
 
 <style>
@@ -171,30 +171,47 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     opacity: 0.6;
   }
 
-  .fleche {
-    position: absolute;
-    bottom: 1.4rem;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #c4a03c;
-    font-size: 0.9rem;
-    opacity: 0.7;
-    animation: descente 2.6s ease-in-out infinite;
-  }
-
   .hero {
     position: relative;
   }
 
-  @keyframes descente {
-    0%,
-    100% {
-      transform: translate(-50%, 0);
-      opacity: 0.7;
+  /* L'indicateur de scroll : le trait qui se déroule, écho du bouton D4.
+     Trait or très estompé ; un segment d'or vif y voyage en boucle. */
+  .indicateur {
+    position: absolute;
+    bottom: 1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 64px;
+    background: rgba(196, 160, 60, 0.15);
+    overflow: hidden;
+  }
+
+  .indicateur::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 38%;
+    background: linear-gradient(180deg, #c4a03c, #f1da80);
+    animation: deroule 2.5s ease-in-out infinite;
+  }
+
+  @keyframes deroule {
+    0% {
+      transform: translateY(-110%);
+      opacity: 0;
     }
-    50% {
-      transform: translate(-50%, 0.4rem);
-      opacity: 0.35;
+    18% {
+      opacity: 1;
+    }
+    78% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(290%);
+      opacity: 0;
     }
   }
 
@@ -204,8 +221,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       content: none;
     }
 
-    .fleche {
-      animation: none;
+    /* Trait statique : le segment vif disparaît, le filet estompé demeure */
+    .indicateur::after {
+      content: none;
     }
   }
 </style>

@@ -1,40 +1,52 @@
 /*
  * VESTIA — Échafaudage commun des sections.
- * Sections alternées nuit pétrole / encre profonde, posées devant la soie
- * fixe ; chaque section tient dans un écran mobile.
+ * La soie vidéo reste visible en fond sur toute la page : les sections
+ * sont transparentes (la règle des sections alternées du brief est
+ * remplacée). Lisibilité par ombres de texte subtiles et, pour les blocs
+ * denses, un léger voile dégradé local — jamais un aplat opaque.
  */
 
 .section {
+  /* La soie reste nuit pétrole : sur elle, les valeurs nuit s'imposent
+     quel que soit le thème */
+  --texte: #faf7f0;
+  --or-trait: #c4a03c;
+  --or-ferme-a: #f1da80;
+  --or-ferme-b: #c4a03c;
+  --filet: rgba(250, 247, 240, 0.14);
+  --surface: rgba(16, 45, 76, 0.55);
+
   position: relative;
-  background-color: var(--fond);
-  padding: 3.8rem 1.6rem;
-  transition: background-color var(--duree-theme) ease;
+  background: transparent;
+  color: var(--texte);
+  padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1.5rem, 5vw, 4rem);
 }
 
-.section--alt {
-  background-color: var(--fond-alt);
-}
-
-/* Le final « Prêt-à-porter. » laisse voir la soie, désormais tendue */
-.section--soie {
-  background-color: transparent;
+/* Voile dégradé local pour les blocs denses — léger, jamais opaque */
+.section--voile {
   background-image: linear-gradient(
     180deg,
-    rgba(9, 30, 53, 0.45) 0%,
-    rgba(9, 30, 53, 0.25) 50%,
-    rgba(9, 30, 53, 0.55) 100%
+    transparent 0%,
+    rgba(9, 30, 53, 0.42) 14%,
+    rgba(9, 30, 53, 0.42) 86%,
+    transparent 100%
   );
-  color: #faf7f0;
 }
 
 .section__inner {
-  max-width: 36rem;
+  max-width: 72rem;
   margin: 0 auto;
 }
 
 .section h2 {
-  font-size: clamp(1.5rem, 6vw, 2.1rem);
-  margin-bottom: 1.3rem;
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  margin-bottom: 1.4rem;
+}
+
+.section :is(h2, h3, p, li, label, legend) {
+  text-shadow:
+    0 1px 2px rgba(9, 30, 53, 0.5),
+    0 2px 18px rgba(9, 30, 53, 0.4);
 }
 
 .section__action {
@@ -54,9 +66,7 @@
   letter-spacing: 0.05em;
   padding: 0.65rem 0.1rem;
   border-radius: 0;
-  transition:
-    border-color var(--duree-theme) ease,
-    color var(--duree-theme) ease;
+  transition: border-color 0.3s ease;
 }
 
 .champ:focus {
@@ -82,10 +92,7 @@
   margin-right: -0.24em;
   text-transform: uppercase;
   cursor: pointer;
-  transition:
-    color var(--duree-theme) ease,
-    border-color var(--duree-theme) ease,
-    opacity 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 .btn-secondaire:hover,
