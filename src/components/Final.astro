@@ -1,0 +1,37 @@
+---
+import Cta from './Cta.astro';
+/*
+ * Section 7 — Le final. Deux mots, un bouton, sur la soie parfaitement
+ * tendue : la section est transparente pour laisser voir l'aboutissement
+ * du scroll-scrubbing. La soie restant nuit pétrole dans les deux thèmes,
+ * le texte y demeure ivoire.
+ */
+---
+
+<section class="section section--soie" id="final">
+  <div class="section__inner">
+    <h2 class="mot">Prêt-à-porter.</h2>
+    <div class="section__action">
+      <Cta href="#reserver">Réserver une cueillette</Cta>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section {
+    display: flex;
+    align-items: center;
+    min-height: 92svh;
+    text-align: center;
+  }
+
+  .mot {
+    font-size: clamp(2.2rem, 9.5vw, 3.6rem);
+    margin-bottom: 0;
+  }
+
+  /* Sur la soie, le bouton garde l'ivoire dans les deux thèmes */
+  .section :global(.cta) {
+    color: #faf7f0;
+  }
+</style>

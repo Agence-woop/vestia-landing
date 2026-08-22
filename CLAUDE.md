@@ -18,6 +18,7 @@ Tous dans `assets-source/` :
 - Astro, CSS vanilla à variables, GSAP ScrollTrigger pour le scroll. Pas de framework UI, pas de Tailwind.
 - `src/styles/tokens.css` — variables des deux thèmes (`html[data-theme="nuit"|"jour"]`, nuit par défaut)
 - `src/styles/base.css` — réinitialisation et typographie de base
+- `src/styles/sections.css` — échafaudage commun des sections (alternance, champs, bouton secondaire)
 - `src/layouts/Base.astro` — head commun : meta, polices Google Fonts, script d'initialisation du thème
 
 ## Décisions prises à l'intégration

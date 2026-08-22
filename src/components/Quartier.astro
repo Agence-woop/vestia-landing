@@ -1,0 +1,138 @@
+---
+import Cta from './Cta.astro';
+/*
+ * Section 5 — Le quartier. Le vérificateur d'adresse, cœur battant de la section.
+ * Les deux états sont intégrés ici, masqués ; la validation instantanée
+ * côté client (zones.json) arrive en Mission 3.
+ */
+---
+
+<section class="section section--alt" id="quartier">
+  <div class="section__inner">
+    <h2>Un territoire court, des délais courts</h2>
+
+    <p class="intro">
+      Vestia est né ici, entre le canal et le fleuve.<br />
+      Griffintown, la Cité du Multimédia, le Vieux-Port.
+    </p>
+
+    <div class="verificateur">
+      <label class="etiquette" for="code-postal">Votre code postal</label>
+      <input
+        class="champ"
+        type="text"
+        id="code-postal"
+        name="code-postal"
+        inputmode="text"
+        autocomplete="postal-code"
+        maxlength="7"
+        placeholder="H3C 1A1"
+      />
+
+      <div class="etat etat--desservi" hidden aria-live="polite">
+        <p class="verdict"><span class="coche" aria-hidden="true">✓</span> Votre adresse est desservie.</p>
+        <div class="section__action">
+          <Cta href="#reserver">Réserver une cueillette</Cta>
+        </div>
+      </div>
+
+      <div class="etat etat--absent" hidden aria-live="polite">
+        <p class="verdict">Pas encore chez vous.</p>
+        <p class="promesse">
+          Laissez votre courriel — vous saurez avant tout le monde quand Vestia traversera la rue.
+        </p>
+        <!-- Branché sur Formspree en Mission 4 -->
+        <form class="prevenir" data-formulaire="prevenez-moi">
+          <label class="visually-hidden" for="courriel-quartier">Votre courriel</label>
+          <input
+            class="champ"
+            type="email"
+            id="courriel-quartier"
+            name="courriel"
+            placeholder="Votre courriel"
+            autocomplete="email"
+          />
+          <button class="btn-secondaire" type="submit">Prévenez-moi</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .intro {
+    font-family: var(--police-voix);
+    font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+    line-height: 1.9;
+    opacity: 0.85;
+  }
+
+  .verificateur {
+    margin-top: 2.2rem;
+    max-width: 22rem;
+  }
+
+  .etiquette {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--or-trait);
+    margin-bottom: 0.5rem;
+    transition: color var(--duree-theme) ease;
+  }
+
+  .etat {
+    margin-top: 1.6rem;
+  }
+
+  .verdict {
+    font-family: var(--police-voix);
+    font-size: 1.02rem;
+  }
+
+  .coche {
+    color: var(--or-trait);
+    margin-right: 0.3rem;
+    transition: color var(--duree-theme) ease;
+  }
+
+  .etat .section__action {
+    text-align: left;
+    margin-top: 1.4rem;
+  }
+
+  .promesse {
+    margin-top: 0.6rem;
+    font-size: 0.84rem;
+    opacity: 0.75;
+  }
+
+  .prevenir {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: flex-end;
+    margin-top: 1rem;
+  }
+
+  .prevenir .champ {
+    flex: 1;
+    min-width: 11rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 40rem) {
+    .intro br {
+      display: none;
+    }
+  }
+</style>
