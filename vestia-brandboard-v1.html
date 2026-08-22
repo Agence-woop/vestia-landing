@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestia — Brandboard v1</title>
+<style>
+  :root {
+    --nuit: #091E35;
+    --encre: #0C2540;
+    --voile: #102D4C;
+    --ivoire: #FAF7F0;
+    --or-sombre: #8E7429;
+    --or: #C4A03C;
+    --or-clair: #F1DA80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--nuit);
+    font-family: 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
+    color: var(--ivoire);
+  }
+
+  /* ---------- entête ---------- */
+  .cover {
+    min-height: 88svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-image: radial-gradient(ellipse 120% 65% at 50% -10%, rgba(250,247,240,0.06), transparent 60%);
+  }
+
+  .wordmark {
+    position: relative;
+    font-family: 'Didot', 'Bodoni 72', Georgia, serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(3rem, 13vw, 6.5rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background-image: linear-gradient(168deg, var(--or-sombre) 0%, var(--or) 26%, var(--or-clair) 50%, var(--or) 74%, var(--or-sombre) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(105deg, transparent 42%, rgba(255,248,225,0.9) 50%, transparent 58%);
+    background-size: 320% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 7s ease-in-out infinite;
+  }
+
+  @keyframes sheen {
+    0%   { background-position: 120% 0; }
+    32%  { background-position: -120% 0; }
+    100% { background-position: -120% 0; }
+  }
+
+  .cover .doc {
+    margin-top: 2.4rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    color: var(--or);
+    opacity: 0.9;
+  }
+
+  .cover .date {
+    margin-top: 0.7rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    opacity: 0.45;
+  }
+
+  /* ---------- sections ---------- */
+  section.bloc {
+    padding: 3.6rem 1.6rem;
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+
+  section.bloc.alt {
+    max-width: none;
+    background-color: var(--encre);
+  }
+
+  section.bloc.alt > div {
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    color: var(--or);
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Baskerville', 'Libre Baskerville', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 6vw, 2.1rem);
+    line-height: 1.3;
+    margin-bottom: 1.3rem;
+  }
+
+  p, li {
+    font-size: 0.92rem;
+    line-height: 1.85;
+    opacity: 0.8;
+    letter-spacing: 0.02em;
+  }
+
+  p + p { margin-top: 0.9rem; }
+
+  .regle {
+    margin-top: 1.4rem;
+    padding: 1rem 1.2rem;
+    border-left: 2px solid var(--or);
+    background: rgba(196, 160, 60, 0.06);
+    font-size: 0.85rem;
+    line-height: 1.75;
+  }
+
+  /* ---------- palette ---------- */
+  .chips { margin-top: 1.6rem; }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(250,247,240,0.08);
+  }
+
+  .chip .pastille {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(250,247,240,0.15);
+  }
+
+  .chip .infos { line-height: 1.5; }
+
+  .chip .nom {
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .chip .hex {
+    font-size: 0.74rem;
+    opacity: 0.5;
+    letter-spacing: 0.08em;
+  }
+
+  .chip .role {
+    font-size: 0.74rem;
+    opacity: 0.45;
+  }
+
+  .p-nuit   { background: #091E35; }
+  .p-encre  { background: #0C2540; }
+  .p-voile  { background: #102D4C; }
+  .p-or     { background: #C4A03C; }
+  .p-degrade { background: linear-gradient(150deg, #8E7429, #C4A03C 45%, #F1DA80); }
+  .p-ivoire { background: #FAF7F0; }
+
+  /* ---------- typographie ---------- */
+  .typo-ligne {
+    padding: 1.3rem 0;
+    border-bottom: 1px solid rgba(250,247,240,0.08);
+  }
+
+  .typo-ligne .exemple { font-size: 1.7rem; line-height: 1.2; }
+
+  .t-didot { font-family: 'Didot', 'Bodoni 72', Georgia, serif; letter-spacing: 0.14em; text-transform: uppercase;
+    background-image: linear-gradient(168deg, var(--or-sombre), var(--or) 40%, var(--or-clair) 60%, var(--or-sombre));
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .t-basker { font-family: 'Baskerville', 'Libre Baskerville', Georgia, serif; }
+  .t-avenir { font-family: 'Avenir Next', 'Optima', sans-serif; font-size: 1.05rem !important; letter-spacing: 0.04em; }
+
+  .typo-ligne .fiche {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    opacity: 0.5;
+    letter-spacing: 0.06em;
+    line-height: 1.7;
+  }
+
+  /* ---------- bouton ---------- */
+  .demo-cta { text-align: center; margin: 1.8rem 0 0.6rem; }
+
+  .cta {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 2.4rem;
+    border-radius: 999px;
+    color: var(--ivoire);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cta::before,
+  .cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .cta::before {
+    background: linear-gradient(52deg, var(--or) 0%, var(--or) 38%, rgba(196,160,60,0) 80%);
+  }
+
+  .cta::after {
+    background: linear-gradient(90deg, var(--or-clair) 0%, var(--or) 40%, var(--or-clair) 100%);
+    opacity: 0;
+  }
+
+  .cta:hover::after, .cta:active::after, .cta:focus-visible::after { opacity: 1; }
+  .cta:hover::before, .cta:active::before, .cta:focus-visible::before { opacity: 0; }
+  .cta:active { color: var(--or-clair); }
+
+  /* ---------- inspirations ---------- */
+  ul.liste { list-style: none; margin-top: 1rem; }
+
+  ul.liste li {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(250,247,240,0.08);
+  }
+
+  ul.liste li strong {
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    opacity: 1;
+  }
+
+  footer {
+    text-align: center;
+    padding: 3rem 2rem 3.6rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.4;
+    line-height: 2.2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark::after { animation: none; content: none; }
+    .cta::before, .cta::after { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="cover">
+    <h1 class="wordmark" data-text="Vestia">Vestia</h1>
+    <p class="doc">Brandboard · v1</p>
+    <p class="date">Août 2026 · Montréal</p>
+  </header>
+
+  <section class="bloc">
+    <p class="eyebrow">01 · L'essence</p>
+    <h2>La maison et le vêtement, en un seul nom.</h2>
+    <p>Vestia naît de deux racines : le latin <em>vestis</em>, le vêtement — celui de veste, vestiaire, vestimentaire — et l'écho de Vesta, gardienne romaine du foyer. Un service de cueillette, repassage et retour à domicile, pensé pour Griffintown et la Cité du Multimédia, à Montréal.</p>
+    <p>Descripteur : <strong>Services à domicile</strong>. Accroche : <strong>« L'intendance de votre quotidien »</strong>. Registre : le luxe discret — la retenue d'Aman, la chaleur d'Aesop. Une seule idée par écran, de l'espace, du silence.</p>
+  </section>
+
+  <section class="bloc alt"><div>
+    <p class="eyebrow">02 · La palette</p>
+    <h2>Une nuit pétrole, un or champagne, un ivoire.</h2>
+    <div class="chips">
+      <div class="chip">
+        <span class="pastille p-nuit"></span>
+        <span class="infos"><span class="nom">Nuit pétrole</span><br><span class="hex">#091E35</span><br><span class="role">Fond principal — le ciel de la marque</span></span>
+      </div>
+      <div class="chip">
+        <span class="pastille p-encre"></span>
+        <span class="infos"><span class="nom">Encre profonde</span><br><span class="hex">#0C2540</span><br><span class="role">Fond secondaire — sections alternées</span></span>
+      </div>
+      <div class="chip">
+        <span class="pastille p-voile"></span>
+        <span class="infos"><span class="nom">Voile</span><br><span class="hex">#102D4C</span><br><span class="role">Surfaces, cartes, éléments surélevés</span></span>
+      </div>
+      <div class="chip">
+        <span class="pastille p-or"></span>
+        <span class="infos"><span class="nom">Or Vestia · aplat</span><br><span class="hex">#C4A03C</span><br><span class="role">Filets, icônes, bordures, petits textes</span></span>
+      </div>
+      <div class="chip">
+        <span class="pastille p-degrade"></span>
+        <span class="infos"><span class="nom">Or Vestia · métallisé</span><br><span class="hex">#8E7429 → #C4A03C → #F1DA80</span><br><span class="role">Emblème et grands moments seulement</span></span>
+      </div>
+      <div class="chip">
+        <span class="pastille p-ivoire"></span>
+        <span class="infos"><span class="nom">Ivoire</span><br><span class="hex">#FAF7F0</span><br><span class="role">Tous les textes courants</span></span>
+      </div>
+    </div>
+    <p class="regle">Règle d'or : l'or est une lumière, jamais une surface. Toujours en accent — trait, reflet, accent — jamais en aplat de fond.</p>
+  </div></section>
+
+  <section class="bloc">
+    <p class="eyebrow">03 · La typographie</p>
+    <h2>Un emblème, une voix, une intendance.</h2>
+    <div class="typo-ligne">
+      <p class="exemple t-didot">Vestia</p>
+      <p class="fiche">Didot — l'emblème. Réservé au nom seul, toujours en grand, en or métallisé. Jamais en texte. Équivalent web : Bodoni Moda.</p>
+    </div>
+    <div class="typo-ligne">
+      <p class="exemple t-basker">L'art de prendre soin.</p>
+      <p class="fiche">Baskerville — la voix. Titres et phrases éditoriales, en ivoire. Équivalent web : Libre Baskerville.</p>
+    </div>
+    <div class="typo-ligne">
+      <p class="exemple t-avenir">Cueillette, repassage soigné et retour à domicile, au rythme de votre quotidien.</p>
+      <p class="fiche">Avenir Next — l'intendance. Textes courants, interface, étiquettes. Équivalent web à confirmer (Montserrat ou Figtree).</p>
+    </div>
+  </section>
+
+  <section class="bloc alt"><div>
+    <p class="eyebrow">04 · Le bouton</p>
+    <h2>Le trait qui se referme.</h2>
+    <p>Capsule au filet d'or de 1&nbsp;px, fondu incliné à 52° — le trait s'éteint plus tôt en haut qu'en bas, comme s'il se déroulait. Au toucher, l'or complète le cercle en champagne : la maison prend en charge.</p>
+    <div class="demo-cta">
+      <a class="cta" href="#">Découvrir nos forfaits</a>
+    </div>
+  </div></section>
+
+  <section class="bloc">
+    <p class="eyebrow">05 · Le mouvement</p>
+    <h2>La soie qui se lisse.</h2>
+    <p>Signature animée du site : un pan de soie nuit pétrole ondule en haut de page, puis se tend et s'apaise au fil du défilement — du froissé au repassé, la promesse racontée par le scroll. Les reflets dorés vivent dans la lumière de la matière.</p>
+    <p>Le reflet balayant de l'emblème et la fermeture du bouton sont les déclinaisons du même geste : chez Vestia, l'or est toujours en mouvement.</p>
+    <p class="regle">Exécution : prototype WebGL (Three.js + GSAP ScrollTrigger), version allégée sur mobile, repli vidéo si nécessaire.</p>
+  </div></section>
+
+  <section class="bloc alt"><div>
+    <p class="eyebrow">06 · Les inspirations</p>
+    <h2>La famille visuelle.</h2>
+    <ul class="liste">
+      <li><strong>Montfort</strong> — la matière WebGL signature sur un contenu sobre</li>
+      <li><strong>Aman Resorts</strong> — le luxe silencieux, le rythme lent</li>
+      <li><strong>Aesop</strong> — le minimalisme chaleureux</li>
+      <li><strong>Breguet</strong> — les codes marine et or de l'horlogerie</li>
+      <li><strong>Apple</strong> — le scrollytelling au service du récit</li>
+    </ul>
+  </div></section>
+
+  <footer>
+    Vestia · Brandboard v1<br>
+    Document de référence — toute évolution passe par une mise à jour de ce document
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestia — Bouton D, le décalé v2</title>
+<style>
+  :root {
+    --fond: #1C2541;
+    --ivoire: #FAF7F0;
+    --or: #C4A03C;
+    --or-clair: #F1DA80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--fond);
+    background-image: radial-gradient(ellipse 120% 50% at 50% -5%, rgba(250,247,240,0.05), transparent 60%);
+    font-family: 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
+    color: var(--ivoire);
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .intro {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .intro h1 {
+    font-size: 0.8rem;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--or);
+  }
+
+  .intro p {
+    margin-top: 0.8rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    opacity: 0.55;
+  }
+
+  .card {
+    padding: 2.6rem 1rem;
+    text-align: center;
+    border-top: 1px solid rgba(196, 160, 60, 0.14);
+  }
+
+  .card:last-of-type { border-bottom: 1px solid rgba(196, 160, 60, 0.14); }
+
+  .label {
+    display: block;
+    margin-top: 1.4rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+
+  .note {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    opacity: 0.38;
+  }
+
+  .cta {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 2.4rem;
+    border-radius: 999px;
+    color: var(--ivoire);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cta::before,
+  .cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .cta::after {
+    background: linear-gradient(90deg, var(--or-clair) 0%, var(--or) 40%, var(--or-clair) 100%);
+    opacity: 0;
+  }
+
+  .cta:hover::after,
+  .cta:active::after,
+  .cta:focus-visible::after { opacity: 1; }
+
+  .cta:hover::before,
+  .cta:active::before,
+  .cta:focus-visible::before { opacity: 0; }
+
+  .cta:active { color: var(--or-clair); }
+
+  /* D3 — rappel */
+  .d3::before {
+    background: linear-gradient(62deg, var(--or) 0%, var(--or) 42%, rgba(196,160,60,0) 84%);
+  }
+
+  /* D4 — un cran de plus */
+  .d4::before {
+    background: linear-gradient(52deg, var(--or) 0%, var(--or) 38%, rgba(196,160,60,0) 80%);
+  }
+
+  /* D5 — l'échappée franche */
+  .d5::before {
+    background: linear-gradient(42deg, var(--or) 0%, var(--or) 34%, rgba(196,160,60,0) 76%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta::before, .cta::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="intro">
+    <h1>Bouton D · Le décalé, v2</h1>
+    <p>Deux crans au-delà du D3 · Toucher pour refermer</p>
+  </header>
+
+  <div class="card">
+    <a class="cta d3" href="#">Découvrir nos forfaits</a>
+    <span class="label">D3 · Rappel</span>
+    <span class="note">Ton point de départ</span>
+  </div>
+
+  <div class="card">
+    <a class="cta d4" href="#">Découvrir nos forfaits</a>
+    <span class="label">D4 · Un cran de plus</span>
+    <span class="note">Le haut s'éteint dès la moitié, le bas court presque jusqu'au bout</span>
+  </div>
+
+  <div class="card">
+    <a class="cta d5" href="#">Découvrir nos forfaits</a>
+    <span class="label">D5 · L'échappée franche</span>
+    <span class="note">L'or ne survit qu'à gauche et le long du bas — l'asymétrie assumée</span>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestia — Nuit & Jour</title>
+<style>
+  :root {
+    /* ------- mode nuit (défaut) ------- */
+    --fond: #091E35;
+    --fond-alt: #0C2540;
+    --texte: #FAF7F0;
+    --met-1: #8E7429;
+    --met-2: #C4A03C;
+    --met-3: #F1DA80;
+    --or-trait: #C4A03C;
+    --or-ferme-a: #F1DA80;
+    --or-ferme-b: #C4A03C;
+    --sheen: rgba(255, 248, 225, 0.9);
+    --halo: rgba(250, 247, 240, 0.06);
+  }
+
+  body.jour {
+    /* ------- mode jour : l'or transposé vers le bronze ------- */
+    --fond: #FAF7F0;
+    --fond-alt: #F2ECDD;
+    --texte: #091E35;
+    --met-1: #5E4712;
+    --met-2: #8E7429;
+    --met-3: #C4A03C;
+    --or-trait: #8E7429;
+    --or-ferme-a: #C4A03C;
+    --or-ferme-b: #8E7429;
+    --sheen: rgba(241, 218, 128, 0.95);
+    --halo: rgba(9, 30, 53, 0.045);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--fond);
+    color: var(--texte);
+    font-family: 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
+    transition: background-color 0.7s ease, color 0.7s ease;
+  }
+
+  /* ------- interrupteur ------- */
+  .bascule {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    z-index: 10;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    border: 1px solid var(--or-trait);
+    background: transparent;
+    color: var(--or-trait);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.7s ease, color 0.7s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-image: radial-gradient(ellipse 120% 65% at 50% -10%, var(--halo), transparent 60%);
+  }
+
+  .kicker {
+    opacity: 0.5;
+    font-size: 0.62rem;
+    letter-spacing: 0.4em;
+    margin-right: -0.4em;
+    text-transform: uppercase;
+    margin-bottom: 2.2rem;
+  }
+
+  .wordmark {
+    position: relative;
+    font-family: 'Didot', 'Bodoni 72', Georgia, serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(3rem, 13.5vw, 7rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background-image: linear-gradient(168deg, var(--met-1) 0%, var(--met-2) 26%, var(--met-3) 50%, var(--met-2) 74%, var(--met-1) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(105deg, transparent 42%, var(--sheen) 50%, transparent 58%);
+    background-size: 320% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 7s ease-in-out infinite;
+  }
+
+  @keyframes sheen {
+    0%   { background-position: 120% 0; }
+    32%  { background-position: -120% 0; }
+    100% { background-position: -120% 0; }
+  }
+
+  .divider {
+    width: 3.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--or-trait), transparent);
+    margin: 2.1rem 0 1.7rem;
+  }
+
+  .tagline {
+    font-size: clamp(0.72rem, 2.8vw, 0.95rem);
+    letter-spacing: 0.42em;
+    margin-right: -0.42em;
+    text-transform: uppercase;
+    line-height: 2;
+  }
+
+  .editorial {
+    background-color: var(--fond-alt);
+    transition: background-color 0.7s ease;
+    padding: 4rem 2rem 4.5rem;
+  }
+
+  .editorial > div { max-width: 34rem; margin: 0 auto; }
+
+  .eyebrow {
+    color: var(--or-trait);
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    transition: color 0.7s ease;
+  }
+
+  .editorial h2 {
+    font-family: 'Baskerville', 'Libre Baskerville', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.6rem, 6.5vw, 2.4rem);
+    line-height: 1.28;
+    margin-bottom: 1.5rem;
+  }
+
+  .editorial p {
+    font-size: 0.94rem;
+    line-height: 1.85;
+    opacity: 0.78;
+    margin-bottom: 2.2rem;
+  }
+
+  .cta {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 2.4rem;
+    border-radius: 999px;
+    color: var(--texte);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    margin-right: -0.3em;
+    text-transform: uppercase;
+    transition: color 0.7s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cta::before,
+  .cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .cta::before {
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+  }
+
+  .cta::after {
+    background: linear-gradient(90deg, var(--or-ferme-a) 0%, var(--or-ferme-b) 40%, var(--or-ferme-a) 100%);
+    opacity: 0;
+  }
+
+  .cta:hover::after, .cta:active::after, .cta:focus-visible::after { opacity: 1; }
+  .cta:hover::before, .cta:active::before, .cta:focus-visible::before { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark::after { animation: none; content: none; }
+  }
+</style>
+</head>
+<body>
+
+  <button class="bascule" id="bascule" aria-label="Basculer entre le mode nuit et le mode jour">☾</button>
+
+  <section class="hero">
+    <p class="kicker">Services à domicile</p>
+    <h1 class="wordmark" data-text="Vestia">Vestia</h1>
+    <div class="divider"></div>
+    <p class="tagline">L'intendance de votre quotidien</p>
+  </section>
+
+  <section class="editorial"><div>
+    <p class="eyebrow">La maison Vestia</p>
+    <h2>L'art de prendre soin, livré à votre porte.</h2>
+    <p>Cueillette, repassage soigné et retour à domicile, au rythme de votre quotidien. Vestia veille sur votre garde-robe pour que vous n'ayez plus à y penser.</p>
+    <a class="cta" href="#">Découvrir nos forfaits</a>
+  </div></section>
+
+  <script>
+    const bascule = document.getElementById('bascule');
+    bascule.addEventListener('click', () => {
+      document.body.classList.toggle('jour');
+      bascule.textContent = document.body.classList.contains('jour') ? '☀' : '☾';
+    });
+  </script>
+
+</body>
+</html>
