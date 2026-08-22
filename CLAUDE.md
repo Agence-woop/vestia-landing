@@ -23,6 +23,12 @@ Tous dans `assets-source/` :
 ## Décisions prises à l'intégration
 
 - Sans-serif du courant : **Figtree** (plus proche de l'Avenir Next du brandboard que Montserrat).
+- Formulaires (Mission 4, « Prévenez-moi ») : **Formspree** plutôt que Netlify Forms.
+- Hébergement : **GitHub Pages** — `https://agence-woop.github.io/vestia-landing` (`base: '/vestia-landing'`
+  dans `astro.config.mjs` ; préfixer les URL d'assets de `public/` avec `import.meta.env.BASE_URL`).
+  Déploiement automatique à chaque push sur `main` via `.github/workflows/deploy.yml`.
+- Soie du hero : `public/soie-nuit-petrole.mp4`, réencodage tout-intra (`ffmpeg -g 1`) de
+  l'asset officiel pour un scroll-scrubbing fluide ; affiche `public/soie-poster.jpg`.
 
 ## Règles non négociables
 
