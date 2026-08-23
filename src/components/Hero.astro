@@ -194,19 +194,25 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       #f1da80 65%,
       transparent 100%
     );
-    animation: goutte 2.5s ease-in-out infinite;
+    animation: goutte 6.5s ease-in-out infinite;
   }
 
+  /* Une respiration : la goutte glisse calmement, s'évanouit,
+     marque une courte pause, puis renaît en haut */
   @keyframes goutte {
     0% {
       transform: translateY(-100%);
       opacity: 0;
     }
-    18% {
+    12% {
       opacity: 1;
     }
-    72% {
+    80% {
       opacity: 1;
+    }
+    92% {
+      transform: translateY(330%);
+      opacity: 0;
     }
     100% {
       transform: translateY(330%);

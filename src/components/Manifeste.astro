@@ -9,7 +9,6 @@
       Il y a des heures qu'on ne rattrape pas. Celles passées derrière une planche à repasser en
       font partie.
     </p>
-    <div class="divider" aria-hidden="true"></div>
     <p class="phrase">
       Vestia les reprend pour vous&nbsp;: votre garde-robe, prise en charge de la porte à la
       penderie.
@@ -33,10 +32,10 @@
      sans éditoriale (Figtree) ; la Baskerville reste aux titres. */
   .phrase {
     font-family: var(--police-courant);
-    font-weight: 400;
+    font-weight: 300;
     font-size: clamp(1.3rem, 2.2vw, 1.9rem);
     line-height: 1.8;
-    letter-spacing: 0.015em;
+    letter-spacing: 0.02em;
     max-width: 34em;
     margin-inline: auto;
     text-shadow:
@@ -44,10 +43,7 @@
       0 2px 24px rgba(9, 30, 53, 0.45);
   }
 
-  .divider {
-    width: 3.5rem;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--or-trait), transparent);
-    margin: 2.4rem auto;
+  .phrase + .phrase {
+    margin-top: 2.4rem;
   }
 </style>
