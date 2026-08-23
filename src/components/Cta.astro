@@ -50,8 +50,39 @@ const { href } = Astro.props;
     transition: opacity 0.5s ease;
   }
 
+  /* La bordure vivante : l'ouverture du trait dérive lentement le long
+     du pourtour. --angle-cta est typée via @property pour être animable ;
+     sans support, la boucle 52° → 412° retombe sur le même rendu
+     statique (412° ≡ 52°). */
+  @property --angle-cta {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 52deg;
+  }
+
   .cta::before {
-    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+    background: linear-gradient(
+      var(--angle-cta, 52deg),
+      var(--or-trait) 0%,
+      var(--or-trait) 38%,
+      transparent 80%
+    );
+    animation: derive 11s linear infinite;
+  }
+
+  @keyframes derive {
+    from {
+      --angle-cta: 52deg;
+    }
+    to {
+      --angle-cta: 412deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta::before {
+      animation: none;
+    }
   }
 
   .cta::after {

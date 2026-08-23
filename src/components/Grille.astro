@@ -9,15 +9,15 @@ import Cta from './Cta.astro';
 
     <div class="cartes">
       <article class="carte">
-        <p class="titre">Pièce simple <span class="prix">5&nbsp;$</span></p>
+        <p class="titre"><span class="pill">Pièce simple</span> <span class="prix">5&nbsp;$</span></p>
         <p class="detail">Chandail, camisole, legging, vêtement sans structure</p>
       </article>
       <article class="carte">
-        <p class="titre">Pièce standard <span class="prix">8&nbsp;$</span></p>
+        <p class="titre"><span class="pill">Pièce standard</span> <span class="prix">8&nbsp;$</span></p>
         <p class="detail">Chemise, blouse, pantalon, jean, jupe, polo</p>
       </article>
       <article class="carte">
-        <p class="titre">Pièce complexe <span class="prix">12&nbsp;$</span></p>
+        <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">12&nbsp;$</span></p>
         <p class="detail">Robe, chemise en lin, pièce plissée, veston</p>
       </article>
 
@@ -46,7 +46,7 @@ import Cta from './Cta.astro';
 
     <p class="egards">
       Nous déclinons avec égards le cachemire, la laine et la maille tricotée, ainsi que les pièces
-      de haute couture — ces étoffes méritent leur propre spécialiste.
+      de haute couture. Ces étoffes méritent leur propre spécialiste.
     </p>
 
     <div class="section__action">
@@ -96,13 +96,23 @@ import Cta from './Cta.astro';
 
   .titre {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
     font-weight: 500;
     font-size: 0.92rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  /* Le nom de la pièce en pill ocre, texte nuit pétrole ;
+     le prix reste en or, hors de la pill */
+  .pill {
+    background: #c4a03c;
+    color: #091e35;
+    padding: 0.35em 0.9em;
+    border-radius: 999px;
+    text-shadow: none;
   }
 
   .prix {
@@ -121,8 +131,10 @@ import Cta from './Cta.astro';
   }
 
   /* ---------- la carte voilée ---------- */
+  /* Fond bleu-noir nettement plus sombre : la tuile se distingue
+     des trois cartes actives */
   .carte--voilee {
-    background-color: rgba(16, 45, 76, 0.3);
+    background-color: rgba(4, 12, 24, 0.72);
   }
 
   /* Même filet D4, en version plus estompée */

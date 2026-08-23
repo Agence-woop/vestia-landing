@@ -33,8 +33,8 @@
   --police-embleme: 'Bodoni Moda', 'Didot', 'Bodoni 72', Georgia, serif;
   /* Libre Baskerville : titres et phrases éditoriales */
   --police-voix: 'Libre Baskerville', Baskerville, Georgia, serif;
-  /* Figtree : textes courants, interface, étiquettes */
-  --police-courant: 'Figtree', 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
+  /* Montserrat : textes courants (400), interface, étiquettes (500) */
+  --police-courant: 'Montserrat', 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
 
   /* Taille unique du texte courant (descriptions, paragraphes, corps
      de cartes) — aucune exception locale */
