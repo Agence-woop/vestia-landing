@@ -23,9 +23,10 @@ Tous dans `assets-source/` :
 
 ## Décisions prises à l'intégration
 
-- Sans-serif du courant : **Figtree** (plus proche de l'Avenir Next du brandboard que Montserrat).
-- Le manifeste est composé en **Figtree** (la sans éditoriale), à l'échelle éditoriale ;
-  la Libre Baskerville reste réservée aux titres de sections.
+- Sans-serif définitive = **Montserrat** (remplace Figtree). Graisses chargées : 200, 400, 500 —
+  texte courant en 400, labels/kickers en 500, manifeste en ExtraLight 200.
+- Le manifeste est composé dans la sans éditoriale (Montserrat ExtraLight), à l'échelle
+  éditoriale ; la Libre Baskerville reste réservée aux titres de sections.
 - Formulaires (Mission 4, « Prévenez-moi ») : **Formspree** plutôt que Netlify Forms.
 - Hébergement : **GitHub Pages** — `https://agence-woop.github.io/vestia-landing` (`base: '/vestia-landing'`
   dans `astro.config.mjs` ; préfixer les URL d'assets de `public/` avec `import.meta.env.BASE_URL`).
