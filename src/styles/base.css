@@ -39,7 +39,7 @@ h3 {
 
 p,
 li {
-  font-size: clamp(1.06rem, 1.1vw, 1.19rem);
+  font-size: var(--taille-courant);
   line-height: 1.75;
   letter-spacing: 0.02em;
 }
