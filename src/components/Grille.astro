@@ -10,7 +10,7 @@ import Cta from './Cta.astro';
     <div class="cartes">
       <article class="carte">
         <p class="titre">Pièce simple <span class="prix">5&nbsp;$</span></p>
-        <p class="detail">T-shirt, camisole, legging, vêtement sans structure</p>
+        <p class="detail">Chandail, camisole, legging, vêtement sans structure</p>
       </article>
       <article class="carte">
         <p class="titre">Pièce standard <span class="prix">8&nbsp;$</span></p>
@@ -63,13 +63,35 @@ import Cta from './Cta.astro';
     margin-top: 1.6rem;
   }
 
+  /* Les cartes parlent le langage du bouton D4 : filet or 1 px en
+     dégradé masqué incliné à 52°, l'or vivant en bas-gauche et
+     s'éteignant vers le haut-droit */
   .carte {
-    background-color: var(--surface);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--filet);
-    border-radius: 0.4rem;
-    padding: 1.3rem 1.4rem;
+    position: relative;
+    background-color: rgba(16, 45, 76, 0.55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-radius: 1.25rem;
+    padding: 1.4rem 1.5rem;
+    box-shadow: 0 12px 32px rgba(4, 14, 26, 0.3);
+  }
+
+  .carte::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1.25rem;
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+    pointer-events: none;
   }
 
   .titre {
@@ -100,8 +122,17 @@ import Cta from './Cta.astro';
 
   /* ---------- la carte voilée ---------- */
   .carte--voilee {
-    border-style: dashed;
-    background-color: transparent;
+    background-color: rgba(16, 45, 76, 0.3);
+  }
+
+  /* Même filet D4, en version plus estompée */
+  .carte--voilee::before {
+    background: linear-gradient(
+      52deg,
+      rgba(196, 160, 60, 0.45) 0%,
+      rgba(196, 160, 60, 0.45) 38%,
+      transparent 80%
+    );
   }
 
   .carte--voilee .titre {
@@ -143,9 +174,9 @@ import Cta from './Cta.astro';
   }
 
   .conditions {
-    margin-top: 1.4rem;
+    margin-top: 1.6rem;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.93rem;
     letter-spacing: 0.08em;
     opacity: 0.8;
   }
@@ -153,7 +184,7 @@ import Cta from './Cta.astro';
   .egards {
     margin-top: 1rem;
     text-align: center;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     line-height: 1.8;
     opacity: 0.8;
     max-width: 62ch;
