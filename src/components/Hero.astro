@@ -31,7 +31,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="hero">
   <p class="kicker">Services à domicile</p>
   <h1 class="wordmark" data-text="Vestia">Vestia</h1>
-  <div class="divider"></div>
   <p class="tagline">L'intendance de votre quotidien</p>
   <div class="action">
     <Cta href="#reserver">Réserver une cueillette</Cta>
@@ -81,9 +80,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .kicker {
     opacity: 0.8;
-    font-size: 0.62rem;
-    letter-spacing: 0.4em;
-    margin-right: -0.4em;
+    font-size: 0.8rem;
+    letter-spacing: 0.35em;
+    margin-right: -0.35em;
     text-transform: uppercase;
     margin-bottom: 2.2rem;
   }
@@ -93,7 +92,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-family: var(--police-embleme);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: clamp(3rem, 13.5vw, 7rem);
+    font-size: clamp(4.4rem, 19.5vw, 10.5rem);
     letter-spacing: 0.2em;
     margin-right: -0.2em;
     background-image: linear-gradient(
@@ -140,14 +139,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
   }
 
-  .divider {
-    width: 3.5rem;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #c4a03c, transparent);
-    margin: 2.1rem 0 1.7rem;
-  }
-
   .tagline {
+    margin-top: 1.1rem;
     font-size: clamp(0.72rem, 2.8vw, 0.95rem);
     letter-spacing: 0.42em;
     margin-right: -0.42em;
@@ -166,8 +159,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .quartiers {
     margin-top: 2.4rem;
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
     opacity: 0.8;
   }
 
@@ -175,8 +168,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     position: relative;
   }
 
-  /* L'indicateur de scroll : le trait qui se déroule, écho du bouton D4.
-     Trait or très estompé ; un segment d'or vif y voyage en boucle. */
+  /* L'indicateur de scroll : une goutte de lumière qui coule, sans
+     support apparent — aucun rail visible, seul le segment d'or passe. */
   .indicateur {
     position: absolute;
     bottom: 1.6rem;
@@ -184,8 +177,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     transform: translateX(-50%);
     width: 1px;
     height: 64px;
-    background: rgba(196, 160, 60, 0.15);
     overflow: hidden;
+    pointer-events: none;
   }
 
   .indicateur::after {
@@ -193,24 +186,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     position: absolute;
     inset: 0 auto auto 0;
     width: 100%;
-    height: 38%;
-    background: linear-gradient(180deg, #c4a03c, #f1da80);
-    animation: deroule 2.5s ease-in-out infinite;
+    height: 30%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      #c4a03c 35%,
+      #f1da80 65%,
+      transparent 100%
+    );
+    animation: goutte 2.5s ease-in-out infinite;
   }
 
-  @keyframes deroule {
+  @keyframes goutte {
     0% {
-      transform: translateY(-110%);
+      transform: translateY(-100%);
       opacity: 0;
     }
     18% {
       opacity: 1;
     }
-    78% {
+    72% {
       opacity: 1;
     }
     100% {
-      transform: translateY(290%);
+      transform: translateY(330%);
       opacity: 0;
     }
   }
@@ -221,9 +220,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       content: none;
     }
 
-    /* Trait statique : le segment vif disparaît, le filet estompé demeure */
+    /* Goutte immobile et discrète, posée au centre du parcours */
     .indicateur::after {
-      content: none;
+      animation: none;
+      transform: translateY(115%);
+      opacity: 0.45;
     }
   }
 </style>

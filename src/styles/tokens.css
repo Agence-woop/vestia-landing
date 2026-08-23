@@ -36,6 +36,10 @@
   /* Figtree : textes courants, interface, étiquettes */
   --police-courant: 'Figtree', 'Avenir Next', 'Optima', 'Helvetica Neue', sans-serif;
 
+  /* Taille unique du texte courant (descriptions, paragraphes, corps
+     de cartes) — aucune exception locale */
+  --taille-courant: clamp(1.06rem, 1.1vw, 1.19rem);
+
   /* ------- mouvement ------- */
   --duree-theme: 0.7s;
 }
