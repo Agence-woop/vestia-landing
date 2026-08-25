@@ -22,8 +22,11 @@ import ZoneVisual from './ZoneVisual.astro';
 
       <p class="propos">
         Un service de cette précision ne s'étend que là où il peut tenir parole. Vestia dessert
-        Griffintown, la Cité du Multimédia et le Vieux-Port. Du lundi au vendredi, cueillette au
-        moment convenu, retour le jour même ou le lendemain — jamais plus tard.
+        Griffintown, la Cité du Multimédia et le Vieux-Port.
+      </p>
+      <p class="propos">
+        Du lundi au vendredi, cueillette au moment convenu, retour le jour même ou le lendemain —
+        jamais plus tard.
       </p>
 
       <form class="verificateur" id="verificateur" novalidate>
@@ -112,6 +115,10 @@ import ZoneVisual from './ZoneVisual.astro';
 
   .propos {
     max-width: 62ch;
+  }
+
+  .propos + .propos {
+    margin-top: 1.1rem;
   }
 
   /* ---------- le vérificateur ---------- */

@@ -79,12 +79,17 @@ const url = href && href.startsWith('/') ? `${base}${href}` : href;
     top: 50%;
     width: 150%;
     aspect-ratio: 1;
+    /* Falloff progressif, sans zone dure : le même caractère fluide
+       que le balayage du wordmark */
     background: conic-gradient(
       from 0deg,
-      transparent 15deg,
-      var(--or-trait) 100deg,
-      var(--or-trait) 250deg,
-      transparent 335deg
+      transparent 0deg,
+      rgba(196, 160, 60, 0.12) 45deg,
+      rgba(196, 160, 60, 0.55) 105deg,
+      #d9bb5e 175deg,
+      rgba(196, 160, 60, 0.55) 245deg,
+      rgba(196, 160, 60, 0.12) 305deg,
+      transparent 360deg
     );
     transform: translate(-50%, -50%) rotate(0turn);
     animation: tourne 11s linear infinite;
