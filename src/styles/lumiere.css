@@ -1,0 +1,76 @@
+/*
+ * Système « lumière Vestia » — la lumière qui glisse, jamais qui claque.
+ * Référence : le balayage du wordmark du hero. Règles :
+ * - cycles lents (8-14 s), désynchronisés (délais négatifs, durées variées)
+ * - amplitude très faible : au repos, un œil distrait ne remarque rien
+ * - le wordmark du hero reste l'élément le plus lumineux de la page
+ * - les textes courants en ocre restent en aplat #C4A03C, sans animation
+ * - prefers-reduced-motion : tout est figé (la réinitialisation globale de
+ *   base.css neutralise les animations ; la bande au repos est hors champ,
+ *   il ne reste que les dégradés statiques)
+ */
+
+/*
+ * Le seul jeu de keyframes du système : la première couche de fond (la
+ * bande de lumière, background-size 320 %) traverse en ~un tiers du
+ * cycle avec un easing doux, puis marque une pause ; les couches
+ * suivantes restent en place. Les bords de bande sont fondus — aucun
+ * saut d'opacité. Les éléments à couche unique (wordmark) ignorent la
+ * seconde paire de valeurs.
+ */
+@keyframes lumiere-balayage {
+  0% {
+    background-position: 130% 0, 0 0;
+  }
+  34% {
+    background-position: -130% 0, 0 0;
+  }
+  100% {
+    background-position: -130% 0, 0 0;
+  }
+}
+
+/* ---------- titres de section : champagne discret, balayage lent ---------- */
+.section h2 {
+  background-image:
+    linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 248, 225, 0.1) 42%,
+      rgba(255, 248, 225, 0.3) 50%,
+      rgba(255, 248, 225, 0.1) 58%,
+      transparent 70%
+    ),
+    linear-gradient(120deg, #a98a2e 0%, #c4a03c 40%, #e3c563 65%, #c4a03c 100%);
+  background-size: 320% 100%, 100% 100%;
+  background-position: 130% 0, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  animation: lumiere-balayage 12s ease-in-out infinite;
+}
+
+/* Désynchronisation : chaque titre vit sa propre respiration */
+#rituel h2 {
+  animation-delay: -3s;
+}
+
+#grille h2 {
+  animation-delay: -6.5s;
+  animation-duration: 13s;
+}
+
+#quartier h2 {
+  animation-delay: -9s;
+}
+
+#engagements h2 {
+  animation-delay: -4.5s;
+  animation-duration: 14s;
+}
+
+#final h2 {
+  animation-delay: -7.5s;
+  animation-duration: 13s;
+}
