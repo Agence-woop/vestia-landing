@@ -2,8 +2,11 @@
 /*
  * Bouton « le trait qui se referme » — variante D4.
  * CSS de référence : assets-source/vestia-boutons-v3.html
- * Filet or 1 px en dégradé masqué incliné à 52°, fondu plus tôt en haut
- * qu'en bas ; au survol/toucher, l'anneau se complète en champagne.
+ * Filet or 1 px partiellement fondu ; au survol/toucher, l'anneau se
+ * complète en champagne. La bordure est vivante : un conic-gradient
+ * tourne en continu (transform: rotate) derrière le masque de l'anneau —
+ * fiable sur desktop et mobile, contrairement à l'animation d'angle de
+ * dégradé via @property.
  */
 interface Props {
   href: string;
@@ -12,7 +15,7 @@ interface Props {
 const { href } = Astro.props;
 ---
 
-<a class="cta" href={href}><slot /></a>
+<a class="cta" href={href}><span class="filet" aria-hidden="true"></span><slot /></a>
 
 <style>
   .cta {
@@ -31,9 +34,9 @@ const { href } = Astro.props;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .cta::before,
-  .cta::after {
-    content: '';
+  /* L'anneau ouvert : le masque ne laisse voir que le filet de 1 px ;
+     tout ce qui se dessine dedans (le dégradé tournant) y est confiné */
+  .filet {
     position: absolute;
     inset: 0;
     border-radius: 999px;
@@ -50,42 +53,49 @@ const { href } = Astro.props;
     transition: opacity 0.5s ease;
   }
 
-  /* La bordure vivante : l'ouverture du trait dérive lentement le long
-     du pourtour. --angle-cta est typée via @property pour être animable ;
-     sans support, la boucle 52° → 412° retombe sur le même rendu
-     statique (412° ≡ 52°). */
-  @property --angle-cta {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 52deg;
-  }
-
-  .cta::before {
-    background: linear-gradient(
-      var(--angle-cta, 52deg),
-      var(--or-trait) 0%,
-      var(--or-trait) 38%,
-      transparent 80%
+  /* Le dégradé vivant : un carré surdimensionné en conic-gradient tourne
+     lentement — l'ouverture du trait dérive le long du pourtour */
+  .filet::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150%;
+    aspect-ratio: 1;
+    background: conic-gradient(
+      from 0deg,
+      transparent 15deg,
+      var(--or-trait) 100deg,
+      var(--or-trait) 250deg,
+      transparent 335deg
     );
-    animation: derive 11s linear infinite;
+    transform: translate(-50%, -50%) rotate(0turn);
+    animation: tourne 11s linear infinite;
   }
 
-  @keyframes derive {
-    from {
-      --angle-cta: 52deg;
-    }
+  @keyframes tourne {
     to {
-      --angle-cta: 412deg;
+      transform: translate(-50%, -50%) rotate(1turn);
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .cta::before {
-      animation: none;
-    }
-  }
-
+  /* L'anneau refermé en champagne, au survol/toucher */
   .cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
     background: linear-gradient(
       90deg,
       var(--or-ferme-a) 0%,
@@ -101,13 +111,21 @@ const { href } = Astro.props;
     opacity: 1;
   }
 
-  .cta:hover::before,
-  .cta:active::before,
-  .cta:focus-visible::before {
+  .cta:hover .filet,
+  .cta:active .filet,
+  .cta:focus-visible .filet {
     opacity: 0;
   }
 
   .cta:active {
     color: var(--or-ferme-a);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Bordure statique : le dégradé s'immobilise, l'or posé en bas-gauche */
+    .filet::before {
+      animation: none;
+      transform: translate(-50%, -50%) rotate(0.35turn);
+    }
   }
 </style>

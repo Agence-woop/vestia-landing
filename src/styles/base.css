@@ -37,6 +37,14 @@ h3 {
   line-height: 1.3;
 }
 
+/* Les titres de sections en Bodoni Moda, plus épais que l'emblème du
+   hero (400), légèrement resserrés — Bodoni le supporte en grande taille */
+h2 {
+  font-family: var(--police-embleme);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
 p,
 li {
   font-size: var(--taille-courant);
