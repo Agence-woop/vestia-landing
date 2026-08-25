@@ -9,13 +9,30 @@
  * dégradé via @property.
  */
 interface Props {
-  href: string;
+  /* Lien (préfixé de la base du site s'il commence par « / ») ; omis pour un bouton */
+  href?: string;
+  /* Type du <button> rendu quand href est omis */
+  type?: 'submit' | 'button';
 }
 
-const { href } = Astro.props;
+const { href, type = 'button' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const url = href && href.startsWith('/') ? `${base}${href}` : href;
 ---
 
-<a class="cta" href={href}><span class="filet" aria-hidden="true"></span><slot /></a>
+{
+  url ? (
+    <a class="cta" href={url}>
+      <span class="filet" aria-hidden="true" />
+      <slot />
+    </a>
+  ) : (
+    <button class="cta" type={type}>
+      <span class="filet" aria-hidden="true" />
+      <slot />
+    </button>
+  )
+}
 
 <style>
   .cta {

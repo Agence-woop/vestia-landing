@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+
+/*
+ * Page d'attente de la réservation — le parcours complet en trois écrans
+ * fera l'objet d'une mission dédiée. Hors navigation, non indexée tant
+ * que le parcours n'est pas livré.
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title="Vestia — Réserver une cueillette" noindex>
+  <main class="attente">
+    <p class="wordmark">Vestia</p>
+    <p class="phrase">La réservation ouvre bientôt.</p>
+    <a class="retour" href={`${base}/`}>Retour à l'accueil</a>
+  </main>
+</Base>
+
+<style>
+  /* Nuit pétrole quel que soit le thème — pas de soie sur cette page */
+  .attente {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-color: #091e35;
+    background-image: radial-gradient(
+      ellipse 120% 65% at 50% -10%,
+      rgba(250, 247, 240, 0.06),
+      transparent 60%
+    );
+    color: #faf7f0;
+  }
+
+  .wordmark {
+    font-family: var(--police-embleme);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(2.4rem, 9vw, 4.5rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    background-image: linear-gradient(
+      168deg,
+      #8e7429 0%,
+      #c4a03c 26%,
+      #f1da80 50%,
+      #c4a03c 74%,
+      #8e7429 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .phrase {
+    margin-top: 2rem;
+    font-size: var(--taille-courant);
+    letter-spacing: 0.04em;
+    opacity: 0.9;
+  }
+
+  .retour {
+    margin-top: 2.6rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #c4a03c;
+    border-bottom: 1px solid rgba(196, 160, 60, 0.35);
+    padding-bottom: 0.25rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .retour:hover,
+  .retour:focus-visible {
+    border-bottom-color: #c4a03c;
+  }
+</style>
