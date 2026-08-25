@@ -56,11 +56,14 @@ import Cta from './Cta.astro';
 </section>
 
 <style>
+  /* Respirations : uniquement l'échelle commune (tokens.css) —
+     titre → tuiles comme les autres paires titre → contenu, mentions
+     liées un cran en dessous, exclusions un cran au-dessus, CTA généreux */
   .cartes {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
     gap: 1.25rem;
-    margin-top: 1.6rem;
+    margin-top: var(--espace-bloc-md);
   }
 
   /* En desktop : quatre tuiles sur une seule ligne, gap généreux,
@@ -255,7 +258,7 @@ import Cta from './Cta.astro';
   }
 
   .conditions {
-    margin-top: 1.6rem;
+    margin-top: var(--espace-bloc-sm);
     text-align: center;
     font-size: 0.93rem;
     letter-spacing: 0.08em;
@@ -263,7 +266,7 @@ import Cta from './Cta.astro';
   }
 
   .egards {
-    margin-top: 1rem;
+    margin-top: var(--espace-bloc-md);
     text-align: center;
     font-size: 0.9rem;
     line-height: 1.8;

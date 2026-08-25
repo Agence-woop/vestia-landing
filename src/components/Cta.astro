@@ -66,6 +66,7 @@ const url = href && href.startsWith('/') ? `${base}${href}` : href;
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
     mask-composite: exclude;
+    overflow: hidden; /* le carré tournant ne doit pas élargir la page */
     pointer-events: none;
     transition: opacity 0.5s ease;
   }
