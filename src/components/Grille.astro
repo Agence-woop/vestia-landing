@@ -42,7 +42,7 @@ import Cta from './Cta.astro';
       </article>
     </div>
 
-    <p class="conditions">Minimum de 8 pièces · Cueillette et livraison toujours incluses</p>
+    <p class="conditions">Minimum de 8 pièces<br />Cueillette et livraison toujours incluses</p>
 
     <p class="egards">
       Nous déclinons avec égards le cachemire, la laine et la maille tricotée, ainsi que les pièces
@@ -59,8 +59,18 @@ import Cta from './Cta.astro';
   .cartes {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 0.9rem;
+    gap: 1.25rem;
     margin-top: 1.6rem;
+  }
+
+  /* En desktop : quatre tuiles sur une seule ligne, gap généreux,
+     léger débord latéral pour compenser */
+  @media (min-width: 64rem) {
+    .cartes {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.75rem;
+      margin-inline: -1.25rem;
+    }
   }
 
   /* Les cartes parlent le langage du bouton D4 : filet or 1 px en
