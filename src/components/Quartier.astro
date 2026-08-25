@@ -1,75 +1,123 @@
 ---
 import Cta from './Cta.astro';
+import ZoneVisual from './ZoneVisual.astro';
+
 /*
- * Section 5 — Le quartier. Le vérificateur d'adresse, cœur battant de la section.
- * Les deux états sont intégrés ici, masqués ; la validation instantanée
- * côté client (zones.json) arrive en Mission 3.
+ * Section 5 — Le territoire. Deux colonnes en desktop : le propos et le
+ * vérificateur à gauche, un slot visuel (ZoneVisual, à venir) à droite.
+ * Le vérificateur répond côté client, sans envoi serveur : normalisation
+ * de la saisie, format canadien, validation par RTA contre
+ * src/data/zones.json. Seul l'envoi « Prévenez-moi » (hors zone) part
+ * vers Formspree, avec le code postal saisi pour cartographier la
+ * demande par quartier.
  */
 ---
 
 <section class="section section--voile" id="quartier">
-  <div class="section__inner">
-    <h2>Un territoire court, des délais courts</h2>
+  <div class="section__inner deux-colonnes">
+    <!-- En mobile, le visuel (quand il existera) passe au-dessus du texte
+         via `order` ; en desktop il occupe la colonne droite -->
+    <div class="colonne-texte">
+      <h2>Un territoire choisi, des délais tenus</h2>
 
-    <p class="intro">
-      Vestia est né ici, entre le canal et le fleuve.<br />
-      Griffintown, la Cité du Multimédia, le Vieux-Port.
-    </p>
+      <p class="propos">
+        Un service de cette précision ne s'étend que là où il peut tenir parole. Vestia dessert
+        Griffintown, la Cité du Multimédia et le Vieux-Port. Du lundi au vendredi, cueillette au
+        moment convenu, retour le jour même ou le lendemain — jamais plus tard.
+      </p>
 
-    <div class="verificateur">
-      <label class="etiquette" for="code-postal">Votre code postal</label>
-      <input
-        class="champ"
-        type="text"
-        id="code-postal"
-        name="code-postal"
-        inputmode="text"
-        autocomplete="postal-code"
-        maxlength="7"
-        placeholder="H3C 1A1"
-      />
-
-      <div class="etat etat--desservi" hidden aria-live="polite">
-        <p class="verdict"><span class="coche" aria-hidden="true">✓</span> Votre adresse est desservie.</p>
-        <div class="section__action">
-          <Cta href="#reserver">Réserver une cueillette</Cta>
-        </div>
-      </div>
-
-      <div class="etat etat--absent" hidden aria-live="polite">
-        <p class="verdict">Pas encore chez vous.</p>
-        <p class="promesse">
-          Laissez votre courriel — vous saurez avant tout le monde quand Vestia traversera la rue.
-        </p>
-        <!-- Branché sur Formspree en Mission 4 -->
-        <form class="prevenir" data-formulaire="prevenez-moi">
-          <label class="visually-hidden" for="courriel-quartier">Votre courriel</label>
+      <form class="verificateur" id="verificateur" novalidate>
+        <label class="etiquette" for="code-postal">Votre code postal</label>
+        <div class="saisie">
           <input
             class="champ"
-            type="email"
-            id="courriel-quartier"
-            name="courriel"
-            placeholder="Votre courriel"
-            autocomplete="email"
+            type="text"
+            id="code-postal"
+            name="code-postal"
+            autocomplete="postal-code"
+            maxlength="7"
+            placeholder="H3C 1A1"
           />
-          <button class="btn-secondaire" type="submit">Prévenez-moi</button>
-        </form>
+          <Cta type="submit">Vérifier</Cta>
+        </div>
+      </form>
+
+      <div class="resultat" aria-live="polite">
+        <p class="message message--erreur" hidden>Veuillez saisir un code postal valide.</p>
+
+        <div class="message message--desservi" hidden>
+          <p class="dore">Vestia dessert votre adresse.</p>
+          <div class="action">
+            <Cta href="/reserver">Réserver une cueillette</Cta>
+          </div>
+        </div>
+
+        <div class="message message--hors-zone" hidden>
+          <p class="promesse">
+            Votre quartier n'y est pas encore. Laissez-nous votre courriel, il viendra.
+          </p>
+          <form class="prevenir" id="prevenir-quartier" novalidate>
+            <input type="hidden" name="code-postal" id="prevenir-code-postal" />
+            <label class="visually-hidden" for="courriel-quartier">Votre courriel</label>
+            <input
+              class="champ"
+              type="email"
+              id="courriel-quartier"
+              name="courriel"
+              placeholder="Votre courriel"
+              autocomplete="email"
+              required
+            />
+            <button class="btn-secondaire" type="submit">Prévenez-moi</button>
+          </form>
+          <p class="suite" hidden></p>
+        </div>
       </div>
     </div>
+
+    <ZoneVisual />
   </div>
 </section>
 
 <style>
-  .intro {
-    font-family: var(--police-voix);
-    font-size: clamp(1.06rem, 1.4vw, 1.25rem);
-    line-height: 1.9;
-    opacity: 0.9;
+  .deux-colonnes {
+    display: grid;
+    gap: clamp(2rem, 4vw, 4rem);
   }
 
+  /* Colonne droite réservée au visuel ; tant que le slot est vide
+     (display: none), la colonne texte occupe seule sa piste, à largeur
+     lisible — aucun trou visible */
+  @media (min-width: 64rem) {
+    .deux-colonnes {
+      grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .deux-colonnes :global(.zone-visuel) {
+      grid-column: 2;
+    }
+  }
+
+  /* Quand le visuel existera : au-dessus du texte en mobile */
+  .deux-colonnes :global(.zone-visuel) {
+    order: -1;
+  }
+
+  @media (min-width: 64rem) {
+    .deux-colonnes :global(.zone-visuel) {
+      order: 0;
+    }
+  }
+
+  .propos {
+    max-width: 62ch;
+  }
+
+  /* ---------- le vérificateur ---------- */
   .verificateur {
     margin-top: 2.2rem;
-    max-width: 22rem;
+    max-width: 30rem;
   }
 
   .etiquette {
@@ -79,33 +127,67 @@ import Cta from './Cta.astro';
     text-transform: uppercase;
     color: var(--or-trait);
     margin-bottom: 0.5rem;
-    transition: color var(--duree-theme) ease;
   }
 
-  .etat {
-    margin-top: 1.6rem;
+  .saisie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
   }
 
-  .verdict {
+  .saisie .champ {
+    flex: 1;
+    min-width: 9rem;
+  }
+
+  /* ---------- les réponses ---------- */
+  .resultat {
+    max-width: 30rem;
+  }
+
+  .message {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(0.3rem);
+    transition:
+      max-height 0.5s ease,
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .message.visible {
+    max-height: 18rem;
+    opacity: 1;
+    transform: none;
+  }
+
+  .message--erreur {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    opacity: 0;
+  }
+
+  .message--erreur.visible {
+    opacity: 0.9;
+  }
+
+  .dore {
+    margin-top: 1.4rem;
     font-family: var(--police-voix);
     font-size: 1.15rem;
-  }
-
-  .coche {
     color: var(--or-trait);
-    margin-right: 0.3rem;
-    transition: color var(--duree-theme) ease;
   }
 
-  .etat .section__action {
-    text-align: left;
-    margin-top: 1.4rem;
+  .action {
+    margin-top: 1.2rem;
+    padding-bottom: 0.3rem;
   }
 
   .promesse {
-    margin-top: 0.6rem;
-    font-size: var(--taille-courant);
-    opacity: 0.9;
+    margin-top: 1.4rem;
+    max-width: 52ch;
   }
 
   .prevenir {
@@ -114,11 +196,17 @@ import Cta from './Cta.astro';
     gap: 0.8rem;
     align-items: flex-end;
     margin-top: 1rem;
+    padding-bottom: 0.2rem;
   }
 
   .prevenir .champ {
     flex: 1;
     min-width: 11rem;
+  }
+
+  .suite {
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
   }
 
   .visually-hidden {
@@ -129,10 +217,84 @@ import Cta from './Cta.astro';
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
-
-  @media (max-width: 40rem) {
-    .intro br {
-      display: none;
-    }
-  }
 </style>
+
+<script>
+  import zones from '../data/zones.json';
+
+  /* Endpoint Formspree du « Prévenez-moi » — identifiant à créer par le
+     propriétaire (voir Mission 4) puis à remplacer ici */
+  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/A_REMPLACER';
+
+  const verificateur = document.getElementById('verificateur') as HTMLFormElement | null;
+  const champ = document.getElementById('code-postal') as HTMLInputElement | null;
+  const erreur = document.querySelector('.message--erreur') as HTMLElement | null;
+  const desservi = document.querySelector('.message--desservi') as HTMLElement | null;
+  const horsZone = document.querySelector('.message--hors-zone') as HTMLElement | null;
+  const prevenir = document.getElementById('prevenir-quartier') as HTMLFormElement | null;
+  const prevenirCode = document.getElementById('prevenir-code-postal') as HTMLInputElement | null;
+  const suite = document.querySelector('.message--hors-zone .suite') as HTMLElement | null;
+
+  const messages = [erreur, desservi, horsZone].filter(Boolean) as HTMLElement[];
+
+  const montrer = (el: HTMLElement) => {
+    el.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+  };
+
+  const masquer = (el: HTMLElement) => {
+    el.classList.remove('visible');
+    el.hidden = true;
+  };
+
+  if (verificateur && champ) {
+    verificateur.addEventListener('submit', (evenement) => {
+      evenement.preventDefault();
+      messages.forEach(masquer);
+
+      /* Normalisation : majuscules, espaces et traits d'union retirés */
+      const code = champ.value.toUpperCase().replace(/[\s-]/g, '');
+      champ.value = code.length > 3 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
+
+      /* Format canadien : lettre-chiffre-lettre chiffre-lettre-chiffre */
+      if (!/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(code)) {
+        if (erreur) montrer(erreur);
+        return;
+      }
+
+      /* Validation par RTA (3 premiers caractères) contre la liste embarquée */
+      if (zones.rta.includes(code.slice(0, 3))) {
+        if (desservi) montrer(desservi);
+      } else {
+        if (prevenirCode) prevenirCode.value = code;
+        if (horsZone) montrer(horsZone);
+      }
+    });
+  }
+
+  if (prevenir && suite) {
+    prevenir.addEventListener('submit', async (evenement) => {
+      evenement.preventDefault();
+      const donnees = new FormData(prevenir);
+      const courriel = String(donnees.get('courriel') ?? '').trim();
+      if (!courriel || !courriel.includes('@')) {
+        suite.textContent = 'Veuillez saisir un courriel valide.';
+        suite.hidden = false;
+        return;
+      }
+      try {
+        const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: donnees,
+        });
+        if (!reponse.ok) throw new Error();
+        prevenir.hidden = true;
+        suite.textContent = 'C’est noté. Vestia vous écrira.';
+      } catch {
+        suite.textContent = 'L’envoi n’a pas abouti. Veuillez réessayer.';
+      }
+      suite.hidden = false;
+    });
+  }
+</script>

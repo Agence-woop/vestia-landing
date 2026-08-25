@@ -1,0 +1,19 @@
+---
+/*
+ * Slot réservé au visuel de la section territoire (carte du quartier,
+ * illustration — à venir). Tant qu'il est vide, il est retiré du flux :
+ * aucun cadre fantôme, aucun trou visible. Le jour où le visuel existe,
+ * remplir le slot et retirer la classe `zone-visuel--vide` ; en mobile,
+ * l'ordre prévu le place au-dessus du texte (voir Quartier.astro).
+ */
+---
+
+<div class="zone-visuel zone-visuel--vide">
+  <slot />
+</div>
+
+<style>
+  .zone-visuel--vide {
+    display: none;
+  }
+</style>
