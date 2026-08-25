@@ -14,10 +14,13 @@ import Cta from './Cta.astro';
 </section>
 
 <style>
+  /* Densité : les respirations au-dessus et en dessous du contenu sont
+     réduites de moitié (padding et hauteur de centrage divisés par deux) */
   .section {
     display: flex;
     align-items: center;
-    min-height: 92svh;
+    min-height: 46svh;
+    padding-block: calc(var(--espace-section) / 2);
     text-align: center;
   }
 

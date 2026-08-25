@@ -40,6 +40,15 @@
      de cartes) — aucune exception locale */
   --taille-courant: clamp(1.06rem, 1.1vw, 1.19rem);
 
+  /* ------- échelle d'espacement vertical ------- */
+  /* Issue des valeurs majoritaires de la page — aucune valeur locale
+     hors échelle pour les respirations de sections */
+  --espace-section: clamp(3.5rem, 9vh, 5.5rem); /* padding vertical des sections */
+  --espace-bloc-lg: 2.4rem; /* CTA de fin de section, blocs bien séparés */
+  --espace-bloc-md: 1.8rem; /* titre → contenu, blocs distincts */
+  --espace-bloc-sm: 1.4rem; /* éléments liés */
+  --espace-bloc-xs: 1.1rem; /* lignes sœurs */
+
   /* ------- mouvement ------- */
   --duree-theme: 0.7s;
 }
