@@ -29,13 +29,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </div>
 
 <section class="hero">
-  <p class="kicker">Services à domicile</p>
+  <p class="kicker">Repassage · Cueillette à domicile</p>
   <h1 class="wordmark" data-text="Vestia">Vestia</h1>
   <p class="tagline">L'intendance de votre quotidien</p>
   <div class="action">
     <Cta href="/reserver">Réserver une cueillette</Cta>
   </div>
-  <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Port</p>
+  <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Montréal</p>
   <div class="indicateur" aria-hidden="true"></div>
 </section>
 
@@ -85,6 +85,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-right: -0.35em;
     text-transform: uppercase;
     margin-bottom: 2.2rem;
+    white-space: nowrap;
+  }
+
+  /* Le descripteur tient sur une ligne en mobile : tracking resserré
+     pour ce seul élément */
+  @media (max-width: 40rem) {
+    .kicker {
+      letter-spacing: 0.2em;
+      margin-right: -0.2em;
+    }
   }
 
   .wordmark {
