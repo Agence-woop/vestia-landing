@@ -1,0 +1,53 @@
+---
+/*
+ * Le sceau de maison — un grand monogramme V en Bodoni Moda, gaufré
+ * dans la soie : champagne à très faible opacité, respiration très
+ * lente (lumière Vestia, désynchronisée). Purement décoratif.
+ * Décision de design en évaluation : se désactive d'une seule prop
+ * (showSeal) dans Engagements.astro.
+ */
+---
+
+<div class="sceau" aria-hidden="true">V</div>
+
+<style>
+  .sceau {
+    font-family: var(--police-embleme);
+    font-weight: 400;
+    font-size: clamp(22rem, 30vw, 30rem);
+    line-height: 0.9;
+    background-image: linear-gradient(
+      168deg,
+      #8e7429 0%,
+      #c4a03c 26%,
+      #f1da80 50%,
+      #c4a03c 74%,
+      #8e7429 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0.055;
+    animation: sceau-respire 14s ease-in-out infinite;
+    animation-delay: -8s;
+    user-select: none;
+  }
+
+  /* Une respiration subliminale : l'amplitude reste minime */
+  @keyframes sceau-respire {
+    0%,
+    100% {
+      opacity: 0.045;
+    }
+    50% {
+      opacity: 0.07;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sceau {
+      animation: none;
+      opacity: 0.055;
+    }
+  }
+</style>
