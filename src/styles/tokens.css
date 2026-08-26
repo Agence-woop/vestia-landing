@@ -49,6 +49,9 @@
   --espace-bloc-sm: 1.4rem; /* éléments liés */
   --espace-bloc-xs: 1.1rem; /* lignes sœurs */
 
+  /* ------- surfaces ------- */
+  --rayon-tuile: 1.25rem; /* arrondi commun des tuiles (tarifs, carte de zone) */
+
   /* ------- mouvement ------- */
   --duree-theme: 0.7s;
 }

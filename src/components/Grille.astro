@@ -1,6 +1,6 @@
 ---
 import Cta from './Cta.astro';
-/* Section 4 — La grille. Trois cartes sobres + une carte voilée. Prix en or aplat. */
+/* Section 4 — La grille. Trois cartes sobres, prix en or aplat. */
 ---
 
 <section class="section section--voile" id="grille">
@@ -19,26 +19,6 @@ import Cta from './Cta.astro';
       <article class="carte">
         <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">12&nbsp;$</span></p>
         <p class="detail">Robe, chemise en lin, pièce plissée, veston</p>
-      </article>
-
-      <article class="carte carte--voilee">
-        <p class="titre">
-          <span class="pastille" aria-hidden="true"></span>Bientôt
-        </p>
-        <p class="detail">Linge de maison · Manteaux &amp; trenchs<br />Le service s'étend.</p>
-        <!-- Branché sur Formspree en Mission 4 -->
-        <form class="prevenir" data-formulaire="prevenez-moi">
-          <label class="visually-hidden" for="courriel-bientot">Votre courriel</label>
-          <input
-            class="champ"
-            type="email"
-            id="courriel-bientot"
-            name="courriel"
-            placeholder="Votre courriel"
-            autocomplete="email"
-          />
-          <button class="btn-secondaire" type="submit">Prévenez-moi</button>
-        </form>
       </article>
     </div>
 
@@ -62,17 +42,16 @@ import Cta from './Cta.astro';
   .cartes {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 1.25rem;
+    gap: var(--espace-bloc-xs);
     margin-top: var(--espace-bloc-md);
   }
 
-  /* En desktop : quatre tuiles sur une seule ligne, gap généreux,
-     léger débord latéral pour compenser */
+  /* En desktop : trois tuiles sur une seule ligne, centrées dans le
+     conteneur, espacées selon l'échelle commune */
   @media (min-width: 64rem) {
     .cartes {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.75rem;
-      margin-inline: -1.25rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--espace-bloc-md);
     }
   }
 
@@ -84,7 +63,7 @@ import Cta from './Cta.astro';
     background-color: rgba(16, 45, 76, 0.55);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
-    border-radius: 1.25rem;
+    border-radius: var(--rayon-tuile);
     padding: 1.4rem 1.5rem;
     box-shadow: 0 12px 32px rgba(4, 14, 26, 0.3);
   }
@@ -96,7 +75,7 @@ import Cta from './Cta.astro';
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: 1.25rem;
+    border-radius: var(--rayon-tuile);
     padding: 1px;
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
@@ -132,10 +111,6 @@ import Cta from './Cta.astro';
   .carte:nth-child(3)::before {
     animation-delay: -9s;
     animation-duration: 14s;
-  }
-
-  .carte:nth-child(4)::before {
-    animation-delay: -11.5s;
   }
 
   .titre {
@@ -193,68 +168,6 @@ import Cta from './Cta.astro';
     margin-top: 0.5rem;
     font-size: var(--taille-courant);
     opacity: 0.9;
-  }
-
-  /* ---------- la carte voilée ---------- */
-  /* Fond bleu-noir nettement plus sombre : la tuile se distingue
-     des trois cartes actives */
-  .carte--voilee {
-    background-color: rgba(4, 12, 24, 0.72);
-  }
-
-  /* Même filet D4, en version plus estompée — même lumière */
-  .carte--voilee::before {
-    background-image:
-      linear-gradient(
-        105deg,
-        transparent 35%,
-        rgba(241, 218, 128, 0.25) 50%,
-        transparent 65%
-      ),
-      linear-gradient(
-        52deg,
-        rgba(196, 160, 60, 0.45) 0%,
-        rgba(196, 160, 60, 0.45) 38%,
-        transparent 80%
-      );
-  }
-
-  .carte--voilee .titre {
-    justify-content: flex-start;
-    gap: 0.6rem;
-    color: var(--or-trait);
-    transition: color var(--duree-theme) ease;
-  }
-
-  .pastille {
-    width: 0.45rem;
-    height: 0.45rem;
-    border-radius: 50%;
-    background: var(--or-trait);
-    align-self: center;
-    transition: background-color var(--duree-theme) ease;
-  }
-
-  .prevenir {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    align-items: flex-end;
-    margin-top: 1.1rem;
-  }
-
-  .prevenir .champ {
-    flex: 1;
-    min-width: 11rem;
-  }
-
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 
   .conditions {
