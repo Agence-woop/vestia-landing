@@ -46,16 +46,14 @@ import Cta from './Cta.astro';
     margin-top: var(--espace-bloc-md);
   }
 
-  /* En desktop : trois tuiles sur une seule ligne, grille resserrée et
-     centrée (ratio de carte, pas de bandeau), espacement de l'échelle
-     commune ; hauteur minimale commune — le contenu reste calé en haut,
-     l'air respire sous la liste, les trois tuiles sont d'égale hauteur */
+  /* En desktop : trois colonnes égales alignées sur les marges de la
+     section (même conteneur que le titre), espacement généreux au cran
+     supérieur de l'échelle ; hauteur minimale commune — contenu calé en
+     haut, l'air respire sous la liste, trois tuiles d'égale hauteur */
   @media (min-width: 64rem) {
     .cartes {
       grid-template-columns: repeat(3, 1fr);
-      gap: var(--espace-bloc-md);
-      max-width: 66rem;
-      margin-inline: auto;
+      gap: var(--espace-bloc-lg);
     }
 
     .carte {
