@@ -88,12 +88,11 @@ import ZoneVisual from './ZoneVisual.astro';
     gap: clamp(2rem, 4vw, 4rem);
   }
 
-  /* Colonne droite réservée au visuel ; tant que le slot est vide
-     (display: none), la colonne texte occupe seule sa piste, à largeur
-     lisible — aucun trou visible */
+  /* Deux colonnes en desktop : le texte (~45 %) à gauche, la carte
+     (~55 %) à droite, alignées verticalement */
   @media (min-width: 64rem) {
     .deux-colonnes {
-      grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
       align-items: center;
     }
 
@@ -102,7 +101,7 @@ import ZoneVisual from './ZoneVisual.astro';
     }
   }
 
-  /* Quand le visuel existera : au-dessus du texte en mobile */
+  /* En mobile, la carte passe au-dessus du bloc texte + vérificateur */
   .deux-colonnes :global(.zone-visuel) {
     order: -1;
   }

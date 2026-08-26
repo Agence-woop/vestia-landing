@@ -1,19 +1,55 @@
 ---
 /*
- * Slot réservé au visuel de la section territoire (carte du quartier,
- * illustration — à venir). Tant qu'il est vide, il est retiré du flux :
- * aucun cadre fantôme, aucun trou visible. Le jour où le visuel existe,
- * remplir le slot et retirer la classe `zone-visuel--vide` ; en mobile,
- * l'ordre prévu le place au-dessus du texte (voir Quartier.astro).
+ * Le visuel de la section territoire : la carte officielle de la zone
+ * desservie (master 7500×5000 dans assets-source/carte-zone-vestia.png,
+ * déclinaisons générées dans public/ — WebP qualité 82 + repli PNG).
+ * Sous la ligne de flottaison : chargement paresseux, dimensions
+ * réservées (width/height + aspect-ratio, aucun saut de mise en page).
+ * Un léger fondu des quatre bords marie la carte au fond de la section.
  */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const tailles = '(min-width: 64rem) 55vw, 100vw';
+const alt =
+  'Carte de la zone desservie par Vestia : Griffintown, Cité du Multimédia, Vieux-Montréal et Vieux-Port, entre le canal de Lachine et le fleuve Saint-Laurent';
 ---
 
-<div class="zone-visuel zone-visuel--vide">
-  <slot />
+<div class="zone-visuel">
+  <picture>
+    <source
+      type="image/webp"
+      srcset={`${base}/carte-zone-vestia-640.webp 640w, ${base}/carte-zone-vestia-1080.webp 1080w, ${base}/carte-zone-vestia-1600.webp 1600w`}
+      sizes={tailles}
+    />
+    <img
+      src={`${base}/carte-zone-vestia-1080.png`}
+      srcset={`${base}/carte-zone-vestia-640.png 640w, ${base}/carte-zone-vestia-1080.png 1080w, ${base}/carte-zone-vestia-1600.png 1600w`}
+      sizes={tailles}
+      width="1600"
+      height="1067"
+      loading="lazy"
+      decoding="async"
+      alt={alt}
+    />
+  </picture>
 </div>
 
 <style>
-  .zone-visuel--vide {
-    display: none;
+  .zone-visuel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1600 / 1067;
+    border-radius: 1.25rem; /* le même radius que les tuiles tarifaires */
+
+    /* Fondu de sécurité : les bords s'éteignent sur ~28 px pour se marier
+       au fond nuit pétrole — invisible en usage, aucune vignette */
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent),
+      linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent),
+      linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+    mask-composite: intersect;
   }
 </style>
