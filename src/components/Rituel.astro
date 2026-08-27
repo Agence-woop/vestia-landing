@@ -11,7 +11,7 @@ import Cta from './Cta.astro';
       <li>
         <span class="numero" aria-hidden="true">I</span>
         <div>
-          <h3>La cueillette</h3>
+          <h3 class="etiquette-or">La cueillette</h3>
           <p>
             Choisissez votre créneau. Nous passons à votre porte, comptons chaque pièce avec vous,
             et prenons le relais.
@@ -21,7 +21,7 @@ import Cta from './Cta.astro';
       <li>
         <span class="numero" aria-hidden="true">II</span>
         <div>
-          <h3>Le soin</h3>
+          <h3 class="etiquette-or">Le soin</h3>
           <p>
             Chaque vêtement est repassé à la main, un à un, avec la minutie d'un atelier.
           </p>
@@ -30,7 +30,7 @@ import Cta from './Cta.astro';
       <li>
         <span class="numero" aria-hidden="true">III</span>
         <div>
-          <h3>Le retour</h3>
+          <h3 class="etiquette-or">Le retour</h3>
           <p>
             Vos pièces reviennent sur cintre et sous housse de protection, à l'abri jusqu'à votre
             penderie. Cueillies avant 9&nbsp;h, elles rentrent le soir même; sinon, dès le
@@ -93,14 +93,9 @@ import Cta from './Cta.astro';
     pointer-events: none;
   }
 
+  /* Style partagé .etiquette-or (sections.css) ; seul l'espacement est local */
   .gestes h3 {
-    font-family: var(--police-courant);
-    font-weight: 500;
-    font-size: 0.86rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
     margin-bottom: 0.45rem;
-    color: var(--or-trait);
   }
 
   .gestes p {
