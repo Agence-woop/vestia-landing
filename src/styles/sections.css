@@ -61,6 +61,18 @@
   margin-top: var(--espace-bloc-lg);
 }
 
+/* ---------- étiquette ocre commune ---------- */
+/* Le style des étapes du rituel (LA CUEILLETTE…), partagé avec les
+   clauses des engagements */
+.etiquette-or {
+  font-family: var(--police-courant);
+  font-weight: 500;
+  font-size: 0.86rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--or-trait);
+}
+
 /* ---------- champs de formulaire ---------- */
 .champ {
   width: 100%;
