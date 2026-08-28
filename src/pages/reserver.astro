@@ -1,48 +1,235 @@
 ---
 import Base from '../layouts/Base.astro';
+import Footer from '../components/Footer.astro';
+import Cta from '../components/Cta.astro';
 
 /*
- * Page d'attente de la réservation — le parcours complet en trois écrans
- * fera l'objet d'une mission dédiée. Hors navigation, non indexée tant
- * que le parcours n'est pas livré.
+ * Le parcours de réservation en trois écrans — une demande de cueillette
+ * confirmée manuellement par message texte, pas une réservation
+ * instantanée. Aucun backend : la soumission finale part vers Formspree
+ * (endpoint provisoire, voir les constantes du script). Tout l'état vit
+ * côté client ; les écrans restent dans le DOM, donc les saisies sont
+ * conservées quand on revient en arrière.
+ * noindex conservé jusqu'au lancement.
  */
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<Base title="Vestia — Réserver une cueillette" noindex>
-  <main class="attente">
-    <p class="wordmark">Vestia</p>
-    <p class="phrase">La réservation ouvre bientôt.</p>
-    <a class="retour" href={`${base}/`}>Retour à l'accueil</a>
+<Base
+  title="Vestia — Réserver une cueillette"
+  description="Demandez votre cueillette Vestia : adresse, jour et fenêtre de passage. Confirmation personnelle par message texte."
+  noindex
+>
+  <main class="section parcours">
+    <header class="entete">
+      <a class="marque" href={`${base}/`}>Vestia</a>
+    </header>
+
+    <div class="cadre">
+      <p class="etape" id="etape" aria-live="polite">1&nbsp;/&nbsp;3</p>
+
+      <!-- ================= Écran 1 — L'adresse ================= -->
+      <form class="ecran" id="ecran-1" novalidate>
+        <h2>Votre adresse</h2>
+
+        <div class="bloc">
+          <label class="etiquette" for="r-code-postal">Votre code postal</label>
+          <div class="saisie">
+            <input
+              class="champ"
+              type="text"
+              id="r-code-postal"
+              name="code-postal"
+              autocomplete="postal-code"
+              maxlength="7"
+              placeholder="H3C 1A1"
+            />
+            <button class="btn-secondaire" type="button" id="r-verifier">Vérifier</button>
+          </div>
+          <p class="erreur" aria-live="polite" hidden>Veuillez saisir un code postal valide.</p>
+          <p class="dore" id="r-desservi" aria-live="polite" hidden>Vestia dessert votre adresse.</p>
+        </div>
+
+        <!-- Hors zone : le parcours s'arrête proprement ici -->
+        <div class="bloc" id="r-hors-zone" hidden>
+          <p class="promesse" aria-live="polite">
+            Votre quartier n'y est pas encore. Laissez-nous votre courriel, il viendra.
+          </p>
+          <div class="saisie">
+            <label class="visually-hidden" for="r-courriel-attente">Votre courriel</label>
+            <input
+              class="champ"
+              type="email"
+              id="r-courriel-attente"
+              placeholder="Votre courriel"
+              autocomplete="email"
+            />
+            <button class="btn-secondaire" type="button" id="r-prevenir">Prévenez-moi</button>
+          </div>
+          <p class="suite" aria-live="polite" hidden></p>
+        </div>
+
+        <div id="r-adresse" hidden>
+          <div class="bloc">
+            <label class="etiquette" for="r-rue">Numéro et rue</label>
+            <input class="champ" type="text" id="r-rue" name="adresse" autocomplete="street-address" />
+            <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre numéro et votre rue.</p>
+          </div>
+          <div class="bloc">
+            <label class="etiquette" for="r-app">Appartement <span class="optionnel">(optionnel)</span></label>
+            <input class="champ" type="text" id="r-app" name="appartement" />
+          </div>
+          <div class="bloc">
+            <label class="etiquette" for="r-acces">Instructions d'accès <span class="optionnel">(optionnel)</span></label>
+            <input class="champ" type="text" id="r-acces" name="instructions" placeholder="Code d'entrée, concierge, remarques…" />
+          </div>
+          <div class="actions">
+            <Cta type="submit">Continuer</Cta>
+          </div>
+        </div>
+      </form>
+
+      <!-- ================= Écran 2 — La cueillette ================= -->
+      <form class="ecran" id="ecran-2" hidden novalidate>
+        <h2>Votre cueillette</h2>
+
+        <div class="bloc">
+          <p class="etiquette">Le jour</p>
+          <div class="calendrier" id="calendrier">
+            <div class="cal-tete">
+              <button type="button" class="cal-nav" id="cal-prec" aria-label="Mois précédent">‹</button>
+              <p class="cal-mois" id="cal-mois" aria-live="polite"></p>
+              <button type="button" class="cal-nav" id="cal-suiv" aria-label="Mois suivant">›</button>
+            </div>
+            <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
+          </div>
+          <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
+        </div>
+
+        <div class="bloc" id="r-fenetres" hidden>
+          <p class="etiquette">La fenêtre de cueillette</p>
+          <fieldset class="groupe">
+            <legend>Matin — retour le soir même</legend>
+            <div class="capsules" data-groupe="matin"></div>
+          </fieldset>
+          <fieldset class="groupe">
+            <legend>Fin de journée — retour le prochain jour ouvrable</legend>
+            <div class="capsules" data-groupe="soir"></div>
+          </fieldset>
+          <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
+        </div>
+
+        <div class="bloc">
+          <p class="etiquette">Combien de pièces, environ?</p>
+          <div class="capsules" id="r-tranches"></div>
+          <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
+          <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
+        </div>
+
+        <div class="bloc">
+          <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
+          <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
+        </div>
+
+        <div class="actions">
+          <Cta type="submit">Continuer</Cta>
+          <button type="button" class="retour" data-retour>‹ Précédent</button>
+        </div>
+      </form>
+
+      <!-- ================= Écran 3 — Vos coordonnées ================= -->
+      <form class="ecran" id="ecran-3" hidden novalidate>
+        <h2>Vos coordonnées</h2>
+
+        <div class="duo">
+          <div class="bloc">
+            <label class="etiquette" for="r-prenom">Prénom</label>
+            <input class="champ" type="text" id="r-prenom" autocomplete="given-name" />
+            <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre prénom.</p>
+          </div>
+          <div class="bloc">
+            <label class="etiquette" for="r-nom">Nom</label>
+            <input class="champ" type="text" id="r-nom" autocomplete="family-name" />
+            <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre nom.</p>
+          </div>
+        </div>
+        <div class="bloc">
+          <label class="etiquette" for="r-courriel">Courriel</label>
+          <input class="champ" type="email" id="r-courriel" autocomplete="email" />
+          <p class="erreur" aria-live="polite" hidden>Veuillez saisir un courriel valide.</p>
+        </div>
+        <div class="bloc">
+          <label class="etiquette" for="r-mobile">Mobile</label>
+          <input class="champ" type="tel" id="r-mobile" autocomplete="tel" inputmode="tel" />
+          <p class="aide">Votre confirmation arrive par message texte.</p>
+          <p class="erreur" aria-live="polite" hidden>Veuillez saisir un numéro de mobile valide.</p>
+        </div>
+
+        <div class="tuile" id="r-recap" aria-live="polite"></div>
+
+        <div class="bloc cases">
+          <label class="case">
+            <input type="checkbox" id="r-conditions" />
+            <span>J'ai lu et j'accepte les
+              <a href={`${base}/conditions-utilisation`} target="_blank" rel="noopener">conditions d'utilisation</a></span>
+          </label>
+          <p class="erreur" aria-live="polite" hidden>Veuillez accepter les conditions d'utilisation.</p>
+          <label class="case">
+            <input type="checkbox" id="r-infolettre" />
+            <span>Tenez-moi informé des nouveautés Vestia</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <Cta type="submit">Envoyer ma demande</Cta>
+          <p class="discret">Confirmation par message texte d'ici 2&nbsp;heures.</p>
+          <p class="erreur" id="r-echec" aria-live="polite" hidden>
+            L'envoi n'a pas fonctionné. Réessayez, ou écrivez-nous à info@vestia.ca.
+          </p>
+          <button type="button" class="retour" data-retour>‹ Précédent</button>
+        </div>
+      </form>
+
+      <!-- ================= Confirmation ================= -->
+      <div class="ecran confirmation" id="ecran-confirmation" hidden>
+        <p class="recu">Votre demande est reçue.</p>
+        <p class="suite-confirmation">
+          Votre intendant Vestia vous confirme votre créneau par message texte d'ici 2&nbsp;heures.
+        </p>
+        <p class="dore" id="r-souhait"></p>
+        <p class="discret">Demande envoyée en soirée? Votre confirmation arrive dès 7&nbsp;h.</p>
+        <a class="retour" href={`${base}/`}>‹ Retour à l'accueil</a>
+      </div>
+    </div>
   </main>
+  <Footer />
 </Base>
 
-<style>
-  /* Nuit pétrole quel que soit le thème — pas de soie sur cette page */
-  .attente {
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
+<style is:global>
+  /* Registre parcours : nuit pétrole uni, pas de soie */
+  body {
     background-color: #091e35;
-    background-image: radial-gradient(
-      ellipse 120% 65% at 50% -10%,
-      rgba(250, 247, 240, 0.06),
-      transparent 60%
-    );
-    color: #faf7f0;
+  }
+</style>
+
+<style>
+  .parcours {
+    min-height: 72svh;
   }
 
-  .wordmark {
+  .entete {
+    text-align: center;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .marque {
     font-family: var(--police-embleme);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: clamp(2.4rem, 9vw, 4.5rem);
+    font-size: 1.4rem;
     letter-spacing: 0.2em;
     margin-right: -0.2em;
+    text-decoration: none;
     background-image: linear-gradient(
       168deg,
       #8e7429 0%,
@@ -56,27 +243,756 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: transparent;
   }
 
-  .phrase {
-    margin-top: 2rem;
-    font-size: var(--taille-courant);
-    letter-spacing: 0.04em;
+  .cadre {
+    max-width: 40rem;
+    margin-inline: auto;
+  }
+
+  /* L'indicateur d'étape, en filigrane doré */
+  .etape {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    color: var(--or-trait);
+    opacity: 0.6;
+    margin-bottom: 0.6rem;
+  }
+
+  /* ---------- les écrans ---------- */
+  .ecran {
+    opacity: 0;
+    transform: translateY(0.4rem);
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+  }
+
+  .ecran.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .bloc {
+    margin-top: var(--espace-bloc-md);
+  }
+
+  .etiquette {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--or-trait);
+    margin-bottom: 0.6rem;
+  }
+
+  .optionnel {
+    text-transform: none;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  .saisie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .saisie .champ {
+    flex: 1;
+    min-width: 9rem;
+  }
+
+  textarea.champ {
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .erreur {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
     opacity: 0.9;
   }
 
+  .aide,
+  .rappel {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  .dore {
+    margin-top: 1rem;
+    font-family: var(--police-voix);
+    font-size: 1.15rem;
+    color: var(--or-trait);
+  }
+
+  .promesse {
+    max-width: 52ch;
+  }
+
+  .suite {
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .duo {
+    display: grid;
+    gap: 0 1.5rem;
+  }
+
+  @media (min-width: 34rem) {
+    .duo {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .actions {
+    margin-top: var(--espace-bloc-lg);
+    text-align: center;
+  }
+
   .retour {
-    margin-top: 2.6rem;
+    display: inline-block;
+    margin-top: 1.2rem;
     font-size: 0.78rem;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     text-decoration: none;
-    color: #c4a03c;
-    border-bottom: 1px solid rgba(196, 160, 60, 0.35);
-    padding-bottom: 0.25rem;
-    transition: border-color 0.3s ease;
+    color: var(--texte);
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
   }
 
   .retour:hover,
   .retour:focus-visible {
-    border-bottom-color: #c4a03c;
+    opacity: 1;
+  }
+
+  .discret {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ---------- le calendrier ---------- */
+  .calendrier {
+    border: 1px solid var(--filet);
+    border-radius: var(--rayon-tuile);
+    padding: 1rem 1.1rem 1.2rem;
+  }
+
+  .cal-tete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .cal-mois {
+    font-family: var(--police-voix);
+    font-size: 1.05rem;
+    text-transform: capitalize;
+  }
+
+  .cal-nav {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    border: 1px solid var(--filet);
+    color: var(--or-trait);
+    font-size: 1rem;
+    line-height: 1;
+    transition: border-color 0.3s ease;
+  }
+
+  .cal-nav:hover:not(:disabled),
+  .cal-nav:focus-visible {
+    border-color: var(--or-trait);
+  }
+
+  .cal-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .cal-grille {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.3rem;
+    text-align: center;
+  }
+
+  .cal-grille :global(.cal-jour-nom) {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    padding: 0.3rem 0;
+  }
+
+  .cal-grille :global(button.jour) {
+    aspect-ratio: 1;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    color: var(--texte);
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease;
+  }
+
+  .cal-grille :global(button.jour:hover:not(:disabled)),
+  .cal-grille :global(button.jour:focus-visible) {
+    background: rgba(196, 160, 60, 0.18);
+  }
+
+  .cal-grille :global(button.jour:disabled) {
+    opacity: 0.28;
+    cursor: default;
+  }
+
+  /* Le jour choisi : la capsule dorée des pills */
+  .cal-grille :global(button.jour.choisi) {
+    background: #c4a03c;
+    color: #091e35;
+    font-weight: 500;
+  }
+
+  /* ---------- capsules (fenêtres, tranches) ---------- */
+  .groupe {
+    border: 0;
+    padding: 0;
+    margin: 0 0 1.1rem;
+  }
+
+  .groupe legend {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 0.6rem;
+    padding: 0;
+  }
+
+  .capsules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .capsules :global(label) {
+    cursor: pointer;
+  }
+
+  .capsules :global(input) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .capsules :global(span) {
+    display: inline-block;
+    padding: 0.5em 1em;
+    border-radius: 999px;
+    border: 1px solid var(--filet);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .capsules :global(label:hover span),
+  .capsules :global(input:focus-visible + span) {
+    border-color: var(--or-trait);
+  }
+
+  .capsules :global(input:focus-visible + span) {
+    outline: 1px solid var(--or-trait);
+    outline-offset: 3px;
+  }
+
+  .capsules :global(input:checked + span) {
+    background: #c4a03c;
+    border-color: #c4a03c;
+    color: #091e35;
+    font-weight: 500;
+  }
+
+  /* ---------- la tuile récapitulative ---------- */
+  .tuile {
+    position: relative;
+    margin-top: var(--espace-bloc-lg);
+    background-color: rgba(16, 45, 76, 0.55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-radius: var(--rayon-tuile);
+    padding: 1.4rem 1.5rem;
+  }
+
+  .tuile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--rayon-tuile);
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+    pointer-events: none;
+  }
+
+  .tuile :global(p) {
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .tuile :global(p + p) {
+    margin-top: 0.4rem;
+  }
+
+  .tuile :global(.recap-titre) {
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--or-trait);
+    opacity: 1;
+    margin-bottom: 0.7rem;
+  }
+
+  /* ---------- cases à cocher ---------- */
+  .cases .case {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    cursor: pointer;
+  }
+
+  .cases .case + .case {
+    margin-top: 0.8rem;
+  }
+
+  .cases input {
+    accent-color: #c4a03c;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    transform: translateY(0.15rem);
+  }
+
+  .cases span {
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .cases a {
+    color: var(--or-trait);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(196, 160, 60, 0.35);
+  }
+
+  .cases a:hover,
+  .cases a:focus-visible {
+    border-bottom-color: var(--or-trait);
+  }
+
+  /* ---------- confirmation ---------- */
+  .confirmation {
+    text-align: center;
+    padding-top: var(--espace-bloc-lg);
+  }
+
+  .recu {
+    font-family: var(--police-voix);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+
+  .suite-confirmation {
+    margin-top: var(--espace-bloc-xs);
+    max-width: 42ch;
+    margin-inline: auto;
+  }
+
+  .confirmation .retour {
+    margin-top: var(--espace-bloc-lg);
   }
 </style>
+
+<script>
+  import zones from '../data/zones.json';
+
+  /* ----------------------------------------------------------------
+     Endpoints Formspree PROVISOIRES — à remplacer par le compte Vestia
+     avant lancement. Isolés ici volontairement.
+  ---------------------------------------------------------------- */
+  const FORMSPREE_RESERVATION_ENDPOINT = 'https://formspree.io/f/A_REMPLACER_RESERVATION';
+  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/A_REMPLACER';
+
+  /* Quartier lisible dans l'objet du courriel, par RTA */
+  const QUARTIERS: Record<string, string> = {
+    H3J: 'Griffintown',
+    H3C: 'Cité du Multimédia',
+    H2Y: 'Vieux-Montréal',
+  };
+
+  const FENETRES_MATIN = ['7 h – 7 h 30', '7 h 30 – 8 h', '8 h – 8 h 30', '8 h 30 – 9 h'];
+  const FENETRES_SOIR = [
+    '17 h – 17 h 30',
+    '17 h 30 – 18 h',
+    '18 h – 18 h 30',
+    '18 h 30 – 19 h',
+    '19 h – 19 h 30',
+  ];
+  const TRANCHES = ['8 – 10', '11 – 15', '16 – 20', '21 et plus'];
+  const HORIZON_JOURS = 21;
+
+  const $ = (s: string) => document.querySelector(s) as HTMLElement;
+  const montrer = (el: HTMLElement) => {
+    el.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+  };
+
+  /* ---------- l'état du parcours ---------- */
+  const etat = {
+    codePostal: '',
+    jour: null as Date | null,
+    fenetre: '',
+    retour: '',
+    tranche: '',
+  };
+
+  const ecrans = [$('#ecran-1'), $('#ecran-2'), $('#ecran-3')] as HTMLFormElement[];
+  let courant = 0;
+
+  function aller(cible: number) {
+    ecrans[courant].classList.remove('visible');
+    ecrans[courant].hidden = true;
+    courant = cible;
+    const ecran = ecrans[courant];
+    ecran.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => ecran.classList.add('visible')));
+    $('#etape').innerHTML = `${courant + 1}&nbsp;/&nbsp;3`;
+    window.scrollTo({ top: 0 });
+    if (courant === 2) remplirRecap();
+  }
+
+  ecrans[0].classList.add('visible');
+  document.querySelectorAll('[data-retour]').forEach((b) =>
+    b.addEventListener('click', () => aller(courant - 1))
+  );
+
+  const afficherErreur = (bloc: Element | null, visible: boolean) => {
+    const e = bloc?.querySelector('.erreur') as HTMLElement | null;
+    if (e) e.hidden = !visible;
+  };
+
+  /* ================= Écran 1 — l'adresse ================= */
+  const champCP = $('#r-code-postal') as HTMLInputElement;
+  const blocCP = champCP.closest('.bloc');
+  const horsZone = $('#r-hors-zone');
+  const desservi = $('#r-desservi');
+  const adresse = $('#r-adresse');
+
+  $('#r-verifier').addEventListener('click', () => {
+    afficherErreur(blocCP, false);
+    desservi.hidden = true;
+    horsZone.hidden = true;
+    adresse.hidden = true;
+
+    /* Normalisation et validation : identiques à la section territoire */
+    const code = champCP.value.toUpperCase().replace(/[\s-]/g, '');
+    champCP.value = code.length > 3 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
+    if (!/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(code)) {
+      afficherErreur(blocCP, true);
+      return;
+    }
+    etat.codePostal = `${code.slice(0, 3)} ${code.slice(3)}`;
+    if (zones.rta.includes(code.slice(0, 3))) {
+      desservi.hidden = false;
+      adresse.hidden = false;
+    } else {
+      horsZone.hidden = false;
+    }
+  });
+
+  /* Hors zone : liste d'attente, le parcours s'arrête là */
+  $('#r-prevenir').addEventListener('click', async () => {
+    const courriel = ($('#r-courriel-attente') as HTMLInputElement).value.trim();
+    const suite = horsZone.querySelector('.suite') as HTMLElement;
+    if (!courriel || !courriel.includes('@')) {
+      suite.textContent = 'Veuillez saisir un courriel valide.';
+      suite.hidden = false;
+      return;
+    }
+    const donnees = new FormData();
+    donnees.set('courriel', courriel);
+    donnees.set('code_postal', etat.codePostal);
+    try {
+      const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: donnees,
+      });
+      if (!reponse.ok) throw new Error();
+      (horsZone.querySelector('.saisie') as HTMLElement).hidden = true;
+      suite.textContent = 'C’est noté. Vestia vous écrira.';
+    } catch {
+      suite.textContent = 'L’envoi n’a pas fonctionné. Réessayez, ou écrivez-nous à info@vestia.ca.';
+    }
+    suite.hidden = false;
+  });
+
+  ecrans[0].addEventListener('submit', (e) => {
+    e.preventDefault();
+    const rue = $('#r-rue') as HTMLInputElement;
+    const ok = rue.value.trim().length > 0;
+    afficherErreur(rue.closest('.bloc'), !ok);
+    if (ok) aller(1);
+  });
+
+  /* ================= Écran 2 — le calendrier ================= */
+  const auMinuit = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const aujourdHui = auMinuit(new Date());
+  const horizon = new Date(aujourdHui);
+  horizon.setDate(horizon.getDate() + HORIZON_JOURS);
+
+  const selectionnable = (d: Date) =>
+    d > aujourdHui && d <= horizon && d.getDay() !== 0 && d.getDay() !== 6;
+
+  const formatLong = (d: Date) =>
+    d.toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const moisContientSelectionnable = (annee: number, mois: number) => {
+    const fin = new Date(annee, mois + 1, 0).getDate();
+    for (let j = 1; j <= fin; j += 1) {
+      if (selectionnable(new Date(annee, mois, j))) return true;
+    }
+    return false;
+  };
+
+  let moisAffiche = new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), 1);
+  const grille = $('#cal-grille');
+
+  function rendreCalendrier() {
+    const annee = moisAffiche.getFullYear();
+    const mois = moisAffiche.getMonth();
+    $('#cal-mois').textContent = moisAffiche.toLocaleDateString('fr-CA', {
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const prec = new Date(annee, mois - 1, 1);
+    const suiv = new Date(annee, mois + 1, 1);
+    ($('#cal-prec') as HTMLButtonElement).disabled = !moisContientSelectionnable(
+      prec.getFullYear(),
+      prec.getMonth()
+    );
+    ($('#cal-suiv') as HTMLButtonElement).disabled = !moisContientSelectionnable(
+      suiv.getFullYear(),
+      suiv.getMonth()
+    );
+
+    grille.innerHTML = '';
+    for (const nom of ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim']) {
+      const t = document.createElement('span');
+      t.className = 'cal-jour-nom';
+      t.textContent = nom;
+      grille.appendChild(t);
+    }
+    /* Semaine commençant le lundi */
+    const decalage = (new Date(annee, mois, 1).getDay() + 6) % 7;
+    for (let v = 0; v < decalage; v += 1) grille.appendChild(document.createElement('span'));
+
+    const fin = new Date(annee, mois + 1, 0).getDate();
+    for (let j = 1; j <= fin; j += 1) {
+      const date = new Date(annee, mois, j);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'jour';
+      b.textContent = String(j);
+      b.setAttribute('aria-label', formatLong(date));
+      if (!selectionnable(date)) {
+        b.disabled = true;
+      } else {
+        b.addEventListener('click', () => {
+          etat.jour = date;
+          grille.querySelectorAll('.choisi').forEach((x) => x.classList.remove('choisi'));
+          b.classList.add('choisi');
+          $('#r-fenetres').hidden = false;
+          afficherErreur($('#calendrier').closest('.bloc'), false);
+        });
+      }
+      if (etat.jour && date.getTime() === etat.jour.getTime()) b.classList.add('choisi');
+      grille.appendChild(b);
+    }
+  }
+
+  $('#cal-prec').addEventListener('click', () => {
+    moisAffiche = new Date(moisAffiche.getFullYear(), moisAffiche.getMonth() - 1, 1);
+    rendreCalendrier();
+  });
+  $('#cal-suiv').addEventListener('click', () => {
+    moisAffiche = new Date(moisAffiche.getFullYear(), moisAffiche.getMonth() + 1, 1);
+    rendreCalendrier();
+  });
+
+  /* Navigation au clavier dans la grille */
+  grille.addEventListener('keydown', (e) => {
+    const touches: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    if (!(e.key in touches)) return;
+    const jours = Array.from(grille.querySelectorAll('button.jour:not(:disabled)')) as HTMLElement[];
+    const i = jours.indexOf(document.activeElement as HTMLElement);
+    if (i === -1) return;
+    e.preventDefault();
+    const cible = jours[Math.min(jours.length - 1, Math.max(0, i + (Math.abs(touches[e.key]) === 7 ? touches[e.key] > 0 ? 5 : -5 : touches[e.key])))];
+    cible?.focus();
+  });
+
+  rendreCalendrier();
+
+  /* Fenêtres et tranches en capsules radio */
+  function capsule(nom: string, valeur: string, conteneur: Element) {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = nom;
+    input.value = valeur;
+    const span = document.createElement('span');
+    span.textContent = valeur;
+    label.append(input, span);
+    conteneur.appendChild(label);
+    return input;
+  }
+
+  for (const f of FENETRES_MATIN) {
+    capsule('fenetre', f, document.querySelector('[data-groupe="matin"]')!).addEventListener(
+      'change',
+      () => {
+        etat.fenetre = f;
+        etat.retour = 'retour le soir même';
+      }
+    );
+  }
+  for (const f of FENETRES_SOIR) {
+    capsule('fenetre', f, document.querySelector('[data-groupe="soir"]')!).addEventListener(
+      'change',
+      () => {
+        etat.fenetre = f;
+        etat.retour = 'retour le prochain jour ouvrable';
+      }
+    );
+  }
+  for (const t of TRANCHES) {
+    capsule('tranche', t, $('#r-tranches')).addEventListener('change', () => {
+      etat.tranche = t;
+    });
+  }
+
+  ecrans[1].addEventListener('submit', (e) => {
+    e.preventDefault();
+    const okJour = etat.jour !== null;
+    const okFenetre = etat.fenetre !== '';
+    const okTranche = etat.tranche !== '';
+    afficherErreur($('#calendrier').closest('.bloc'), !okJour);
+    afficherErreur($('#r-fenetres'), okJour && !okFenetre);
+    afficherErreur($('#r-tranches').closest('.bloc'), !okTranche);
+    if (okJour && okFenetre && okTranche) aller(2);
+  });
+
+  /* ================= Écran 3 — coordonnées et envoi ================= */
+  function adresseComplete() {
+    const rue = ($('#r-rue') as HTMLInputElement).value.trim();
+    const app = ($('#r-app') as HTMLInputElement).value.trim();
+    return `${rue}${app ? `, app. ${app}` : ''}, ${etat.codePostal}`;
+  }
+
+  function remplirRecap() {
+    $('#r-recap').innerHTML = `
+      <p class="recap-titre">Votre demande</p>
+      <p>${adresseComplete()}</p>
+      <p>${formatLong(etat.jour!)}</p>
+      <p>${etat.fenetre} — ${etat.retour}</p>
+      <p>${etat.tranche} pièces</p>
+    `;
+  }
+
+  const courrielValide = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const mobileValide = (v: string) =>
+    /^(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/.test(v.trim());
+
+  ecrans[2].addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const prenom = $('#r-prenom') as HTMLInputElement;
+    const nom = $('#r-nom') as HTMLInputElement;
+    const courriel = $('#r-courriel') as HTMLInputElement;
+    const mobile = $('#r-mobile') as HTMLInputElement;
+    const conditions = $('#r-conditions') as HTMLInputElement;
+
+    const okPrenom = prenom.value.trim().length > 0;
+    const okNom = nom.value.trim().length > 0;
+    const okCourriel = courrielValide(courriel.value.trim());
+    const okMobile = mobileValide(mobile.value);
+    const okConditions = conditions.checked;
+    afficherErreur(prenom.closest('.bloc'), !okPrenom);
+    afficherErreur(nom.closest('.bloc'), !okNom);
+    afficherErreur(courriel.closest('.bloc'), !okCourriel);
+    afficherErreur(mobile.closest('.bloc'), !okMobile);
+    afficherErreur(conditions.closest('.cases'), !okConditions);
+    $('#r-echec').hidden = true;
+    if (!(okPrenom && okNom && okCourriel && okMobile && okConditions)) return;
+
+    const jourLong = formatLong(etat.jour!);
+    const quartier = QUARTIERS[etat.codePostal.slice(0, 3)] ?? etat.codePostal;
+    const donnees = new FormData();
+    donnees.set('_subject', `Demande de cueillette — ${jourLong}, ${etat.fenetre} — ${quartier}`);
+    donnees.set('adresse', adresseComplete());
+    donnees.set('code_postal', etat.codePostal);
+    donnees.set('instructions_acces', ($('#r-acces') as HTMLInputElement).value.trim());
+    donnees.set('jour', jourLong);
+    donnees.set('fenetre', `${etat.fenetre} — ${etat.retour}`);
+    donnees.set('tranche_pieces', etat.tranche);
+    donnees.set('notes', ($('#r-notes') as HTMLTextAreaElement).value.trim());
+    donnees.set('prenom', prenom.value.trim());
+    donnees.set('nom', nom.value.trim());
+    donnees.set('courriel', courriel.value.trim());
+    donnees.set('mobile', mobile.value.trim());
+    donnees.set('infolettre', ($('#r-infolettre') as HTMLInputElement).checked ? 'oui' : 'non');
+
+    try {
+      const reponse = await fetch(FORMSPREE_RESERVATION_ENDPOINT, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: donnees,
+      });
+      if (!reponse.ok) throw new Error();
+      /* La confirmation remplace le formulaire */
+      ecrans[2].classList.remove('visible');
+      ecrans[2].hidden = true;
+      $('#etape').hidden = true;
+      $('#r-souhait').textContent = `Cueillette souhaitée: ${jourLong}, ${etat.fenetre}`;
+      montrer($('#ecran-confirmation'));
+      window.scrollTo({ top: 0 });
+    } catch {
+      /* Les données saisies restent en place */
+      $('#r-echec').hidden = false;
+    }
+  });
+</script>
