@@ -1,0 +1,5 @@
+{
+  "note": "Dates non réservables. Format AAAA-MM-JJ. Retirer les dates passées de temps en temps.",
+  "feries": ["2026-09-07"],
+  "complets": ["2026-09-09"]
+}
