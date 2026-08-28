@@ -146,12 +146,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
                 <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
               </div>
-
-              <div class="actions">
-                <Cta type="submit">Continuer</Cta>
-              </div>
             </div>
           </div>
+        </div>
+
+        <!-- Le CTA, centré sous l'ensemble des deux colonnes -->
+        <div class="actions">
+          <Cta type="submit">Continuer</Cta>
         </div>
       </form>
 
@@ -296,10 +297,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: var(--espace-bloc-md);
   }
 
-  /* Étiquettes de champs doublées, style conservé */
+  /* Étiquettes de champs, style conservé — réduites de ~3,7 pt : à 2-3 pt
+     de moins, « Une précision pour votre intendant? (optionnel) » passait
+     encore sur deux lignes en desktop */
   .etiquette {
     display: block;
-    font-size: 1.36rem;
+    font-size: 1.05rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--or-trait);
@@ -383,7 +386,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   @media (min-width: 64rem) {
     .deux-col {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: start;
+      align-items: stretch;
+    }
+
+    /* La colonne droite occupe la hauteur du calendrier ; les trois
+       groupes se répartissent l'espace — c'est l'espace entre eux qui
+       absorbe la différence, jamais le textarea */
+    .col-droite {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .droite-contenu {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
   }
 
