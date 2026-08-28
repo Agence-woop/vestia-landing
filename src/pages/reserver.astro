@@ -114,6 +114,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 </div>
                 <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
               </div>
+              <div class="legende" id="cal-legende" hidden>
+                <p class="legende-item" id="leg-complet" hidden>
+                  <span class="marque-complet" aria-hidden="true"></span>
+                  <span><strong>Complet</strong> — la limite de cueillettes est atteinte</span>
+                </p>
+                <p class="legende-item" id="leg-ferie" hidden>
+                  <span class="marque-ferie" aria-hidden="true"></span>
+                  <span><strong>Férié</strong> — Vestia ne circule pas</span>
+                </p>
+              </div>
               <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
             </div>
           </div>
@@ -135,16 +145,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
               </div>
 
-              <div class="espaceur" aria-hidden="true"></div>
-
               <div class="bloc">
-                <p class="etiquette">Combien de pièces, environ?</p>
+                <p class="etiquette">Combien de pièces avez-vous, environ?</p>
                 <div class="capsules" id="r-tranches"></div>
                 <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
               </div>
-
-              <div class="espaceur" aria-hidden="true"></div>
 
               <div class="bloc">
                 <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
@@ -391,44 +397,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     gap: 0 var(--espace-bloc-lg);
   }
 
-  /* Les espaceurs plafonnés n'existent qu'en desktop */
-  .espaceur {
-    display: none;
-  }
-
   @media (min-width: 64rem) {
     .deux-col {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: stretch;
+      align-items: start;
     }
+  }
 
-    /* La colonne droite occupe la hauteur du calendrier ; les espaceurs
-       flexibles mais plafonnés répartissent l'espace entre les groupes
-       (jamais le textarea) : alignée au bas du calendrier quand c'est
-       naturel, sans creuser de vides — au-delà du plafond, la colonne
-       se termine simplement avant le bas */
-    .col-droite {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .droite-contenu {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .espaceur {
-      display: block;
-      flex: 1 1 auto;
-      min-height: var(--espace-bloc-sm);
-      max-height: var(--espace-bloc-lg);
-    }
-
-    /* L'espaceur porte l'espacement entre groupes */
-    .droite-contenu .espaceur + .bloc {
-      margin-top: 0;
-    }
+  /* Espacement uniforme et fixe entre les trois groupes de la colonne
+     droite — l'aide « Minimum de 8 pièces… » appartient à son groupe,
+     le séparateur est le même partout */
+  .droite-contenu > .bloc + .bloc {
+    margin-top: var(--espace-bloc-md);
   }
 
   /* L'espace titre → colonnes, resserré d'un cran */
@@ -443,7 +423,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   #ecran-2 .actions {
-    margin-top: var(--espace-bloc-md);
+    margin-top: var(--espace-bloc-sm);
   }
 
   .verrou {
@@ -554,6 +534,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   .cal-grille :global(button.jour) {
+    position: relative;
     aspect-ratio: 1;
     border-radius: 999px;
     font-size: 0.92rem;
@@ -561,6 +542,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     transition:
       background-color 0.25s ease,
       color 0.25s ease;
+  }
+
+  /* Journée complète : non sélectionnable mais lisible, marquée d'un
+     point ocre discret sous le chiffre — jamais une alerte */
+  .cal-grille :global(button.jour.complet:disabled) {
+    opacity: 0.75;
+  }
+
+  .cal-grille :global(button.jour.complet)::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 15%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--or-trait);
+    transform: translateX(-50%);
   }
 
   /* En desktop, la case devient une capsule de hauteur contenue
@@ -590,6 +589,46 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     background: #c4a03c;
     color: #091e35;
     font-weight: 500;
+  }
+
+  /* ---------- la légende du calendrier ---------- */
+  .legende {
+    margin-top: 0.7rem;
+    padding-inline: 0.4rem;
+  }
+
+  .legende-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  }
+
+  .legende-item + .legende-item {
+    margin-top: 0.3rem;
+  }
+
+  .legende strong {
+    font-weight: 500;
+  }
+
+  .marque-complet,
+  .marque-ferie {
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+
+  .marque-complet {
+    background: var(--or-trait);
+  }
+
+  .marque-ferie {
+    background: var(--texte);
+    opacity: 0.28;
   }
 
   /* ---------- capsules (fenêtres, tranches) ---------- */
@@ -763,6 +802,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <script>
   import zones from '../data/zones.json';
+  import joursIndisponibles from '../data/jours-indisponibles.json';
 
   /* ----------------------------------------------------------------
      Endpoints Formspree PROVISOIRES — à remplacer par le compte Vestia
@@ -902,13 +942,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   });
 
   /* ================= Écran 2 — le calendrier ================= */
+  const FERIES = new Set(joursIndisponibles.feries);
+  const COMPLETS = new Set(joursIndisponibles.complets);
+  const cle = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
   const auMinuit = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const aujourdHui = auMinuit(new Date());
   const horizon = new Date(aujourdHui);
   horizon.setDate(horizon.getDate() + HORIZON_JOURS);
 
   const selectionnable = (d: Date) =>
-    d > aujourdHui && d <= horizon && d.getDay() !== 0 && d.getDay() !== 6;
+    d > aujourdHui &&
+    d <= horizon &&
+    d.getDay() !== 0 &&
+    d.getDay() !== 6 &&
+    !FERIES.has(cle(d)) &&
+    !COMPLETS.has(cle(d));
 
   const formatLong = (d: Date) =>
     d.toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -955,6 +1005,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     for (let v = 0; v < decalage; v += 1) grille.appendChild(document.createElement('span'));
 
     const fin = new Date(annee, mois + 1, 0).getDate();
+    let moisAFerie = false;
+    let moisAComplet = false;
     for (let j = 1; j <= fin; j += 1) {
       const date = new Date(annee, mois, j);
       const b = document.createElement('button');
@@ -962,8 +1014,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       b.className = 'jour';
       b.textContent = String(j);
       b.setAttribute('aria-label', formatLong(date));
+      const semaine = date.getDay() !== 0 && date.getDay() !== 6;
       if (!selectionnable(date)) {
         b.disabled = true;
+        /* Les fériés reprennent le grisé des fins de semaine ; les
+           journées complètes restent lisibles avec leur point ocre.
+           Une date de liste tombant une fin de semaine reste un simple
+           jour grisé, sans marqueur ni mention. */
+        if (semaine && FERIES.has(cle(date))) {
+          b.setAttribute('aria-label', `${formatLong(date)} — férié`);
+          b.setAttribute('aria-disabled', 'true');
+          moisAFerie = true;
+        } else if (semaine && COMPLETS.has(cle(date))) {
+          b.classList.add('complet');
+          b.setAttribute('aria-label', `${formatLong(date)} — complet`);
+          b.setAttribute('aria-disabled', 'true');
+          moisAComplet = true;
+        }
       } else {
         b.addEventListener('click', () => {
           etat.jour = date;
@@ -977,6 +1044,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       if (etat.jour && date.getTime() === etat.jour.getTime()) b.classList.add('choisi');
       grille.appendChild(b);
     }
+
+    /* La légende n'affiche que les entrées pertinentes au mois affiché */
+    ($('#leg-ferie') as HTMLElement).hidden = !moisAFerie;
+    ($('#leg-complet') as HTMLElement).hidden = !moisAComplet;
+    ($('#cal-legende') as HTMLElement).hidden = !(moisAFerie || moisAComplet);
   }
 
   $('#cal-prec').addEventListener('click', () => {
