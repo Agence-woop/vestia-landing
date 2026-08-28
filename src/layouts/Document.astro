@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import Footer from '../components/Footer.astro';
+import Soie from '../components/Soie.astro';
 
 /*
  * Gabarit des pages document (conditions, politique) : registre de
@@ -18,7 +19,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base title={title} description={description}>
-  <main class="document">
+  <Soie />
+  <!-- section--voile : voile local supplémentaire, indispensable aux
+       textes longs sur la soie -->
+  <main class="document section--voile">
     <header class="entete">
       <a class="marque" href={`${base}/`}>Vestia</a>
     </header>
@@ -33,7 +37,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </Base>
 
 <style is:global>
-  /* Registre document : nuit pétrole uni quel que soit le thème */
+  /* Couleur de secours derrière la soie, quel que soit le thème */
   body {
     background-color: #091e35;
   }
@@ -60,7 +64,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-family: var(--police-embleme);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: 1.4rem;
+    font-size: clamp(2.8rem, 9vw, 4.2rem);
     letter-spacing: 0.2em;
     margin-right: -0.2em;
     text-decoration: none;

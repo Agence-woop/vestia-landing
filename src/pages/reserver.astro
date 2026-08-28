@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Footer from '../components/Footer.astro';
 import Cta from '../components/Cta.astro';
+import Soie from '../components/Soie.astro';
 
 /*
  * Le parcours de réservation en trois écrans — une demande de cueillette
@@ -20,13 +21,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   description="Demandez votre cueillette Vestia : adresse, jour et fenêtre de passage. Confirmation personnelle par message texte."
   noindex
 >
-  <main class="section parcours">
+  <Soie />
+  <main class="section section--voile parcours">
     <header class="entete">
       <a class="marque" href={`${base}/`}>Vestia</a>
     </header>
 
-    <div class="cadre">
-      <p class="etape" id="etape" aria-live="polite">1&nbsp;/&nbsp;3</p>
+    <!-- Le conteneur standard du site, comme l'accueil et les pages légales -->
+    <div class="cadre section__inner">
+      <div class="barre">
+        <button type="button" class="retour" id="r-retour" hidden>‹ Retour</button>
+        <p class="etape" id="etape" aria-live="polite">1&nbsp;/&nbsp;3</p>
+      </div>
 
       <!-- ================= Écran 1 — L'adresse ================= -->
       <form class="ecran" id="ecran-1" novalidate>
@@ -78,6 +84,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <div class="bloc">
             <label class="etiquette" for="r-app">Appartement <span class="optionnel">(optionnel)</span></label>
             <input class="champ" type="text" id="r-app" name="appartement" />
+            <p class="aide">
+              Sans numéro d'appartement, votre intendant vous retrouve dans le hall d'entrée.
+            </p>
           </div>
           <div class="bloc">
             <label class="etiquette" for="r-acces">Instructions d'accès <span class="optionnel">(optionnel)</span></label>
@@ -93,47 +102,56 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <form class="ecran" id="ecran-2" hidden novalidate>
         <h2>Votre cueillette</h2>
 
-        <div class="bloc">
-          <p class="etiquette">Le jour</p>
-          <div class="calendrier" id="calendrier">
-            <div class="cal-tete">
-              <button type="button" class="cal-nav" id="cal-prec" aria-label="Mois précédent">‹</button>
-              <p class="cal-mois" id="cal-mois" aria-live="polite"></p>
-              <button type="button" class="cal-nav" id="cal-suiv" aria-label="Mois suivant">›</button>
+        <div class="deux-col">
+          <div class="col-gauche">
+            <div class="bloc">
+              <p class="etiquette">Le jour</p>
+              <div class="calendrier" id="calendrier">
+                <div class="cal-tete">
+                  <button type="button" class="cal-nav" id="cal-prec" aria-label="Mois précédent">‹</button>
+                  <p class="cal-mois" id="cal-mois" aria-live="polite"></p>
+                  <button type="button" class="cal-nav" id="cal-suiv" aria-label="Mois suivant">›</button>
+                </div>
+                <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
+              </div>
+              <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
             </div>
-            <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
           </div>
-          <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
-        </div>
 
-        <div class="bloc" id="r-fenetres" hidden>
-          <p class="etiquette">La fenêtre de cueillette</p>
-          <fieldset class="groupe">
-            <legend>Matin — retour le soir même</legend>
-            <div class="capsules" data-groupe="matin"></div>
-          </fieldset>
-          <fieldset class="groupe">
-            <legend>Fin de journée — retour le prochain jour ouvrable</legend>
-            <div class="capsules" data-groupe="soir"></div>
-          </fieldset>
-          <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
-        </div>
+          <!-- La colonne s'active en douceur dès qu'un jour est choisi -->
+          <div class="col-droite" id="r-droite">
+            <p class="verrou" id="r-verrou" aria-live="polite">Choisissez d'abord un jour</p>
+            <div class="droite-contenu" id="r-droite-contenu">
+              <div class="bloc" id="r-fenetres">
+                <p class="etiquette">La fenêtre de cueillette</p>
+                <fieldset class="groupe">
+                  <legend>Matin — retour le soir même</legend>
+                  <div class="capsules" data-groupe="matin"></div>
+                </fieldset>
+                <fieldset class="groupe">
+                  <legend>Fin de journée — retour le prochain jour ouvrable</legend>
+                  <div class="capsules" data-groupe="soir"></div>
+                </fieldset>
+                <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
+              </div>
 
-        <div class="bloc">
-          <p class="etiquette">Combien de pièces, environ?</p>
-          <div class="capsules" id="r-tranches"></div>
-          <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
-          <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
-        </div>
+              <div class="bloc">
+                <p class="etiquette">Combien de pièces, environ?</p>
+                <div class="capsules" id="r-tranches"></div>
+                <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
+                <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
+              </div>
 
-        <div class="bloc">
-          <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
-          <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
-        </div>
+              <div class="bloc">
+                <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
+                <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
+              </div>
 
-        <div class="actions">
-          <Cta type="submit">Continuer</Cta>
-          <button type="button" class="retour" data-retour>‹ Précédent</button>
+              <div class="actions">
+                <Cta type="submit">Continuer</Cta>
+              </div>
+            </div>
+          </div>
         </div>
       </form>
 
@@ -186,7 +204,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <p class="erreur" id="r-echec" aria-live="polite" hidden>
             L'envoi n'a pas fonctionné. Réessayez, ou écrivez-nous à info@vestia.ca.
           </p>
-          <button type="button" class="retour" data-retour>‹ Précédent</button>
         </div>
       </form>
 
@@ -226,7 +243,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-family: var(--police-embleme);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: 1.4rem;
+    font-size: clamp(2.8rem, 9vw, 4.2rem);
     letter-spacing: 0.2em;
     margin-right: -0.2em;
     text-decoration: none;
@@ -243,9 +260,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: transparent;
   }
 
-  .cadre {
-    max-width: 40rem;
-    margin-inline: auto;
+  /* Le retour au-dessus du titre, l'indicateur d'étape en vis-à-vis */
+  .barre {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    min-height: 1.4rem;
   }
 
   /* L'indicateur d'étape, en filigrane doré */
@@ -254,7 +275,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     letter-spacing: 0.3em;
     color: var(--or-trait);
     opacity: 0.6;
-    margin-bottom: 0.6rem;
+    margin-left: auto;
   }
 
   /* ---------- les écrans ---------- */
@@ -275,9 +296,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: var(--espace-bloc-md);
   }
 
+  /* Étiquettes de champs doublées, style conservé */
   .etiquette {
     display: block;
-    font-size: 0.68rem;
+    font-size: 1.36rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--or-trait);
@@ -350,6 +372,38 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .actions {
     margin-top: var(--espace-bloc-lg);
     text-align: center;
+  }
+
+  /* ---------- écran 2 : deux colonnes en desktop ---------- */
+  .deux-col {
+    display: grid;
+    gap: 0 var(--espace-bloc-lg);
+  }
+
+  @media (min-width: 64rem) {
+    .deux-col {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .verrou {
+    margin-top: var(--espace-bloc-md);
+    font-size: 0.95rem;
+    opacity: 0.8;
+  }
+
+  .droite-contenu {
+    opacity: 0.35;
+    transition: opacity 0.45s ease;
+  }
+
+  .col-droite.actif .verrou {
+    display: none;
+  }
+
+  .col-droite.actif .droite-contenu {
+    opacity: 1;
   }
 
   .retour {
@@ -654,13 +708,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   };
 
   const FENETRES_MATIN = ['7 h – 7 h 30', '7 h 30 – 8 h', '8 h – 8 h 30', '8 h 30 – 9 h'];
-  const FENETRES_SOIR = [
-    '17 h – 17 h 30',
-    '17 h 30 – 18 h',
-    '18 h – 18 h 30',
-    '18 h 30 – 19 h',
-    '19 h – 19 h 30',
-  ];
+  const FENETRES_SOIR = ['17 h 30 – 18 h', '18 h – 18 h 30', '18 h 30 – 19 h', '19 h – 19 h 30'];
   const TRANCHES = ['8 – 10', '11 – 15', '16 – 20', '21 et plus'];
   const HORIZON_JOURS = 21;
 
@@ -682,7 +730,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const ecrans = [$('#ecran-1'), $('#ecran-2'), $('#ecran-3')] as HTMLFormElement[];
   let courant = 0;
 
-  function aller(cible: number) {
+  /* Affiche une étape sans toucher à l'historique */
+  function montrerEcran(cible: number) {
     ecrans[courant].classList.remove('visible');
     ecrans[courant].hidden = true;
     courant = cible;
@@ -690,14 +739,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     ecran.hidden = false;
     requestAnimationFrame(() => requestAnimationFrame(() => ecran.classList.add('visible')));
     $('#etape').innerHTML = `${courant + 1}&nbsp;/&nbsp;3`;
+    ($('#r-retour') as HTMLButtonElement).hidden = courant === 0;
     window.scrollTo({ top: 0 });
     if (courant === 2) remplirRecap();
   }
 
+  /* Avancer pousse une entrée d'historique : le bouton retour du
+     navigateur ramène à l'étape précédente, données intactes */
+  function avancer(cible: number) {
+    history.pushState({ etape: cible }, '');
+    montrerEcran(cible);
+    sauvegarder();
+  }
+
+  window.addEventListener('popstate', (e) => {
+    const et = e.state && typeof e.state.etape === 'number' ? e.state.etape : 0;
+    montrerEcran(Math.max(0, Math.min(2, et)));
+  });
+
   ecrans[0].classList.add('visible');
-  document.querySelectorAll('[data-retour]').forEach((b) =>
-    b.addEventListener('click', () => aller(courant - 1))
-  );
+  /* Le bouton « ‹ Retour » du site passe par l'historique : un seul chemin */
+  $('#r-retour').addEventListener('click', () => history.back());
 
   const afficherErreur = (bloc: Element | null, visible: boolean) => {
     const e = bloc?.querySelector('.erreur') as HTMLElement | null;
@@ -765,7 +827,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const rue = $('#r-rue') as HTMLInputElement;
     const ok = rue.value.trim().length > 0;
     afficherErreur(rue.closest('.bloc'), !ok);
-    if (ok) aller(1);
+    if (ok) avancer(1);
   });
 
   /* ================= Écran 2 — le calendrier ================= */
@@ -836,8 +898,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           etat.jour = date;
           grille.querySelectorAll('.choisi').forEach((x) => x.classList.remove('choisi'));
           b.classList.add('choisi');
-          $('#r-fenetres').hidden = false;
+          activerDroite();
           afficherErreur($('#calendrier').closest('.bloc'), false);
+          sauvegarder();
         });
       }
       if (etat.jour && date.getTime() === etat.jour.getTime()) b.classList.add('choisi');
@@ -906,6 +969,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     });
   }
 
+  /* La colonne droite reste estompée et inerte tant qu'aucun jour
+     n'est choisi */
+  const droite = $('#r-droite');
+  const droiteContenu = $('#r-droite-contenu') as HTMLElement & { inert: boolean };
+  droiteContenu.inert = true;
+
+  function activerDroite() {
+    droite.classList.add('actif');
+    droiteContenu.inert = false;
+  }
+
   ecrans[1].addEventListener('submit', (e) => {
     e.preventDefault();
     const okJour = etat.jour !== null;
@@ -914,7 +988,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     afficherErreur($('#calendrier').closest('.bloc'), !okJour);
     afficherErreur($('#r-fenetres'), okJour && !okFenetre);
     afficherErreur($('#r-tranches').closest('.bloc'), !okTranche);
-    if (okJour && okFenetre && okTranche) aller(2);
+    if (okJour && okFenetre && okTranche) avancer(2);
   });
 
   /* ================= Écran 3 — coordonnées et envoi ================= */
@@ -983,10 +1057,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         body: donnees,
       });
       if (!reponse.ok) throw new Error();
-      /* La confirmation remplace le formulaire */
+      /* La confirmation remplace le formulaire ; l'état de session est effacé */
+      sessionStorage.removeItem(CLE_SESSION);
       ecrans[2].classList.remove('visible');
       ecrans[2].hidden = true;
       $('#etape').hidden = true;
+      ($('#r-retour') as HTMLButtonElement).hidden = true;
       $('#r-souhait').textContent = `Cueillette souhaitée: ${jourLong}, ${etat.fenetre}`;
       montrer($('#ecran-confirmation'));
       window.scrollTo({ top: 0 });
@@ -995,4 +1071,108 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       $('#r-echec').hidden = false;
     }
   });
+
+  /* ================= Persistance de session ================= */
+  const CLE_SESSION = 'vestia-reservation';
+  const valeur = (id: string) => ($(`#${id}`) as HTMLInputElement).value;
+  const cocher = (id: string) => ($(`#${id}`) as HTMLInputElement).checked;
+
+  function sauvegarder() {
+    const j = etat.jour;
+    const donnees = {
+      etape: courant,
+      cp: valeur('r-code-postal'),
+      codePostal: etat.codePostal,
+      desservi: !adresse.hidden,
+      rue: valeur('r-rue'),
+      app: valeur('r-app'),
+      acces: valeur('r-acces'),
+      jour: j ? `${j.getFullYear()}-${j.getMonth() + 1}-${j.getDate()}` : '',
+      fenetre: etat.fenetre,
+      retour: etat.retour,
+      tranche: etat.tranche,
+      notes: valeur('r-notes'),
+      prenom: valeur('r-prenom'),
+      nom: valeur('r-nom'),
+      courriel: valeur('r-courriel'),
+      mobile: valeur('r-mobile'),
+      conditions: cocher('r-conditions'),
+      infolettre: cocher('r-infolettre'),
+    };
+    try {
+      sessionStorage.setItem(CLE_SESSION, JSON.stringify(donnees));
+    } catch {
+      /* stockage indisponible : le parcours fonctionne sans persistance */
+    }
+  }
+
+  const poserValeur = (id: string, v: string) => {
+    ($(`#${id}`) as HTMLInputElement).value = v ?? '';
+  };
+  const poserCoche = (id: string, v: boolean) => {
+    ($(`#${id}`) as HTMLInputElement).checked = Boolean(v);
+  };
+  const poserRadio = (nom: string, v: string) => {
+    const input = document.querySelector(
+      `input[name="${nom}"][value="${v}"]`
+    ) as HTMLInputElement | null;
+    if (input) {
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  };
+
+  /* Restauration après rechargement, puis reconstruction de
+     l'historique (une entrée par étape déjà franchie) */
+  function restaurer() {
+    let d: any = null;
+    try {
+      d = JSON.parse(sessionStorage.getItem(CLE_SESSION) ?? 'null');
+    } catch {
+      d = null;
+    }
+    history.replaceState({ etape: 0 }, '');
+    if (!d) return;
+
+    poserValeur('r-code-postal', d.cp);
+    poserValeur('r-rue', d.rue);
+    poserValeur('r-app', d.app);
+    poserValeur('r-acces', d.acces);
+    poserValeur('r-notes', d.notes);
+    poserValeur('r-prenom', d.prenom);
+    poserValeur('r-nom', d.nom);
+    poserValeur('r-courriel', d.courriel);
+    poserValeur('r-mobile', d.mobile);
+    poserCoche('r-conditions', d.conditions);
+    poserCoche('r-infolettre', d.infolettre);
+
+    if (d.codePostal) etat.codePostal = d.codePostal;
+    if (d.desservi) {
+      desservi.hidden = false;
+      adresse.hidden = false;
+    }
+    if (d.jour) {
+      const [a, m, jj] = String(d.jour).split('-').map(Number);
+      const date = new Date(a, m - 1, jj);
+      if (selectionnable(date)) {
+        etat.jour = date;
+        moisAffiche = new Date(a, m - 1, 1);
+        rendreCalendrier();
+        activerDroite();
+      }
+    }
+    if (d.fenetre) poserRadio('fenetre', d.fenetre);
+    if (d.tranche) poserRadio('tranche', d.tranche);
+
+    const etape = Math.max(0, Math.min(2, Number(d.etape) || 0));
+    for (let i = 1; i <= etape; i += 1) history.pushState({ etape: i }, '');
+    if (etape > 0) montrerEcran(etape);
+  }
+
+  /* Chaque saisie est sauvegardée au fil de l'eau */
+  const cadre = document.querySelector('.cadre') as HTMLElement;
+  cadre.addEventListener('input', sauvegarder);
+  cadre.addEventListener('change', sauvegarder);
+
+  restaurer();
 </script>

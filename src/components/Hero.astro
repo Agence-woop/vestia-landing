@@ -1,32 +1,15 @@
 ---
 import Cta from './Cta.astro';
+import Soie from './Soie.astro';
 
 /*
- * Mission 1 — Le hero et la soie.
- * La soie vidéo couvre l'écran en fond fixe ; le défilement pilote
- * `currentTime` sur toute la hauteur de page (scroll-scrubbing).
- * Replis : lecture en boucle simple si la page ne défile pas encore,
- * si le scrubbing manque de fluidité, ou sans JavaScript ;
- * image fixe si `prefers-reduced-motion`.
- * La soie reste nuit pétrole dans les deux thèmes.
+ * Mission 1 — Le hero. La soie (fond vidéo scrubbé) vit dans le
+ * composant partagé Soie.astro ; elle reste nuit pétrole dans les
+ * deux thèmes.
  */
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<div class="soie" aria-hidden="true">
-  <video
-    id="soie-video"
-    muted
-    playsinline
-    autoplay
-    loop
-    preload="auto"
-    poster={`${base}/soie-poster.jpg`}
-  >
-    <source src={`${base}/soie-nuit-petrole.mp4`} type="video/mp4" />
-  </video>
-  <div class="scrim"></div>
-</div>
+<Soie />
 
 <section class="hero">
   <p class="kicker">Repassage · Cueillette à domicile</p>
@@ -40,32 +23,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </section>
 
 <style>
-  /* ---------- la soie ---------- */
-  .soie {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background-color: #091e35;
-  }
-
-  .soie video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .scrim {
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(
-      180deg,
-      rgba(9, 30, 53, 0.55) 0%,
-      rgba(9, 30, 53, 0.18) 32%,
-      rgba(9, 30, 53, 0.18) 62%,
-      rgba(9, 30, 53, 0.6) 100%
-    );
-  }
-
   /* ---------- le hero ---------- */
   .hero {
     min-height: 100svh;
@@ -238,74 +195,3 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 </style>
 
-<script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  const video = document.getElementById('soie-video') as HTMLVideoElement | null;
-
-  if (video) {
-    const mouvementReduit = matchMedia('(prefers-reduced-motion: reduce)');
-
-    const enBoucle = () => {
-      video.loop = true;
-      video.play().catch(() => {});
-    };
-
-    const demarrer = () => {
-      /* Image fixe pour qui préfère un mouvement réduit */
-      if (mouvementReduit.matches) {
-        video.pause();
-        video.currentTime = 0;
-        return;
-      }
-
-      /* Tant que la page ne défile pas, la soie ondule en boucle simple */
-      const portee = document.documentElement.scrollHeight - window.innerHeight;
-      if (portee < 200) {
-        enBoucle();
-        return;
-      }
-
-      /* Scroll-scrubbing : le défilement pilote currentTime sur toute la page */
-      video.loop = false;
-      /* Un aller-retour lecture/pause force le décodage sur iOS */
-      video.play().then(() => video.pause()).catch(() => {});
-
-      gsap.registerPlugin(ScrollTrigger);
-      const scrub = gsap.to(video, {
-        currentTime: video.duration,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: document.body,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 0.5,
-        },
-      });
-
-      /* Repli : si les seeks sont trop lents (mobile bas de gamme), boucle simple */
-      let debutSeek = 0;
-      let cumul = 0;
-      let mesures = 0;
-      video.addEventListener('seeking', () => {
-        debutSeek = performance.now();
-      });
-      video.addEventListener('seeked', () => {
-        cumul += performance.now() - debutSeek;
-        mesures += 1;
-        if (mesures >= 12 && cumul / mesures > 200) {
-          scrub.scrollTrigger?.kill();
-          scrub.kill();
-          enBoucle();
-        }
-      });
-    };
-
-    if (video.readyState >= 1) {
-      demarrer();
-    } else {
-      video.addEventListener('loadedmetadata', demarrer, { once: true });
-    }
-  }
-</script>
