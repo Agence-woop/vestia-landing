@@ -1,6 +1,6 @@
 # Conditions d'utilisation
 
-**Vestia — Repassage · Cueillette à domicile**
+**Vestia — Repassage · Cueillette à domicile**  
 En vigueur le [DATE DE MISE EN LIGNE]
 
 Les présentes conditions encadrent l'utilisation du service Vestia. En réservant une cueillette, vous les acceptez. Nous les avons voulues à l'image du service: claires, complètes, sans surprise.
@@ -78,7 +78,7 @@ Rien dans les présentes conditions ne limite les droits que vous confèrent les
 
 ## 10. Vos renseignements personnels
 
-Les renseignements recueillis dans le cadre du service (coordonnées, adresse, historique de commandes) sont traités conformément à notre [Politique de confidentialité], dans le respect de la Loi 25.
+Les renseignements recueillis dans le cadre du service (coordonnées, adresse, historique de commandes) sont traités conformément à notre [Politique de confidentialité](/vestia-landing/politique-de-confidentialite/), dans le respect de la Loi 25.
 
 ## 11. Modifications
 
