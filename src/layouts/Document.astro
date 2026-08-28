@@ -23,7 +23,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <a class="marque" href={`${base}/`}>Vestia</a>
     </header>
 
-    <article class="texte">
+    <!-- Le conteneur standard des sections de l'accueil (section__inner) :
+         mêmes largeur maximale et marges que « Le rituel Vestia » -->
+    <article class="texte section__inner">
       <slot />
     </article>
   </main>
@@ -75,11 +77,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: transparent;
   }
 
-  /* ---------- la colonne de lecture ---------- */
-  .texte {
-    max-width: 72ch;
-    margin-inline: auto;
-  }
+  /* ---------- la colonne de lecture ----------
+     Largeur et centrage : le conteneur standard section__inner
+     (sections.css) — aucune valeur locale */
 
   /* Titre de page : Baskerville au traitement lumière des H2 du site */
   .texte :global(h1) {
