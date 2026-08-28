@@ -121,7 +121,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 </p>
                 <p class="legende-item" id="leg-ferie" hidden>
                   <span class="marque-ferie" aria-hidden="true"></span>
-                  <span><strong>Férié</strong> — Vestia ne circule pas</span>
+                  <span><strong>Fin de semaine ou férié</strong> — Vestia ne circule pas</span>
                 </p>
               </div>
               <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
@@ -423,7 +423,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   #ecran-2 .actions {
-    margin-top: var(--espace-bloc-sm);
+    margin-top: var(--espace-bloc-md);
   }
 
   .verrou {
@@ -544,8 +544,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       color 0.25s ease;
   }
 
-  /* Journée complète : non sélectionnable mais lisible, marquée d'un
-     point ocre discret sous le chiffre — jamais une alerte */
+  /* Journée complète : non sélectionnable mais lisible, barrée d'un
+     trait oblique ocre fin (bas gauche → haut droite), bord à bord —
+     le trait barre, il ne masque pas ; jamais une alerte */
   .cal-grille :global(button.jour.complet:disabled) {
     opacity: 0.75;
   }
@@ -553,13 +554,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .cal-grille :global(button.jour.complet)::after {
     content: '';
     position: absolute;
-    left: 50%;
-    bottom: 15%;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--or-trait);
-    transform: translateX(-50%);
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom right,
+      transparent calc(50% - 0.75px),
+      #c4a03c calc(50% - 0.75px),
+      #c4a03c calc(50% + 0.75px),
+      transparent calc(50% + 0.75px)
+    );
+    pointer-events: none;
   }
 
   /* En desktop, la case devient une capsule de hauteur contenue
@@ -614,19 +618,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-weight: 500;
   }
 
-  .marque-complet,
+  .marque-complet {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(
+      to bottom right,
+      transparent calc(50% - 0.75px),
+      #c4a03c calc(50% - 0.75px),
+      #c4a03c calc(50% + 0.75px),
+      transparent calc(50% + 0.75px)
+    );
+  }
+
   .marque-ferie {
     flex-shrink: 0;
     width: 5px;
     height: 5px;
     border-radius: 50%;
-  }
-
-  .marque-complet {
-    background: var(--or-trait);
-  }
-
-  .marque-ferie {
     background: var(--texte);
     opacity: 0.28;
   }
@@ -1045,7 +1054,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       grille.appendChild(b);
     }
 
-    /* La légende n'affiche que les entrées pertinentes au mois affiché */
+    /* La légende n'affiche que les entrées pertinentes au mois affiché
+       (contrainte : le CTA reste visible à 800 px sur un mois à six
+       rangées sans dates indisponibles) */
     ($('#leg-ferie') as HTMLElement).hidden = !moisAFerie;
     ($('#leg-complet') as HTMLElement).hidden = !moisAComplet;
     ($('#cal-legende') as HTMLElement).hidden = !(moisAFerie || moisAComplet);
