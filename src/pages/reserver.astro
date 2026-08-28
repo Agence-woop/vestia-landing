@@ -565,14 +565,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   /* En desktop, la case devient une capsule de hauteur contenue
      (cible cliquable ≥ 40 px) pour que l'étape tienne dans l'écran */
+  /* Cases carrées rétablies (pastille dorée circulaire et centrée) :
+     en desktop, la carte du calendrier se compacte en largeur plutôt
+     que d'écraser la grille — la contrainte reste le CTA visible à
+     800 px de hauteur utile */
   @media (min-width: 64rem) {
-    .cal-grille :global(button.jour) {
-      aspect-ratio: auto;
-      height: 2.5rem; /* 40 px : le plancher de cible cliquable */
-    }
-
-    .cal-grille {
-      gap: 0.25rem;
+    .calendrier {
+      max-width: 26rem;
     }
   }
 
