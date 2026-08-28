@@ -1,6 +1,6 @@
 # Politique de confidentialité
 
-**Vestia — Repassage · Cueillette à domicile**
+**Vestia — Repassage · Cueillette à domicile**  
 En vigueur le [DATE DE MISE EN LIGNE]
 
 Chez Vestia, la discrétion fait partie du service. Cette politique décrit, en termes simples, les renseignements personnels que nous recueillons, ce que nous en faisons, et les droits que la loi vous reconnaît. Elle est établie conformément à la Loi sur la protection des renseignements personnels dans le secteur privé (Québec), telle que modernisée par la Loi 25.
