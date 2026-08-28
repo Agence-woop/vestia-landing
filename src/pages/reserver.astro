@@ -100,7 +100,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <!-- ================= Écran 2 — La cueillette ================= -->
       <form class="ecran" id="ecran-2" hidden novalidate>
-        <h2>Votre cueillette</h2>
+        <h2 class="titre-serre">Votre cueillette</h2>
 
         <div class="deux-col">
           <div class="col-gauche">
@@ -122,7 +122,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <div class="col-droite" id="r-droite">
             <p class="verrou" id="r-verrou" aria-live="polite">Choisissez d'abord un jour</p>
             <div class="droite-contenu" id="r-droite-contenu">
-              <div class="bloc" id="r-fenetres">
+              <div class="bloc premier" id="r-fenetres">
                 <p class="etiquette">La fenêtre de cueillette</p>
                 <fieldset class="groupe">
                   <legend>Matin — retour le soir même</legend>
@@ -135,12 +135,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
               </div>
 
+              <div class="espaceur" aria-hidden="true"></div>
+
               <div class="bloc">
                 <p class="etiquette">Combien de pièces, environ?</p>
                 <div class="capsules" id="r-tranches"></div>
                 <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
               </div>
+
+              <div class="espaceur" aria-hidden="true"></div>
 
               <div class="bloc">
                 <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
@@ -231,20 +235,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </style>
 
 <style>
+  /* En-tête resserré : l'espace se récupère en haut pour que le CTA de
+     l'étape 2 tienne dans un écran de 14 pouces */
   .parcours {
     min-height: 72svh;
+    padding-top: var(--espace-bloc-md);
   }
 
   .entete {
     text-align: center;
-    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+    margin-bottom: var(--espace-bloc-sm);
   }
 
+  /* Wordmark de cette page à ~60 % (les pages légales gardent leur ×3) */
   .marque {
     font-family: var(--police-embleme);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: clamp(2.8rem, 9vw, 4.2rem);
+    font-size: clamp(1.7rem, 5.4vw, 2.5rem);
     letter-spacing: 0.2em;
     margin-right: -0.2em;
     text-decoration: none;
@@ -266,7 +274,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.4rem;
     min-height: 1.4rem;
   }
 
@@ -383,15 +391,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     gap: 0 var(--espace-bloc-lg);
   }
 
+  /* Les espaceurs plafonnés n'existent qu'en desktop */
+  .espaceur {
+    display: none;
+  }
+
   @media (min-width: 64rem) {
     .deux-col {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       align-items: stretch;
     }
 
-    /* La colonne droite occupe la hauteur du calendrier ; les trois
-       groupes se répartissent l'espace — c'est l'espace entre eux qui
-       absorbe la différence, jamais le textarea */
+    /* La colonne droite occupe la hauteur du calendrier ; les espaceurs
+       flexibles mais plafonnés répartissent l'espace entre les groupes
+       (jamais le textarea) : alignée au bas du calendrier quand c'est
+       naturel, sans creuser de vides — au-delà du plafond, la colonne
+       se termine simplement avant le bas */
     .col-droite {
       display: flex;
       flex-direction: column;
@@ -401,8 +416,34 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
+
+    .espaceur {
+      display: block;
+      flex: 1 1 auto;
+      min-height: var(--espace-bloc-sm);
+      max-height: var(--espace-bloc-lg);
+    }
+
+    /* L'espaceur porte l'espacement entre groupes */
+    .droite-contenu .espaceur + .bloc {
+      margin-top: 0;
+    }
+  }
+
+  /* L'espace titre → colonnes, resserré d'un cran */
+  .titre-serre {
+    margin-bottom: 0;
+  }
+
+  .deux-col .col-gauche > .bloc:first-child,
+  .deux-col .verrou,
+  .droite-contenu .bloc.premier {
+    margin-top: var(--espace-bloc-sm);
+  }
+
+  #ecran-2 .actions {
+    margin-top: var(--espace-bloc-md);
   }
 
   .verrou {
@@ -460,14 +501,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .calendrier {
     border: 1px solid var(--filet);
     border-radius: var(--rayon-tuile);
-    padding: 1rem 1.1rem 1.2rem;
+    padding: 0.8rem 1.1rem 0.9rem;
   }
 
   .cal-tete {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
   }
 
   .cal-mois {
@@ -520,6 +561,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     transition:
       background-color 0.25s ease,
       color 0.25s ease;
+  }
+
+  /* En desktop, la case devient une capsule de hauteur contenue
+     (cible cliquable ≥ 40 px) pour que l'étape tienne dans l'écran */
+  @media (min-width: 64rem) {
+    .cal-grille :global(button.jour) {
+      aspect-ratio: auto;
+      height: 2.5rem; /* 40 px : le plancher de cible cliquable */
+    }
+
+    .cal-grille {
+      gap: 0.25rem;
+    }
   }
 
   .cal-grille :global(button.jour:hover:not(:disabled)),
