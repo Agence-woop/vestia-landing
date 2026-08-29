@@ -143,7 +143,9 @@ import Cta from './Cta.astro';
   .prix {
     font-family: var(--police-voix);
     color: var(--or-trait);
-    font-size: 1.15rem;
+    /* +3 pt (1,15 rem → 1,4 rem) : lisible d'un coup d'œil, sans effet
+       promotionnel — la pill du palier garde la dominance */
+    font-size: 1.4rem;
     letter-spacing: 0.04em;
     text-transform: none;
     transition: color var(--duree-theme) ease;
@@ -152,6 +154,8 @@ import Cta from './Cta.astro';
   .detail {
     margin-top: 0.5rem;
     font-size: var(--taille-courant);
+    /* Lecture aérée des listes de pièces */
+    line-height: 1.9;
     opacity: 0.9;
   }
 
