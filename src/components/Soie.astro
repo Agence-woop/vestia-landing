@@ -14,19 +14,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <div class="soie" aria-hidden="true">
-  <video
-    id="soie-video"
-    muted
-    playsinline
-    autoplay
-    loop
-    preload="auto"
-    poster={`${base}/soie-poster.jpg`}
-  >
+  <!-- Une seule vidéo est téléchargée : la source portrait pour les
+       écrans mobiles, la source desktop 16:9 pour les écrans larges -->
+  <video id="soie-video" muted playsinline autoplay loop preload="auto">
+    <source
+      src={`${base}/soie-nuit-petrole-mobile.mp4`}
+      type="video/mp4"
+      media="(orientation: portrait)"
+    />
     <source src={`${base}/soie-nuit-petrole.mp4`} type="video/mp4" />
   </video>
   <div class="scrim"></div>
 </div>
+
+<!-- L'affiche suit le format servi ; posée ici en synchrone pour
+     qu'un seul des deux jpg soit jamais demandé -->
+<script is:inline define:vars={{ base }}>
+  document.getElementById('soie-video').poster = matchMedia('(orientation: portrait)').matches
+    ? `${base}/soie-poster-mobile.jpg`
+    : `${base}/soie-poster.jpg`;
+</script>
 
 <style>
   .soie {
@@ -67,6 +74,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     const enBoucle = () => {
       video.loop = true;
+      /* Sur les pages trop courtes pour le scrubbing, la boucle est
+         ralentie en respiration à peine perceptible : le mouvement ne
+         distrait pas la saisie (parcours de réservation, entre autres) */
+      video.playbackRate = 0.25;
       video.play().catch(() => {});
     };
 
