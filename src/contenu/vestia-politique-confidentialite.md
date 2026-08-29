@@ -11,7 +11,7 @@ Chez Vestia, la discrétion fait partie du service. Cette politique décrit, en 
 
 Le service Vestia est exploité par [ENTITÉ JURIDIQUE À CONFIRMER], dont le siège est situé au 198, rue Ann, Montréal (Québec) H3C 0T2.
 
-Le responsable de la protection des renseignements personnels est **Kévin [NOM DE FAMILLE], co-fondateur**. Vous pouvez le joindre pour toute question relative à vos renseignements: info@vestia.ca · (438) 300-7410.
+Le responsable de la protection des renseignements personnels est **Kévin Zounias, co-fondateur**. Vous pouvez le joindre pour toute question relative à vos renseignements: info@vestia.ca · (438) 300-7410.
 
 ## 2. Les renseignements que nous recueillons
 

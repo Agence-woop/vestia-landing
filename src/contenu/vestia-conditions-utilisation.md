@@ -58,7 +58,7 @@ La livraison se fait en mains propres à l'adresse de cueillette, au créneau co
 
 En cas d'absence au moment de la livraison, une nouvelle livraison est planifiée le jour ouvrable suivant; des frais de nouvelle livraison de 5 $ peuvent alors s'appliquer. Avec votre accord préalable, la commande peut également être remise à un tiers que vous désignez (concierge, voisin), auquel cas la remise à ce tiers vaut livraison.
 
-Toute commande non réclamée quatre-vingt-dix (90) jours après la première tentative de livraison est réputée abandonnée et pourra être remise à un organisme de bienfaisance. [DÉLAI À VALIDER]
+Toute commande non réclamée quatre-vingt-dix (90) jours après la première tentative de livraison est réputée abandonnée et pourra être remise à un organisme de bienfaisance.
 
 ## 8. Le paiement
 

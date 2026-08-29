@@ -1,8 +1,8 @@
 ---
 /*
  * Section 8 — Le pied de page. Discret, complet, sur la soie voilée.
- * Téléphone, courriel et Instagram : décisions du propriétaire en attente
- * (brief §7) — pastilles provisoires à remplacer avant lancement.
+ * Téléphone et courriel : coordonnées réelles, cliquables (tel:/mailto:).
+ * Instagram : en attente du compte actif (brief §7).
  * Conditions d'utilisation et politique de confidentialité : pages réelles.
  */
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -16,7 +16,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <!-- Instagram reviendra quand le compte sera actif -->
     <p class="contacts">
-      <span>Téléphone</span> · <span>Courriel</span>
+      <a href="tel:+14383007410">(438)&nbsp;300-7410</a> ·
+      <a href="mailto:info@vestia.ca">info@vestia.ca</a>
     </p>
 
     <p class="legal">
@@ -63,6 +64,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-size: 0.78rem;
     letter-spacing: 0.1em;
     opacity: 0.8;
+    /* En mobile, numéro et courriel peuvent passer sur deux lignes */
+    line-height: 2;
+  }
+
+  /* Les coordonnées, au style des liens légaux */
+  .contacts a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--filet);
+    padding-bottom: 0.1rem;
+    transition: border-color var(--duree-theme) ease;
+  }
+
+  .contacts a:hover,
+  .contacts a:focus-visible {
+    border-bottom-color: var(--or-trait);
   }
 
   /* La ligne peut passer sur deux lignes proprement en mobile */
