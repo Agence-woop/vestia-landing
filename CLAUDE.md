@@ -10,7 +10,10 @@ Tous dans `assets-source/` :
 - `vestia-landing-textes-vf.md` — textes finaux, source de vérité : ne pas réécrire
 - `vestia-boutons-v3.html` — CSS de référence du bouton (variante `.d4`)
 - `vestia-nuit-jour.html` — prototype de la bascule de thème
-- `vestia-soie-finale-nuit-petrole.mp4` — asset hero officiel (720×1280, boucle 40 s)
+- `vestia-soie-desktop-intra.mp4` — soie desktop en tout-intra, solution de rechange si le
+  scrubbing saccade
+- `vestia-soie-finale-nuit-petrole.mp4` — ancien asset hero (720×1280, boucle 40 s)
+- `vestia-soie-portrait-toutintra.mp4` — son réencodage tout-intra, servi jusqu'à la soie desktop
 - `vestia-soie-canva-1080-boucle.mp4` — soie de réserve
 
 ## Structure
@@ -31,8 +34,10 @@ Tous dans `assets-source/` :
 - Hébergement : **GitHub Pages** — `https://agence-woop.github.io/vestia-landing` (`base: '/vestia-landing'`
   dans `astro.config.mjs` ; préfixer les URL d'assets de `public/` avec `import.meta.env.BASE_URL`).
   Déploiement automatique à chaque push sur `main` via `.github/workflows/deploy.yml`.
-- Soie du hero : `public/soie-nuit-petrole.mp4`, réencodage tout-intra (`ffmpeg -g 1`) de
-  l'asset officiel pour un scroll-scrubbing fluide ; affiche `public/soie-poster.jpg`.
+- Soie du fond : `public/soie-nuit-petrole.mp4` — soie desktop officielle (1600×900, 32 s,
+  768 images, image-clé toutes les 12 images) ; affiche `public/soie-poster.jpg` tirée de sa
+  première image. En cas de scrubbing saccadé, la version tout-intra
+  `assets-source/vestia-soie-desktop-intra.mp4` la remplace telle quelle.
 - **Sections : la règle des sections alternées du brief est remplacée par « soie visible
   partout, sections transparentes ».** Lisibilité par ombres de texte subtiles et léger voile
   dégradé local (`.section--voile`) derrière les blocs denses — jamais un aplat opaque. Les
