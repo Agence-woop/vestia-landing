@@ -27,7 +27,7 @@ Nous traitons les vêtements du quotidien: chemises, blouses, pantalons, jeans, 
 
 Nous déclinons avec égards:
 
-- le cachemire, la laine et la maille tricotée;
+- la laine, le cachemire et les tricots à mailles lâches ou faits main;
 - les pièces de haute couture et de créateurs;
 - les manteaux et trenchs;
 - le cuir et le suède.
