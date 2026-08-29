@@ -114,7 +114,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                 </div>
                 <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
               </div>
-              <div class="legende" id="cal-legende" hidden>
+              <div class="legende" id="cal-legende">
+                <p class="legende-item">Les cueillettes s'ouvrent trois semaines à l'avance</p>
                 <p class="legende-item" id="leg-complet" hidden>
                   <span class="marque-complet" aria-hidden="true"></span>
                   <span><strong>Complet</strong> — la limite de cueillettes est atteinte</span>
@@ -554,7 +555,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .cal-grille :global(button.jour.complet)::after {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: 17%;
     border-radius: inherit;
     background: linear-gradient(
       to bottom right,
@@ -620,8 +621,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .marque-complet {
     flex-shrink: 0;
-    width: 10px;
-    height: 10px;
+    width: 7px;
+    height: 7px;
     background: linear-gradient(
       to bottom right,
       transparent calc(50% - 0.75px),
@@ -1018,6 +1019,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     let moisAComplet = false;
     for (let j = 1; j <= fin; j += 1) {
       const date = new Date(annee, mois, j);
+
+      /* Hors de la plage de réservation (passé ou au-delà de l'horizon) :
+         case vide, sans chiffre ni fond — le calendrier montre où
+         s'arrête la réservation */
+      if (date <= aujourdHui || date > horizon) {
+        grille.appendChild(document.createElement('span'));
+        continue;
+      }
+
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'jour';
@@ -1054,12 +1064,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       grille.appendChild(b);
     }
 
-    /* La légende n'affiche que les entrées pertinentes au mois affiché
-       (contrainte : le CTA reste visible à 800 px sur un mois à six
-       rangées sans dates indisponibles) */
+    /* La mention d'ouverture est permanente ; les entrées férié et
+       complet suivent le mois affiché */
     ($('#leg-ferie') as HTMLElement).hidden = !moisAFerie;
     ($('#leg-complet') as HTMLElement).hidden = !moisAComplet;
-    ($('#cal-legende') as HTMLElement).hidden = !(moisAFerie || moisAComplet);
   }
 
   $('#cal-prec').addEventListener('click', () => {
