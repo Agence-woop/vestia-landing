@@ -112,10 +112,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                   <p class="cal-mois" id="cal-mois" aria-live="polite"></p>
                   <button type="button" class="cal-nav" id="cal-suiv" aria-label="Mois suivant">›</button>
                 </div>
-                <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
+                <div class="cal-corps" id="cal-corps">
+                  <div class="cal-grille" id="cal-grille" role="grid" aria-label="Choisissez le jour de votre cueillette"></div>
+                  <p class="cal-voile" id="cal-voile" hidden>Ouverture des cueillettes prochainement</p>
+                </div>
               </div>
-              <div class="legende" id="cal-legende">
-                <p class="legende-item">Les cueillettes s'ouvrent trois semaines à l'avance</p>
+              <div class="legende" id="cal-legende" hidden>
                 <p class="legende-item" id="leg-complet" hidden>
                   <span class="marque-complet" aria-hidden="true"></span>
                   <span><strong>Complet</strong> — la limite de cueillettes est atteinte</span>
@@ -589,6 +591,44 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     cursor: default;
   }
 
+  /* Jours passés : très effacés, sans marqueur */
+  .cal-grille :global(button.jour.passe:disabled) {
+    opacity: 0.1;
+  }
+
+  /* ---------- le mois fermé, flouté ---------- */
+  .cal-corps {
+    position: relative;
+  }
+
+  .cal-corps.ferme .cal-grille {
+    filter: blur(4px);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .cal-corps.ferme .cal-grille :global(button.jour:disabled) {
+    opacity: 0.8;
+  }
+
+  .cal-voile {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+  }
+
+  /* display: flex l'emporterait sinon sur l'attribut hidden */
+  .cal-voile[hidden] {
+    display: none;
+  }
+
   /* Le jour choisi : la capsule dorée des pills */
   .cal-grille :global(button.jour.choisi) {
     background: #c4a03c;
@@ -831,7 +871,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const FENETRES_MATIN = ['7 h – 7 h 30', '7 h 30 – 8 h', '8 h – 8 h 30', '8 h 30 – 9 h'];
   const FENETRES_SOIR = ['17 h 30 – 18 h', '18 h – 18 h 30', '18 h 30 – 19 h', '19 h – 19 h 30'];
   const TRANCHES = ['8 – 10', '11 – 15', '16 – 20', '21 et plus'];
-  const HORIZON_JOURS = 21;
 
   const $ = (s: string) => document.querySelector(s) as HTMLElement;
   const montrer = (el: HTMLElement) => {
@@ -959,16 +998,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   const auMinuit = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const aujourdHui = auMinuit(new Date());
-  const horizon = new Date(aujourdHui);
-  horizon.setDate(horizon.getDate() + HORIZON_JOURS);
 
-  const selectionnable = (d: Date) =>
-    d > aujourdHui &&
-    d <= horizon &&
-    d.getDay() !== 0 &&
-    d.getDay() !== 6 &&
-    !FERIES.has(cle(d)) &&
-    !COMPLETS.has(cle(d));
+  /* Ouverture par mois : le mois courant est entièrement ouvert ; dès
+     qu'il reste 7 jours ou moins, le mois suivant s'ouvre à son tour.
+     Le mois qui suit le dernier mois ouvert s'affiche flouté, rien
+     au-delà n'est atteignable. Calculé à chaque chargement. */
+  const indexMois = (annee: number, mois: number) => annee * 12 + mois;
+  const courantIdx = indexMois(aujourdHui.getFullYear(), aujourdHui.getMonth());
+  const finDuMois = new Date(aujourdHui.getFullYear(), aujourdHui.getMonth() + 1, 0).getDate();
+  const dernierOuvertIdx = finDuMois - aujourdHui.getDate() <= 7 ? courantIdx + 1 : courantIdx;
+  const flouteIdx = dernierOuvertIdx + 1;
+
+  const selectionnable = (d: Date) => {
+    const idx = indexMois(d.getFullYear(), d.getMonth());
+    return (
+      d > aujourdHui &&
+      idx >= courantIdx &&
+      idx <= dernierOuvertIdx &&
+      d.getDay() !== 0 &&
+      d.getDay() !== 6 &&
+      !FERIES.has(cle(d)) &&
+      !COMPLETS.has(cle(d))
+    );
+  };
 
   const formatLong = (d: Date) =>
     d.toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -981,7 +1033,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return false;
   };
 
+  /* Un mois affichable : un mois ouvert qui a des jours à offrir, ou le
+     mois flouté — jamais une grille ouverte sans aucun jour */
+  const moisAffichable = (annee: number, mois: number) => {
+    const idx = indexMois(annee, mois);
+    return idx === flouteIdx || (idx >= courantIdx && idx <= dernierOuvertIdx && moisContientSelectionnable(annee, mois));
+  };
+
   let moisAffiche = new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), 1);
+  if (!moisContientSelectionnable(moisAffiche.getFullYear(), moisAffiche.getMonth())) {
+    moisAffiche = new Date(moisAffiche.getFullYear(), moisAffiche.getMonth() + 1, 1);
+  }
   const grille = $('#cal-grille');
 
   function rendreCalendrier() {
@@ -992,16 +1054,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       year: 'numeric',
     });
 
+    const idxAffiche = indexMois(annee, mois);
+    const ferme = idxAffiche === flouteIdx;
     const prec = new Date(annee, mois - 1, 1);
     const suiv = new Date(annee, mois + 1, 1);
-    ($('#cal-prec') as HTMLButtonElement).disabled = !moisContientSelectionnable(
-      prec.getFullYear(),
-      prec.getMonth()
-    );
-    ($('#cal-suiv') as HTMLButtonElement).disabled = !moisContientSelectionnable(
-      suiv.getFullYear(),
-      suiv.getMonth()
-    );
+    ($('#cal-prec') as HTMLButtonElement).disabled = !moisAffichable(prec.getFullYear(), prec.getMonth());
+    ($('#cal-suiv') as HTMLButtonElement).disabled = !moisAffichable(suiv.getFullYear(), suiv.getMonth());
+
+    /* Le mois fermé : grille floutée et assombrie sous un mot d'attente,
+       entièrement non interactive — l'en-tête du mois reste nette */
+    $('#cal-corps').classList.toggle('ferme', ferme);
+    ($('#cal-voile') as HTMLElement).hidden = !ferme;
 
     grille.innerHTML = '';
     for (const nom of ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim']) {
@@ -1019,28 +1082,31 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     let moisAComplet = false;
     for (let j = 1; j <= fin; j += 1) {
       const date = new Date(annee, mois, j);
-
-      /* Hors de la plage de réservation (passé ou au-delà de l'horizon) :
-         case vide, sans chiffre ni fond — le calendrier montre où
-         s'arrête la réservation */
-      if (date <= aujourdHui || date > horizon) {
-        grille.appendChild(document.createElement('span'));
-        continue;
-      }
-
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'jour';
       b.textContent = String(j);
       b.setAttribute('aria-label', formatLong(date));
+
+      /* Mois flouté : jours uniformes, cachés des lecteurs d'écran */
+      if (ferme) {
+        b.disabled = true;
+        b.setAttribute('aria-hidden', 'true');
+        b.tabIndex = -1;
+        grille.appendChild(b);
+        continue;
+      }
+
       const semaine = date.getDay() !== 0 && date.getDay() !== 6;
       if (!selectionnable(date)) {
         b.disabled = true;
-        /* Les fériés reprennent le grisé des fins de semaine ; les
-           journées complètes restent lisibles avec leur point ocre.
-           Une date de liste tombant une fin de semaine reste un simple
-           jour grisé, sans marqueur ni mention. */
-        if (semaine && FERIES.has(cle(date))) {
+        /* Hiérarchie du mois ouvert : passés très effacés, fins de
+           semaine et fériés grisés, journées complètes grisées avec
+           leur trait oblique. Une date de liste tombant une fin de
+           semaine reste un simple jour grisé, sans marqueur. */
+        if (date <= aujourdHui) {
+          b.classList.add('passe');
+        } else if (semaine && FERIES.has(cle(date))) {
           b.setAttribute('aria-label', `${formatLong(date)} — férié`);
           b.setAttribute('aria-disabled', 'true');
           moisAFerie = true;
@@ -1064,10 +1130,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       grille.appendChild(b);
     }
 
-    /* La mention d'ouverture est permanente ; les entrées férié et
-       complet suivent le mois affiché */
+    /* Les entrées de légende suivent le mois affiché */
     ($('#leg-ferie') as HTMLElement).hidden = !moisAFerie;
     ($('#leg-complet') as HTMLElement).hidden = !moisAComplet;
+    ($('#cal-legende') as HTMLElement).hidden = !(moisAFerie || moisAComplet);
   }
 
   $('#cal-prec').addEventListener('click', () => {
