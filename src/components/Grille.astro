@@ -9,20 +9,27 @@ import Cta from './Cta.astro';
 
     <div class="cartes">
       <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce simple</span> <span class="prix">5&nbsp;$</span></p>
-        <p class="detail">Chandail, camisole, legging, vêtement sans structure</p>
+        <p class="titre"><span class="pill">Pièce simple</span> <span class="prix">6&nbsp;$</span></p>
+        <p class="detail">T-shirt, chandail de coton, camisole, polo, legging, pantalon de jogging</p>
       </article>
       <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce standard</span> <span class="prix">8&nbsp;$</span></p>
-        <p class="detail">Chemise, blouse, pantalon, jean, jupe, polo</p>
+        <p class="titre"><span class="pill">Pièce standard</span> <span class="prix">9&nbsp;$</span></p>
+        <p class="detail">Chemise, blouse, pantalon, jean, jupe, short</p>
       </article>
       <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">12&nbsp;$</span></p>
-        <p class="detail">Robe, chemise en lin, pièce plissée, veston</p>
+        <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">15&nbsp;$</span></p>
+        <p class="detail">Robe, pièce en lin, jupe ou robe plissée</p>
+      </article>
+      <article class="carte surface-tuile">
+        <p class="titre"><span class="pill">Veston</span> <span class="prix">20&nbsp;$</span></p>
+        <p class="detail">Veston, blazer</p>
       </article>
     </div>
 
-    <p class="conditions">Minimum de 8 pièces<br />Cueillette et livraison toujours incluses</p>
+    <p class="conditions">
+      Minimum de 8 pièces<br />Cueillette et livraison toujours incluses<br />
+      <span class="hors-liste">Une pièce ne figure pas dans la liste? Votre intendant vous le dira à la cueillette.</span>
+    </p>
 
     <p class="egards">
       Nous déclinons avec égards le cachemire, la laine et la maille tricotée, ainsi que les pièces
@@ -52,8 +59,8 @@ import Cta from './Cta.astro';
      haut, l'air respire sous la liste, trois tuiles d'égale hauteur */
   @media (min-width: 64rem) {
     .cartes {
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--espace-bloc-lg);
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--espace-bloc-md);
     }
 
     .carte {
@@ -79,6 +86,11 @@ import Cta from './Cta.astro';
   .carte:nth-child(3)::before {
     animation-delay: -9s;
     animation-duration: 14s;
+  }
+
+  .carte:nth-child(4)::before {
+    animation-delay: -11.5s;
+    animation-duration: 12s;
   }
 
   .titre {
@@ -123,6 +135,11 @@ import Cta from './Cta.astro';
     animation-duration: 12s;
   }
 
+  .carte:nth-child(4) .pill {
+    animation-delay: -9.5s;
+    animation-duration: 13s;
+  }
+
   .prix {
     font-family: var(--police-voix);
     color: var(--or-trait);
@@ -144,6 +161,11 @@ import Cta from './Cta.astro';
     font-size: 0.93rem;
     letter-spacing: 0.08em;
     opacity: 0.8;
+  }
+
+  /* La troisième ligne, même style mais plus discrète */
+  .hors-liste {
+    opacity: 0.75;
   }
 
   .egards {

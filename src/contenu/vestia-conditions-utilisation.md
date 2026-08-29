@@ -36,7 +36,7 @@ Nous déclinons avec égards:
 
 ## 4. La réservation
 
-La réservation se fait en ligne. Chaque commande compte un minimum de huit pièces; toute cueillette est facturée au minimum de 40 $, correspondant à huit pièces simples, même si un nombre inférieur de pièces est confié.
+La réservation se fait en ligne. Chaque commande compte un minimum de huit pièces; toute cueillette est facturée au minimum de 48 $, correspondant à huit pièces simples, même si un nombre inférieur de pièces est confié.
 
 Vous pouvez modifier ou annuler votre cueillette sans frais jusqu'à 18 h la veille du jour convenu. En cas d'annulation tardive ou d'absence au moment de la cueillette, aucuns frais ne sont facturés à ce jour; Vestia se réserve toutefois la possibilité d'appliquer ultérieurement des frais de déplacement, qui seraient alors annoncés avant toute réservation.
 
