@@ -21,7 +21,7 @@ Tous dans `assets-source/` :
 - Astro, CSS vanilla à variables, GSAP ScrollTrigger pour le scroll. Pas de framework UI, pas de Tailwind.
 - `src/styles/tokens.css` — variables des deux thèmes (`html[data-theme="nuit"|"jour"]`, nuit par défaut)
 - `src/styles/base.css` — réinitialisation et typographie de base
-- `src/styles/sections.css` — échafaudage commun des sections (champs, bouton secondaire, voile local)
+- `src/styles/sections.css` — échafaudage commun des sections (champs, bouton secondaire, voile local, surface de tuile `.surface-tuile`, texte champagne `.texte-champagne` dans lumiere.css)
 - `src/layouts/Base.astro` — head commun : meta, polices Google Fonts, script d'initialisation du thème
 
 ## Décisions prises à l'intégration
@@ -41,7 +41,7 @@ Tous dans `assets-source/` :
 - Soie mobile : `public/soie-nuit-petrole-mobile.mp4` (810×1440, même étalonnage), servie via
   `<source media="(orientation: portrait)">` — un seul fichier téléchargé ; affiche
   `public/soie-poster-mobile.jpg`. Sur les pages trop courtes pour le scrubbing, la boucle de
-  repli tourne à `playbackRate = 0.25`.
+  repli tourne à `playbackRate = 0.4`.
 - **Sections : la règle des sections alternées du brief est remplacée par « soie visible
   partout, sections transparentes ».** Lisibilité par ombres de texte subtiles et léger voile
   dégradé local (`.section--voile`) derrière les blocs denses — jamais un aplat opaque. Les

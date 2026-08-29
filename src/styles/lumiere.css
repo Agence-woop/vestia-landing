@@ -30,8 +30,11 @@
   }
 }
 
-/* ---------- titres de section : champagne discret, balayage lent ---------- */
-.section h2 {
+/* ---------- titres de section : champagne discret, balayage lent ----------
+   .texte-champagne : le même traitement, partagé avec les étiquettes et
+   mots dorés du parcours de réservation */
+.section h2,
+.section .texte-champagne {
   background-image:
     linear-gradient(
       105deg,
