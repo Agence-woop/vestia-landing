@@ -39,7 +39,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <h2>Votre adresse</h2>
 
         <div class="bloc">
-          <label class="etiquette" for="r-code-postal">Votre code postal</label>
+          <label class="etiquette texte-champagne" for="r-code-postal">Votre code postal</label>
           <div class="saisie">
             <input
               class="champ"
@@ -53,7 +53,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <button class="btn-secondaire" type="button" id="r-verifier">Vérifier</button>
           </div>
           <p class="erreur" aria-live="polite" hidden>Veuillez saisir un code postal valide.</p>
-          <p class="dore" id="r-desservi" aria-live="polite" hidden>Vestia dessert votre adresse.</p>
+          <p class="dore texte-champagne" id="r-desservi" aria-live="polite" hidden>Vestia dessert votre adresse.</p>
         </div>
 
         <!-- Hors zone : le parcours s'arrête proprement ici -->
@@ -77,19 +77,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
         <div id="r-adresse" hidden>
           <div class="bloc">
-            <label class="etiquette" for="r-rue">Numéro et rue</label>
+            <label class="etiquette texte-champagne" for="r-rue">Numéro et rue</label>
             <input class="champ" type="text" id="r-rue" name="adresse" autocomplete="street-address" />
             <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre numéro et votre rue.</p>
           </div>
           <div class="bloc">
-            <label class="etiquette" for="r-app">Appartement <span class="optionnel">(optionnel)</span></label>
+            <label class="etiquette texte-champagne" for="r-app">Appartement <span class="optionnel">(optionnel)</span></label>
             <input class="champ" type="text" id="r-app" name="appartement" />
             <p class="aide">
               Sans numéro d'appartement, votre intendant vous retrouve dans le hall d'entrée.
             </p>
           </div>
           <div class="bloc">
-            <label class="etiquette" for="r-acces">Instructions d'accès <span class="optionnel">(optionnel)</span></label>
+            <label class="etiquette texte-champagne" for="r-acces">Instructions d'accès <span class="optionnel">(optionnel)</span></label>
             <input class="champ" type="text" id="r-acces" name="instructions" placeholder="Code d'entrée, concierge, remarques…" />
           </div>
           <div class="actions">
@@ -105,8 +105,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <div class="deux-col">
           <div class="col-gauche">
             <div class="bloc">
-              <p class="etiquette">Le jour</p>
-              <div class="calendrier" id="calendrier">
+              <p class="etiquette texte-champagne">Le jour</p>
+              <div class="calendrier surface-tuile" id="calendrier">
                 <div class="cal-tete">
                   <button type="button" class="cal-nav" id="cal-prec" aria-label="Mois précédent">‹</button>
                   <p class="cal-mois" id="cal-mois" aria-live="polite"></p>
@@ -136,7 +136,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <p class="verrou" id="r-verrou" aria-live="polite">Choisissez d'abord un jour</p>
             <div class="droite-contenu" id="r-droite-contenu">
               <div class="bloc premier" id="r-fenetres">
-                <p class="etiquette">La fenêtre de cueillette</p>
+                <p class="etiquette texte-champagne">La fenêtre de cueillette</p>
                 <fieldset class="groupe">
                   <legend>Matin — retour le soir même</legend>
                   <div class="capsules" data-groupe="matin"></div>
@@ -149,14 +149,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
               </div>
 
               <div class="bloc">
-                <p class="etiquette">Combien de pièces avez-vous, environ?</p>
+                <p class="etiquette texte-champagne">Combien de pièces avez-vous, environ?</p>
                 <div class="capsules" id="r-tranches"></div>
                 <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
               </div>
 
               <div class="bloc">
-                <label class="etiquette" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
+                <label class="etiquette texte-champagne" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
                 <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
               </div>
             </div>
@@ -175,29 +175,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
         <div class="duo">
           <div class="bloc">
-            <label class="etiquette" for="r-prenom">Prénom</label>
+            <label class="etiquette texte-champagne" for="r-prenom">Prénom</label>
             <input class="champ" type="text" id="r-prenom" autocomplete="given-name" />
             <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre prénom.</p>
           </div>
           <div class="bloc">
-            <label class="etiquette" for="r-nom">Nom</label>
+            <label class="etiquette texte-champagne" for="r-nom">Nom</label>
             <input class="champ" type="text" id="r-nom" autocomplete="family-name" />
             <p class="erreur" aria-live="polite" hidden>Veuillez indiquer votre nom.</p>
           </div>
         </div>
         <div class="bloc">
-          <label class="etiquette" for="r-courriel">Courriel</label>
+          <label class="etiquette texte-champagne" for="r-courriel">Courriel</label>
           <input class="champ" type="email" id="r-courriel" autocomplete="email" />
           <p class="erreur" aria-live="polite" hidden>Veuillez saisir un courriel valide.</p>
         </div>
         <div class="bloc">
-          <label class="etiquette" for="r-mobile">Mobile</label>
+          <label class="etiquette texte-champagne" for="r-mobile">Mobile</label>
           <input class="champ" type="tel" id="r-mobile" autocomplete="tel" inputmode="tel" />
           <p class="aide">Votre confirmation arrive par message texte.</p>
           <p class="erreur" aria-live="polite" hidden>Veuillez saisir un numéro de mobile valide.</p>
         </div>
 
-        <div class="tuile" id="r-recap" aria-live="polite"></div>
+        <div class="tuile surface-tuile" id="r-recap" aria-live="polite"></div>
 
         <div class="bloc cases">
           <label class="case">
@@ -227,7 +227,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <p class="suite-confirmation">
           Votre intendant Vestia vous confirme votre créneau par message texte d'ici 2&nbsp;heures.
         </p>
-        <p class="dore" id="r-souhait"></p>
+        <p class="dore texte-champagne" id="r-souhait"></p>
         <p class="discret">Demande envoyée en soirée? Votre confirmation arrive dès 7&nbsp;h.</p>
         <a class="retour" href={`${base}/`}>‹ Retour à l'accueil</a>
       </div>
@@ -317,18 +317,36 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   /* Étiquettes de champs, style conservé — réduites de ~3,7 pt : à 2-3 pt
      de moins, « Une précision pour votre intendant? (optionnel) » passait
      encore sur deux lignes en desktop */
+  /* La couleur vient du traitement champagne commun (texte-champagne) */
   .etiquette {
     display: block;
     font-size: 1.05rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--or-trait);
     margin-bottom: 0.6rem;
   }
 
+  /* Chaque étiquette respire à son propre rythme */
+  .bloc:nth-of-type(even) .etiquette {
+    animation-delay: -4.5s;
+  }
+
+  .bloc:nth-of-type(3n) .etiquette {
+    animation-delay: -8s;
+    animation-duration: 13s;
+  }
+
+  .droite-contenu .etiquette {
+    animation-delay: -6s;
+    animation-duration: 14s;
+  }
+
+  /* La mention reste un aplat ocre : hors du clip champagne du parent,
+     elle garde sa demi-teinte */
   .optionnel {
     text-transform: none;
     letter-spacing: 0.08em;
+    color: var(--or-trait);
     opacity: 0.6;
   }
 
@@ -342,6 +360,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .saisie .champ {
     flex: 1;
     min-width: 9rem;
+  }
+
+  /* Sur la soie du parcours, les champs gardent leur filet bas mais
+     reposent sur le fond des tuiles (tokens de sections.css) : la
+     vidéo ne transparaît pas sous la saisie. Portée locale — le champ
+     du vérificateur de zone de l'accueil ne change pas. */
+  .champ {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: var(--flou-surface);
+    backdrop-filter: var(--flou-surface);
+    border-radius: 0.55rem 0.55rem 0 0;
+    padding: 0.65rem 0.8rem;
   }
 
   textarea.champ {
@@ -366,7 +396,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: 1rem;
     font-family: var(--police-voix);
     font-size: 1.15rem;
-    color: var(--or-trait);
+    animation-delay: -5.5s;
+    animation-duration: 14s;
   }
 
   .promesse {
@@ -481,10 +512,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   /* ---------- le calendrier ---------- */
+  /* Fond et contour : la surface de tuile commune (sections.css),
+     celle des tuiles tarifaires — la soie ne transparaît plus */
   .calendrier {
-    border: 1px solid var(--filet);
-    border-radius: var(--rayon-tuile);
     padding: 0.8rem 1.1rem 0.9rem;
+  }
+
+  .calendrier::before {
+    animation-delay: -3.5s;
+    animation-duration: 12s;
   }
 
   .cal-tete {
@@ -629,11 +665,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     display: none;
   }
 
-  /* Le jour choisi : la capsule dorée des pills */
+  /* Le jour choisi : la capsule dorée des pills, parcourue du même
+     balayage discret (couches de fond seulement — le texte nuit
+     pétrole, peint au-dessus, ne change pas) */
   .cal-grille :global(button.jour.choisi) {
-    background: #c4a03c;
+    background-image:
+      linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(255, 248, 225, 0.28) 50%,
+        transparent 65%
+      ),
+      linear-gradient(#c4a03c, #c4a03c);
+    background-size: 320% 100%, 100% 100%;
+    background-position: 130% 0, 0 0;
     color: #091e35;
     font-weight: 500;
+    animation: lumiere-balayage 12s ease-in-out infinite;
+    animation-delay: -2.5s;
   }
 
   /* ---------- la légende du calendrier ---------- */
@@ -718,6 +767,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     padding: 0.5em 1em;
     border-radius: 999px;
     border: 1px solid var(--filet);
+    /* Le fond des tuiles (tokens de sections.css) : la capsule se
+       détache nettement de la soie en mouvement */
+    background-color: var(--surface);
+    -webkit-backdrop-filter: var(--flou-surface);
+    backdrop-filter: var(--flou-surface);
     font-size: 0.9rem;
     letter-spacing: 0.04em;
     white-space: nowrap;
@@ -737,40 +791,46 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     outline-offset: 3px;
   }
 
+  /* Capsule choisie : le balayage des pills tarifaires sur le fond
+     ocre — couches de fond seulement, texte nuit pétrole intact */
   .capsules :global(input:checked + span) {
-    background: #c4a03c;
+    background-image:
+      linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(255, 248, 225, 0.28) 50%,
+        transparent 65%
+      ),
+      linear-gradient(#c4a03c, #c4a03c);
+    background-size: 320% 100%, 100% 100%;
+    background-position: 130% 0, 0 0;
     border-color: #c4a03c;
     color: #091e35;
     font-weight: 500;
+    animation: lumiere-balayage 11s ease-in-out infinite;
+  }
+
+  /* Désynchronisation par groupe */
+  [data-groupe='soir'] :global(input:checked + span) {
+    animation-delay: -4s;
+    animation-duration: 12s;
+  }
+
+  #r-tranches :global(input:checked + span) {
+    animation-delay: -7.5s;
+    animation-duration: 13s;
   }
 
   /* ---------- la tuile récapitulative ---------- */
+  /* Fond et contour : la surface de tuile commune (sections.css) */
   .tuile {
-    position: relative;
     margin-top: var(--espace-bloc-lg);
-    background-color: rgba(16, 45, 76, 0.55);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    border-radius: var(--rayon-tuile);
     padding: 1.4rem 1.5rem;
   }
 
   .tuile::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--rayon-tuile);
-    padding: 1px;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
-    pointer-events: none;
+    animation-delay: -6.5s;
+    animation-duration: 14s;
   }
 
   .tuile :global(p) {
@@ -782,13 +842,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: 0.4rem;
   }
 
+  /* La couleur vient du traitement champagne commun */
   .tuile :global(.recap-titre) {
     font-size: 0.68rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--or-trait);
     opacity: 1;
     margin-bottom: 0.7rem;
+    animation-delay: -9s;
   }
 
   /* ---------- cases à cocher ---------- */
@@ -1228,7 +1289,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   function remplirRecap() {
     $('#r-recap').innerHTML = `
-      <p class="recap-titre">Votre demande</p>
+      <p class="recap-titre texte-champagne">Votre demande</p>
       <p>${adresseComplete()}</p>
       <p>${formatLong(etat.jour!)}</p>
       <p>${etat.fenetre} — ${etat.retour}</p>

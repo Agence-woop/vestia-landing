@@ -8,15 +8,15 @@ import Cta from './Cta.astro';
     <h2>La clarté, jusque dans les prix</h2>
 
     <div class="cartes">
-      <article class="carte">
+      <article class="carte surface-tuile">
         <p class="titre"><span class="pill">Pièce simple</span> <span class="prix">5&nbsp;$</span></p>
         <p class="detail">Chandail, camisole, legging, vêtement sans structure</p>
       </article>
-      <article class="carte">
+      <article class="carte surface-tuile">
         <p class="titre"><span class="pill">Pièce standard</span> <span class="prix">8&nbsp;$</span></p>
         <p class="detail">Chemise, blouse, pantalon, jean, jupe, polo</p>
       </article>
-      <article class="carte">
+      <article class="carte surface-tuile">
         <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">12&nbsp;$</span></p>
         <p class="detail">Robe, chemise en lin, pièce plissée, veston</p>
       </article>
@@ -61,48 +61,10 @@ import Cta from './Cta.astro';
     }
   }
 
-  /* Les cartes parlent le langage du bouton D4 : filet or 1 px en
-     dégradé masqué incliné à 52°, l'or vivant en bas-gauche et
-     s'éteignant vers le haut-droit */
+  /* Fond et contour : la surface de tuile commune (sections.css) ; ici,
+     seuls le gabarit et la désynchronisation du reflet, carte par carte */
   .carte {
-    position: relative;
-    background-color: rgba(16, 45, 76, 0.55);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    border-radius: var(--rayon-tuile);
     padding: 1.4rem 1.5rem;
-    box-shadow: 0 12px 32px rgba(4, 14, 26, 0.3);
-  }
-
-  /* Lumière Vestia : un reflet discret parcourt lentement le contour —
-     la bande (première couche) glisse sur le filet masqué, désynchronisée
-     d'une carte à l'autre */
-  .carte::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--rayon-tuile);
-    padding: 1px;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    background-image:
-      linear-gradient(
-        105deg,
-        transparent 35%,
-        rgba(241, 218, 128, 0.4) 50%,
-        transparent 65%
-      ),
-      linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
-    background-size: 320% 100%, 100% 100%;
-    background-position: 130% 0, 0 0;
-    animation: lumiere-balayage 13s ease-in-out infinite;
-    pointer-events: none;
   }
 
   .carte:nth-child(1)::before {

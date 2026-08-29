@@ -77,7 +77,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       /* Sur les pages trop courtes pour le scrubbing, la boucle est
          ralentie en respiration à peine perceptible : le mouvement ne
          distrait pas la saisie (parcours de réservation, entre autres) */
-      video.playbackRate = 0.25;
+      video.playbackRate = 0.4;
       video.play().catch(() => {});
     };
 
