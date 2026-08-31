@@ -391,7 +391,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .erreur {
     margin-top: 0.6rem;
     font-size: 0.9rem;
+    color: var(--erreur);
     opacity: 0.9;
+  }
+
+  /* La suite du bloc hors zone porte aussi les messages de validation */
+  .suite.suite--erreur {
+    color: var(--erreur);
   }
 
   .aide,
@@ -502,6 +508,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .col-droite.actif .droite-contenu {
     opacity: 1;
+  }
+
+  /* display: inline-block l'emporterait sinon sur l'attribut hidden —
+     le « ‹ Retour » doit disparaître à l'écran 1 et à la confirmation */
+  .retour[hidden] {
+    display: none;
   }
 
   .retour {
@@ -872,9 +884,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: 0.4rem;
   }
 
-  /* Montserrat n'est chargée qu'en 200/400/500 : pas de faux gras */
+  /* Montserrat n'est chargée qu'en 200/400/500 : pas de faux gras.
+     Les étiquettes du récapitulatif dépassent les valeurs d'un bon
+     point (0,95 rem → 1,05 rem) pour une hiérarchie visible. */
   .tuile :global(strong) {
     font-weight: 500;
+    font-size: 1.05rem;
   }
 
   /* La couleur vient du traitement champagne commun */
@@ -1053,14 +1068,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const suite = horsZone.querySelector('.suite') as HTMLElement;
     if (!courriel || !courriel.includes('@')) {
       suite.textContent = 'Veuillez saisir un courriel valide.';
+      suite.classList.add('suite--erreur');
       suite.hidden = false;
       return;
     }
     const donnees = new FormData();
-    donnees.set('courriel', courriel);
-    donnees.set('code_postal', etat.codePostal);
+    donnees.set('Courriel', courriel);
+    donnees.set('Code postal', etat.codePostal);
     /* Objet lisible d'un coup d'œil et réponse directe au client */
-    donnees.set('_subject', `Liste d'attente — ${etat.codePostal}`);
+    donnees.set('_subject', `LISTE D'ATTENTE — ${etat.codePostal}`);
     donnees.set('_replyto', courriel);
     try {
       const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
@@ -1071,8 +1087,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       if (!reponse.ok) throw new Error();
       (horsZone.querySelector('.saisie') as HTMLElement).hidden = true;
       suite.textContent = 'C’est noté. Vestia vous écrira.';
+      suite.classList.remove('suite--erreur');
     } catch {
       suite.textContent = 'L’envoi n’a pas fonctionné. Réessayez, ou écrivez-nous à info@vestia.ca.';
+      suite.classList.add('suite--erreur');
     }
     suite.hidden = false;
   });
@@ -1414,6 +1432,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const mobileValide = (v: string) =>
     /^(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/.test(v.trim());
 
+  /* ---------- formatage du mobile au fil de la frappe ----------
+     Normalise toute saisie ou tout collage au format nord-américain
+     (438) 506-3210 ; l'indicatif 1 en tête est retiré. On ne reformate
+     pas pendant un effacement, pour ne pas coincer la correction. */
+  const formaterMobile = (v: string) => {
+    let c = v.replace(/\D/g, '');
+    if (c.length === 11 && c.startsWith('1')) c = c.slice(1);
+    c = c.slice(0, 10);
+    if (c.length === 0) return '';
+    if (c.length <= 3) return `(${c}`;
+    if (c.length <= 6) return `(${c.slice(0, 3)}) ${c.slice(3)}`;
+    return `(${c.slice(0, 3)}) ${c.slice(3, 6)}-${c.slice(6)}`;
+  };
+
+  const champMobile = $('#r-mobile') as HTMLInputElement;
+  champMobile.addEventListener('input', (e) => {
+    if ((e as InputEvent).inputType?.startsWith('delete')) return;
+    const formate = formaterMobile(champMobile.value);
+    if (formate !== champMobile.value) champMobile.value = formate;
+  });
+
   ecrans[2].addEventListener('submit', async (e) => {
     e.preventDefault();
     const prenom = $('#r-prenom') as HTMLInputElement;
@@ -1440,22 +1479,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
        client, puis les champs dans l'ordre naturel de lecture d'une
        demande — noms explicites en français */
     const donnees = new FormData();
-    donnees.set('_subject', `Cueillette — ${jourLong}, ${etat.fenetre} — ${prenom.value.trim()} ${nom.value.trim()}`);
+    donnees.set('_subject', `CUEILLETTE — ${jourLong}, ${etat.fenetre} — ${prenom.value.trim()} ${nom.value.trim()}`);
     donnees.set('_replyto', courriel.value.trim());
-    donnees.set('prenom', prenom.value.trim());
-    donnees.set('nom', nom.value.trim());
-    donnees.set('courriel', courriel.value.trim());
-    donnees.set('mobile', mobile.value.trim());
-    donnees.set('adresse', ($('#r-rue') as HTMLInputElement).value.trim());
-    donnees.set('appartement', ($('#r-app') as HTMLInputElement).value.trim());
-    donnees.set('code_postal', etat.codePostal);
-    donnees.set('instructions_acces', ($('#r-acces') as HTMLInputElement).value.trim());
-    donnees.set('jour', jourLong);
-    donnees.set('fenetre_de_cueillette', etat.fenetre);
-    donnees.set('retour', retourEnClair());
-    donnees.set('tranche_de_pieces', `${etat.tranche} pièces`);
-    donnees.set('precision', ($('#r-notes') as HTMLTextAreaElement).value.trim());
-    donnees.set('infolettre', ($('#r-infolettre') as HTMLInputElement).checked ? 'oui' : 'non');
+    donnees.set('Prénom', prenom.value.trim());
+    donnees.set('Nom', nom.value.trim());
+    donnees.set('Courriel', courriel.value.trim());
+    donnees.set('Mobile', mobile.value.trim());
+    donnees.set('Adresse', ($('#r-rue') as HTMLInputElement).value.trim());
+    donnees.set('Appartement', ($('#r-app') as HTMLInputElement).value.trim());
+    donnees.set('Code postal', etat.codePostal);
+    donnees.set("Instructions d'accès", ($('#r-acces') as HTMLInputElement).value.trim());
+    donnees.set('Jour de cueillette', jourLong);
+    donnees.set('Fenêtre de cueillette', etat.fenetre);
+    donnees.set('Retour', retourEnClair());
+    donnees.set('Volume', `${etat.tranche} pièces`);
+    donnees.set('Précision', ($('#r-notes') as HTMLTextAreaElement).value.trim());
+    donnees.set('Infolettre', ($('#r-infolettre') as HTMLInputElement).checked ? 'oui' : 'non');
 
     try {
       const reponse = await fetch(FORMSPREE_RESERVATION_ENDPOINT, {
@@ -1470,8 +1509,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       ecrans[2].hidden = true;
       $('#etape').hidden = true;
       ($('#r-retour') as HTMLButtonElement).hidden = true;
-      $('#r-souhait').textContent =
-        `Cueillette souhaitée: ${jourLong}, ${etat.fenetre} · Retour: ${retourEnClair()}`;
+      /* Deux lignes distinctes — valeurs générées par le site, sans
+         saisie utilisateur */
+      $('#r-souhait').innerHTML =
+        `Cueillette souhaitée: ${jourLong}, ${etat.fenetre}<br />Retour: ${retourEnClair()}`;
       montrer($('#ecran-confirmation'));
       window.scrollTo({ top: 0 });
     } catch {
