@@ -200,7 +200,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <p class="erreur" aria-live="polite" hidden>Veuillez saisir un courriel valide.</p>
         </div>
         <div class="bloc">
-          <label class="etiquette texte-champagne" for="r-mobile">Mobile</label>
+          <label class="etiquette texte-champagne" for="r-mobile">Cellulaire</label>
           <input class="champ" type="tel" id="r-mobile" autocomplete="tel" inputmode="tel" />
           <p class="aide">Votre confirmation arrive par message texte.</p>
           <p class="erreur" aria-live="polite" hidden>Veuillez saisir un numéro de mobile valide.</p>
@@ -232,7 +232,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <!-- ================= Confirmation ================= -->
       <div class="ecran confirmation" id="ecran-confirmation" hidden>
-        <p class="recu">Votre demande est reçue.</p>
+        <p class="recu">Votre demande nous est parvenue.</p>
         <p class="suite-confirmation">
           Votre intendant Vestia vous confirme votre créneau par message texte d'ici 2&nbsp;heures.
         </p>
@@ -1484,7 +1484,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     donnees.set('Prénom', prenom.value.trim());
     donnees.set('Nom', nom.value.trim());
     donnees.set('Courriel', courriel.value.trim());
-    donnees.set('Mobile', mobile.value.trim());
+    donnees.set('Cellulaire', mobile.value.trim());
     donnees.set('Adresse', ($('#r-rue') as HTMLInputElement).value.trim());
     donnees.set('Appartement', ($('#r-app') as HTMLInputElement).value.trim());
     donnees.set('Code postal', etat.codePostal);
