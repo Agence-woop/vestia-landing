@@ -172,6 +172,7 @@ import ZoneVisual from './ZoneVisual.astro';
   .message--erreur {
     margin-top: 1rem;
     font-size: 0.95rem;
+    color: var(--erreur);
     opacity: 0;
   }
 
@@ -213,6 +214,11 @@ import ZoneVisual from './ZoneVisual.astro';
   .suite {
     margin-top: 0.8rem;
     font-size: 0.95rem;
+  }
+
+  /* La suite porte aussi les messages de validation du « Prévenez-moi » */
+  .suite.suite--erreur {
+    color: var(--erreur);
   }
 
   .visually-hidden {
@@ -283,15 +289,20 @@ import ZoneVisual from './ZoneVisual.astro';
   if (prevenir && suite) {
     prevenir.addEventListener('submit', async (evenement) => {
       evenement.preventDefault();
-      const donnees = new FormData(prevenir);
-      const courriel = String(donnees.get('courriel') ?? '').trim();
+      const saisie = new FormData(prevenir);
+      const courriel = String(saisie.get('courriel') ?? '').trim();
       if (!courriel || !courriel.includes('@')) {
         suite.textContent = 'Veuillez saisir un courriel valide.';
+        suite.classList.add('suite--erreur');
         suite.hidden = false;
         return;
       }
-      /* Objet lisible d'un coup d'œil et réponse directe au client */
-      donnees.set('_subject', `Liste d'attente — ${donnees.get('code_postal')}`);
+      /* Noms de champs lisibles tels quels dans le courriel, objet en
+         majuscules, réponse directe au client */
+      const donnees = new FormData();
+      donnees.set('Courriel', courriel);
+      donnees.set('Code postal', String(saisie.get('code_postal') ?? ''));
+      donnees.set('_subject', `LISTE D'ATTENTE — ${saisie.get('code_postal')}`);
       donnees.set('_replyto', courriel);
       try {
         const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
@@ -302,8 +313,10 @@ import ZoneVisual from './ZoneVisual.astro';
         if (!reponse.ok) throw new Error();
         prevenir.hidden = true;
         suite.textContent = 'C’est noté. Vestia vous écrira.';
+        suite.classList.remove('suite--erreur');
       } catch {
         suite.textContent = 'L’envoi n’a pas abouti. Veuillez réessayer.';
+        suite.classList.add('suite--erreur');
       }
       suite.hidden = false;
     });

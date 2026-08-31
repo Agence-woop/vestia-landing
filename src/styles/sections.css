@@ -16,6 +16,9 @@
   --filet: rgba(250, 247, 240, 0.14);
   --surface: rgba(16, 45, 76, 0.55);
   --flou-surface: blur(14px);
+  /* Rose carmin des messages d'erreur de validation — attire l'œil
+     sans tomber dans le rouge d'alerte */
+  --erreur: #e8798a;
 
   position: relative;
   background: transparent;
