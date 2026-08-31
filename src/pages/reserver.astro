@@ -1271,9 +1271,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   /* ---------- le retour, en jours ouvrables ----------
-     Les libellés dépendent du jour et de la fenêtre choisis : samedi,
-     dimanche et fériés du JSON sont sautés. « Ce soir » désigne le soir
-     de la cueillette, « Demain soir » son lendemain. */
+     Les libellés nomment le jour de la semaine concerné, calculé depuis
+     le JOUR DE CUEILLETTE choisi — jamais depuis la date du jour.
+     Samedi, dimanche et fériés du JSON sont sautés. Les dates sont
+     manipulées en heure locale et en jours de calendrier (jamais en
+     durées de 24 h) : le calcul reste juste au changement d'heure. */
   const RETOUR_CONVENIR = 'On en convient ensemble';
 
   const jourOuvrableSuivant = (d: Date) => {
@@ -1284,13 +1286,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return n;
   };
 
-  const libelleSoir = (cueillette: Date, cible: Date) => {
-    const lendemain = new Date(
-      cueillette.getFullYear(),
-      cueillette.getMonth(),
-      cueillette.getDate() + 1
-    );
-    if (cible.getTime() === lendemain.getTime()) return 'Demain soir';
+  /* « Mercredi soir » — majuscule initiale dans les capsules */
+  const libelleSoir = (cible: Date) => {
     const nom = cible.toLocaleDateString('fr-CA', { weekday: 'long' });
     return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} soir`;
   };
@@ -1301,15 +1298,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const j1 = jourOuvrableSuivant(etat.jour);
     if (FENETRES_MATIN.includes(etat.fenetre)) {
       return [
-        { libelle: 'Ce soir', date: etat.jour },
-        { libelle: libelleSoir(etat.jour, j1), date: j1 },
+        { libelle: libelleSoir(etat.jour), date: etat.jour },
+        { libelle: libelleSoir(j1), date: j1 },
         { libelle: RETOUR_CONVENIR, date: null },
       ];
     }
     const j2 = jourOuvrableSuivant(j1);
     return [
-      { libelle: libelleSoir(etat.jour, j1), date: j1 },
-      { libelle: libelleSoir(etat.jour, j2), date: j2 },
+      { libelle: libelleSoir(j1), date: j1 },
+      { libelle: libelleSoir(j2), date: j2 },
       { libelle: RETOUR_CONVENIR, date: null },
     ];
   }
@@ -1393,12 +1390,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return `${rue}${app ? `, app. ${app}` : ''}, ${etat.codePostal}`;
   }
 
-  /* Le retour en clair : « demain soir, 17 h 30 – 19 h 30 » ou
-     « à convenir ensemble » */
+  /* Le retour en clair, avec la date pour lever toute ambiguïté :
+     « jeudi 3 septembre, 17 h 30 – 19 h 30 » ou « à convenir ensemble » */
   const retourEnClair = () =>
     etat.retour === RETOUR_CONVENIR
       ? 'à convenir ensemble'
-      : `${etat.retour.charAt(0).toLowerCase()}${etat.retour.slice(1)}, 17 h 30 – 19 h 30`;
+      : `${etat.retourDate}, 17 h 30 – 19 h 30`;
 
   /* Quatre lignes étiquetées — étiquette en gras, valeur en graisse
      normale, aucune espace avant les deux points (typographie
@@ -1455,12 +1452,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     donnees.set('instructions_acces', ($('#r-acces') as HTMLInputElement).value.trim());
     donnees.set('jour', jourLong);
     donnees.set('fenetre_de_cueillette', etat.fenetre);
-    donnees.set(
-      'retour',
-      etat.retour === RETOUR_CONVENIR
-        ? 'à convenir ensemble'
-        : `${etat.retour} (${etat.retourDate}), 17 h 30 – 19 h 30`
-    );
+    donnees.set('retour', retourEnClair());
     donnees.set('tranche_de_pieces', `${etat.tranche} pièces`);
     donnees.set('precision', ($('#r-notes') as HTMLTextAreaElement).value.trim());
     donnees.set('infolettre', ($('#r-infolettre') as HTMLInputElement).checked ? 'oui' : 'non');
