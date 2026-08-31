@@ -46,11 +46,15 @@ Vous pouvez modifier ou annuler votre cueillette sans frais jusqu'à 18 h la vei
 
 **Le bordereau signé fait foi du nombre de pièces confiées et rendues.** Aucune réclamation portant sur le nombre de pièces ne peut être reçue après la signature du bordereau de retour.
 
-## 6. Les délais
+## 6. Les délais et le retour
 
-Les pièces cueillies avant 9 h sont retournées le soir même; les autres, le jour ouvrable suivant. Votre créneau de retour est un rendez-vous convenu, annoncé par message avant notre arrivée.
+Votre créneau de cueillette est un rendez-vous convenu, non une estimation.
 
-Vestia s'engage fermement sur ces délais. Ils peuvent exceptionnellement être suspendus en cas de force majeure — conditions météorologiques extrêmes, panne, ou tout événement hors de notre contrôle raisonnable. Le cas échéant, vous êtes prévenu sans délai et un nouveau créneau vous est proposé en priorité.
+Le moment du retour est choisi par vous au moment de la réservation, parmi les options proposées, puis confirmé par message texte. Les pièces cueillies le matin peuvent revenir dès le soir même. Les pièces cueillies en fin de journée reviennent au plus tôt le soir du jour ouvrable suivant. Vous pouvez également choisir un retour ultérieur, ou convenir d'un moment avec nous.
+
+Les retours ont lieu entre 17 h 30 et 19 h 30. Un message vous annonce notre arrivée.
+
+Vestia s'engage fermement sur les moments convenus. Ils peuvent exceptionnellement être suspendus en cas de force majeure — conditions météorologiques extrêmes, panne, ou tout événement hors de notre contrôle raisonnable. Le cas échéant, vous êtes prévenu sans délai et un nouveau moment vous est proposé en priorité.
 
 ## 7. La livraison
 

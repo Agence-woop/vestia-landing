@@ -131,31 +131,40 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             </div>
           </div>
 
-          <!-- La colonne s'active en douceur dès qu'un jour est choisi -->
+          <!-- La colonne se dévoile question par question : la fenêtre dès
+               qu'un jour est choisi, le retour après la fenêtre, les pièces
+               et la précision après le retour, le CTA après les pièces -->
           <div class="col-droite" id="r-droite">
             <p class="verrou" id="r-verrou" aria-live="polite">Choisissez d'abord un jour</p>
             <div class="droite-contenu" id="r-droite-contenu">
-              <div class="bloc premier" id="r-fenetres">
+              <div class="bloc premier apparition" id="r-fenetres" hidden>
                 <p class="etiquette texte-champagne">La fenêtre de cueillette</p>
                 <fieldset class="groupe">
-                  <legend>Matin — retour le soir même</legend>
+                  <legend>Matin</legend>
                   <div class="capsules" data-groupe="matin"></div>
                 </fieldset>
                 <fieldset class="groupe">
-                  <legend>Fin de journée — retour le prochain jour ouvrable</legend>
+                  <legend>Fin de journée</legend>
                   <div class="capsules" data-groupe="soir"></div>
                 </fieldset>
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une fenêtre de cueillette.</p>
               </div>
 
-              <div class="bloc">
+              <div class="bloc apparition" id="r-retour-groupe" hidden>
+                <p class="etiquette texte-champagne">Le retour</p>
+                <div class="capsules" id="r-retours"></div>
+                <p class="rappel">Retour entre 17&nbsp;h&nbsp;30 et 19&nbsp;h&nbsp;30. Un message vous annonce notre arrivée.</p>
+                <p class="erreur" aria-live="polite" hidden>Veuillez choisir un moment de retour.</p>
+              </div>
+
+              <div class="bloc apparition" id="r-pieces" hidden>
                 <p class="etiquette texte-champagne">Combien de pièces avez-vous, environ?</p>
                 <div class="capsules" id="r-tranches"></div>
                 <p class="rappel">Minimum de 8 pièces. Le compte exact se fait avec vous, à la cueillette.</p>
                 <p class="erreur" aria-live="polite" hidden>Veuillez choisir une tranche de pièces.</p>
               </div>
 
-              <div class="bloc">
+              <div class="bloc apparition" id="r-notes-groupe" hidden>
                 <label class="etiquette texte-champagne" for="r-notes">Une précision pour votre intendant? <span class="optionnel">(optionnel)</span></label>
                 <textarea class="champ" id="r-notes" name="notes" rows="2"></textarea>
               </div>
@@ -164,7 +173,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </div>
 
         <!-- Le CTA, centré sous l'ensemble des deux colonnes -->
-        <div class="actions">
+        <div class="actions apparition" id="r-continuer" hidden>
           <Cta type="submit">Continuer</Cta>
         </div>
       </form>
@@ -438,11 +447,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
   }
 
-  /* Espacement uniforme et fixe entre les trois groupes de la colonne
-     droite — l'aide « Minimum de 8 pièces… » appartient à son groupe,
-     le séparateur est le même partout */
+  /* Espacement uniforme et fixe entre les groupes de la colonne
+     droite — resserré d'un cran depuis l'ajout du groupe « Le retour »,
+     pour que le CTA reste atteignable à 800 px de hauteur utile */
   .droite-contenu > .bloc + .bloc {
-    margin-top: var(--espace-bloc-md);
+    margin-top: var(--espace-bloc-xs);
+  }
+
+  /* ---------- apparition progressive des questions ---------- */
+  /* Fondu doux avec léger déplacement ; la réinitialisation globale de
+     base.css rend l'apparition instantanée en prefers-reduced-motion */
+  .apparition {
+    opacity: 0;
+    transform: translateY(0.4rem);
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+  }
+
+  .apparition.visible {
+    opacity: 1;
+    transform: none;
   }
 
   /* L'espace titre → colonnes, resserré d'un cran */
@@ -453,11 +478,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .deux-col .col-gauche > .bloc:first-child,
   .deux-col .verrou,
   .droite-contenu .bloc.premier {
-    margin-top: var(--espace-bloc-sm);
+    margin-top: var(--espace-bloc-xs);
   }
 
   #ecran-2 .actions {
-    margin-top: var(--espace-bloc-md);
+    margin-top: var(--espace-bloc-xs);
   }
 
   .verrou {
@@ -816,6 +841,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     animation-duration: 12s;
   }
 
+  #r-retours :global(input:checked + span) {
+    animation-delay: -5.5s;
+    animation-duration: 14s;
+  }
+
   #r-tranches :global(input:checked + span) {
     animation-delay: -7.5s;
     animation-duration: 13s;
@@ -945,6 +975,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     jour: null as Date | null,
     fenetre: '',
     retour: '',
+    retourDate: '',
     tranche: '',
   };
 
@@ -1183,6 +1214,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           grille.querySelectorAll('.choisi').forEach((x) => x.classList.remove('choisi'));
           b.classList.add('choisi');
           activerDroite();
+          /* Les libellés du retour suivent le jour choisi */
+          if (etat.fenetre) rendreRetours();
           afficherErreur($('#calendrier').closest('.bloc'), false);
           sauvegarder();
         });
@@ -1234,27 +1267,94 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return input;
   }
 
-  for (const f of FENETRES_MATIN) {
-    capsule('fenetre', f, document.querySelector('[data-groupe="matin"]')!).addEventListener(
-      'change',
-      () => {
-        etat.fenetre = f;
-        etat.retour = 'retour le soir même';
-      }
+  /* ---------- le retour, en jours ouvrables ----------
+     Les libellés dépendent du jour et de la fenêtre choisis : samedi,
+     dimanche et fériés du JSON sont sautés. « Ce soir » désigne le soir
+     de la cueillette, « Demain soir » son lendemain. */
+  const RETOUR_CONVENIR = 'On en convient ensemble';
+
+  const jourOuvrableSuivant = (d: Date) => {
+    let n = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    while (n.getDay() === 0 || n.getDay() === 6 || FERIES.has(cle(n))) {
+      n = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
+    }
+    return n;
+  };
+
+  const libelleSoir = (cueillette: Date, cible: Date) => {
+    const lendemain = new Date(
+      cueillette.getFullYear(),
+      cueillette.getMonth(),
+      cueillette.getDate() + 1
     );
+    if (cible.getTime() === lendemain.getTime()) return 'Demain soir';
+    const nom = cible.toLocaleDateString('fr-CA', { weekday: 'long' });
+    return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} soir`;
+  };
+
+  /* Les trois options : libellé + date résolue (null pour « à convenir ») */
+  function optionsRetour(): Array<{ libelle: string; date: Date | null }> {
+    if (!etat.jour || !etat.fenetre) return [];
+    const j1 = jourOuvrableSuivant(etat.jour);
+    if (FENETRES_MATIN.includes(etat.fenetre)) {
+      return [
+        { libelle: 'Ce soir', date: etat.jour },
+        { libelle: libelleSoir(etat.jour, j1), date: j1 },
+        { libelle: RETOUR_CONVENIR, date: null },
+      ];
+    }
+    const j2 = jourOuvrableSuivant(j1);
+    return [
+      { libelle: libelleSoir(etat.jour, j1), date: j1 },
+      { libelle: libelleSoir(etat.jour, j2), date: j2 },
+      { libelle: RETOUR_CONVENIR, date: null },
+    ];
   }
-  for (const f of FENETRES_SOIR) {
-    capsule('fenetre', f, document.querySelector('[data-groupe="soir"]')!).addEventListener(
+
+  /* (Re)construit les capsules de retour. Si un choix antérieur change,
+     la sélection est conservée tant que son libellé existe encore, et
+     réinitialisée sinon. */
+  function rendreRetours() {
+    const conteneur = $('#r-retours');
+    const options = optionsRetour();
+    const precedent = etat.retour;
+    conteneur.innerHTML = '';
+    for (const o of options) {
+      capsule('retour', o.libelle, conteneur).addEventListener('change', () => {
+        etat.retour = o.libelle;
+        etat.retourDate = o.date ? formatLong(o.date) : '';
+        afficherErreur($('#r-retour-groupe'), false);
+        montrer($('#r-pieces'));
+        montrer($('#r-notes-groupe'));
+      });
+    }
+    if (precedent) {
+      if (options.some((o) => o.libelle === precedent)) {
+        poserRadio('retour', precedent);
+      } else {
+        etat.retour = '';
+        etat.retourDate = '';
+      }
+    }
+  }
+
+  for (const f of [...FENETRES_MATIN, ...FENETRES_SOIR]) {
+    const groupe = FENETRES_MATIN.includes(f) ? 'matin' : 'soir';
+    capsule('fenetre', f, document.querySelector(`[data-groupe="${groupe}"]`)!).addEventListener(
       'change',
       () => {
         etat.fenetre = f;
-        etat.retour = 'retour le prochain jour ouvrable';
+        afficherErreur($('#r-fenetres'), false);
+        rendreRetours();
+        montrer($('#r-retour-groupe'));
       }
     );
   }
   for (const t of TRANCHES) {
     capsule('tranche', t, $('#r-tranches')).addEventListener('change', () => {
       etat.tranche = t;
+      afficherErreur($('#r-pieces'), false);
+      montrer($('#r-continuer'));
     });
   }
 
@@ -1267,17 +1367,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   function activerDroite() {
     droite.classList.add('actif');
     droiteContenu.inert = false;
+    montrer($('#r-fenetres'));
   }
 
   ecrans[1].addEventListener('submit', (e) => {
     e.preventDefault();
     const okJour = etat.jour !== null;
     const okFenetre = etat.fenetre !== '';
+    const okRetour = etat.retour !== '';
     const okTranche = etat.tranche !== '';
     afficherErreur($('#calendrier').closest('.bloc'), !okJour);
     afficherErreur($('#r-fenetres'), okJour && !okFenetre);
-    afficherErreur($('#r-tranches').closest('.bloc'), !okTranche);
-    if (okJour && okFenetre && okTranche) avancer(2);
+    afficherErreur($('#r-retour-groupe'), okFenetre && !okRetour);
+    afficherErreur($('#r-pieces'), !okTranche);
+    if (okJour && okFenetre && okRetour && okTranche) avancer(2);
   });
 
   /* ================= Écran 3 — coordonnées et envoi ================= */
@@ -1287,12 +1390,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     return `${rue}${app ? `, app. ${app}` : ''}, ${etat.codePostal}`;
   }
 
+  /* Le retour en clair : « demain soir, 17 h 30 – 19 h 30 » ou
+     « à convenir ensemble » */
+  const retourEnClair = () =>
+    etat.retour === RETOUR_CONVENIR
+      ? 'à convenir ensemble'
+      : `${etat.retour.charAt(0).toLowerCase()}${etat.retour.slice(1)}, 17 h 30 – 19 h 30`;
+
   function remplirRecap() {
     $('#r-recap').innerHTML = `
       <p class="recap-titre texte-champagne">Votre demande</p>
       <p>${adresseComplete()}</p>
       <p>${formatLong(etat.jour!)}</p>
-      <p>${etat.fenetre} — ${etat.retour}</p>
+      <p>${etat.fenetre}</p>
+      <p>Retour: ${retourEnClair()}</p>
       <p>${etat.tranche} pièces</p>
     `;
   }
@@ -1330,7 +1441,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     donnees.set('code_postal', etat.codePostal);
     donnees.set('instructions_acces', ($('#r-acces') as HTMLInputElement).value.trim());
     donnees.set('jour', jourLong);
-    donnees.set('fenetre', `${etat.fenetre} — ${etat.retour}`);
+    donnees.set('fenetre', etat.fenetre);
+    donnees.set(
+      'retour',
+      etat.retour === RETOUR_CONVENIR
+        ? 'à convenir ensemble'
+        : `${etat.retour} (${etat.retourDate}), 17 h 30 – 19 h 30`
+    );
     donnees.set('tranche_pieces', etat.tranche);
     donnees.set('notes', ($('#r-notes') as HTMLTextAreaElement).value.trim());
     donnees.set('prenom', prenom.value.trim());
@@ -1352,7 +1469,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       ecrans[2].hidden = true;
       $('#etape').hidden = true;
       ($('#r-retour') as HTMLButtonElement).hidden = true;
-      $('#r-souhait').textContent = `Cueillette souhaitée: ${jourLong}, ${etat.fenetre}`;
+      $('#r-souhait').textContent =
+        `Cueillette souhaitée: ${jourLong}, ${etat.fenetre} · Retour: ${retourEnClair()}`;
       montrer($('#ecran-confirmation'));
       window.scrollTo({ top: 0 });
     } catch {
@@ -1379,6 +1497,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       jour: j ? `${j.getFullYear()}-${j.getMonth() + 1}-${j.getDate()}` : '',
       fenetre: etat.fenetre,
       retour: etat.retour,
+      retourDate: etat.retourDate,
       tranche: etat.tranche,
       notes: valeur('r-notes'),
       prenom: valeur('r-prenom'),
@@ -1450,7 +1569,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         activerDroite();
       }
     }
+    /* La fenêtre reconstruit les capsules de retour, puis le retour se
+       replace s'il est toujours offert */
     if (d.fenetre) poserRadio('fenetre', d.fenetre);
+    if (d.retour) poserRadio('retour', d.retour);
     if (d.tranche) poserRadio('tranche', d.tranche);
 
     const etape = Math.max(0, Math.min(2, Number(d.etape) || 0));
