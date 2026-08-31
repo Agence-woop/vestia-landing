@@ -60,7 +60,7 @@ import ZoneVisual from './ZoneVisual.astro';
             Votre quartier n'y est pas encore. Laissez-nous votre courriel, il viendra.
           </p>
           <form class="prevenir" id="prevenir-quartier" novalidate>
-            <input type="hidden" name="code-postal" id="prevenir-code-postal" />
+            <input type="hidden" name="code_postal" id="prevenir-code-postal" />
             <label class="visually-hidden" for="courriel-quartier">Votre courriel</label>
             <input
               class="champ"
@@ -228,9 +228,11 @@ import ZoneVisual from './ZoneVisual.astro';
 <script>
   import zones from '../data/zones.json';
 
-  /* Endpoint Formspree du « Prévenez-moi » — identifiant à créer par le
-     propriétaire (voir Mission 4) puis à remplacer ici */
-  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/A_REMPLACER';
+  /* ----------------------------------------------------------------
+     Endpoint Formspree — liste d'attente (« Prévenez-moi »), le même
+     que le bloc hors zone de /reserver. Isolé ici volontairement.
+  ---------------------------------------------------------------- */
+  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/mdeoaqoy';
 
   const verificateur = document.getElementById('verificateur') as HTMLFormElement | null;
   const champ = document.getElementById('code-postal') as HTMLInputElement | null;
@@ -272,7 +274,7 @@ import ZoneVisual from './ZoneVisual.astro';
       if (zones.rta.includes(code.slice(0, 3))) {
         if (desservi) montrer(desservi);
       } else {
-        if (prevenirCode) prevenirCode.value = code;
+        if (prevenirCode) prevenirCode.value = `${code.slice(0, 3)} ${code.slice(3)}`;
         if (horsZone) montrer(horsZone);
       }
     });
@@ -288,6 +290,9 @@ import ZoneVisual from './ZoneVisual.astro';
         suite.hidden = false;
         return;
       }
+      /* Objet lisible d'un coup d'œil et réponse directe au client */
+      donnees.set('_subject', `Liste d'attente — ${donnees.get('code_postal')}`);
+      donnees.set('_replyto', courriel);
       try {
         const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
           method: 'POST',

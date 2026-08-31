@@ -872,6 +872,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin-top: 0.4rem;
   }
 
+  /* Montserrat n'est chargée qu'en 200/400/500 : pas de faux gras */
+  .tuile :global(strong) {
+    font-weight: 500;
+  }
+
   /* La couleur vient du traitement champagne commun */
   .tuile :global(.recap-titre) {
     font-size: 0.68rem;
@@ -946,18 +951,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   import joursIndisponibles from '../data/jours-indisponibles.json';
 
   /* ----------------------------------------------------------------
-     Endpoints Formspree PROVISOIRES — à remplacer par le compte Vestia
-     avant lancement. Isolés ici volontairement.
+     Endpoints Formspree du compte Vestia. Isolés ici volontairement :
+     - réservations : le formulaire de l'écran 3
+     - liste d'attente : le bloc hors zone (le même identifiant que le
+       « Prévenez-moi » de la section territoire de l'accueil)
   ---------------------------------------------------------------- */
-  const FORMSPREE_RESERVATION_ENDPOINT = 'https://formspree.io/f/A_REMPLACER_RESERVATION';
-  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/A_REMPLACER';
-
-  /* Quartier lisible dans l'objet du courriel, par RTA */
-  const QUARTIERS: Record<string, string> = {
-    H3J: 'Griffintown',
-    H3C: 'Cité du Multimédia',
-    H2Y: 'Vieux-Montréal',
-  };
+  const FORMSPREE_RESERVATION_ENDPOINT = 'https://formspree.io/f/xjyvgnvp';
+  const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/mdeoaqoy';
 
   const FENETRES_MATIN = ['7 h – 7 h 30', '7 h 30 – 8 h', '8 h – 8 h 30', '8 h 30 – 9 h'];
   const FENETRES_SOIR = ['17 h 30 – 18 h', '18 h – 18 h 30', '18 h 30 – 19 h', '19 h – 19 h 30'];
@@ -1059,6 +1059,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const donnees = new FormData();
     donnees.set('courriel', courriel);
     donnees.set('code_postal', etat.codePostal);
+    /* Objet lisible d'un coup d'œil et réponse directe au client */
+    donnees.set('_subject', `Liste d'attente — ${etat.codePostal}`);
+    donnees.set('_replyto', courriel);
     try {
       const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
         method: 'POST',
@@ -1397,14 +1400,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       ? 'à convenir ensemble'
       : `${etat.retour.charAt(0).toLowerCase()}${etat.retour.slice(1)}, 17 h 30 – 19 h 30`;
 
+  /* Quatre lignes étiquetées — étiquette en gras, valeur en graisse
+     normale, aucune espace avant les deux points (typographie
+     québécoise) */
   function remplirRecap() {
     $('#r-recap').innerHTML = `
       <p class="recap-titre texte-champagne">Votre demande</p>
-      <p>${adresseComplete()}</p>
-      <p>${formatLong(etat.jour!)}</p>
-      <p>${etat.fenetre}</p>
-      <p>Retour: ${retourEnClair()}</p>
-      <p>${etat.tranche} pièces</p>
+      <p><strong>Adresse:</strong> ${adresseComplete()}</p>
+      <p><strong>Cueillette:</strong> ${formatLong(etat.jour!)}, ${etat.fenetre}</p>
+      <p><strong>Retour:</strong> ${retourEnClair()}</p>
+      <p><strong>Volume:</strong> ${etat.tranche} pièces</p>
     `;
   }
 
@@ -1434,26 +1439,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     if (!(okPrenom && okNom && okCourriel && okMobile && okConditions)) return;
 
     const jourLong = formatLong(etat.jour!);
-    const quartier = QUARTIERS[etat.codePostal.slice(0, 3)] ?? etat.codePostal;
+    /* Objet lisible d'un coup d'œil sur téléphone, réponse directe au
+       client, puis les champs dans l'ordre naturel de lecture d'une
+       demande — noms explicites en français */
     const donnees = new FormData();
-    donnees.set('_subject', `Demande de cueillette — ${jourLong}, ${etat.fenetre} — ${quartier}`);
-    donnees.set('adresse', adresseComplete());
+    donnees.set('_subject', `Cueillette — ${jourLong}, ${etat.fenetre} — ${prenom.value.trim()} ${nom.value.trim()}`);
+    donnees.set('_replyto', courriel.value.trim());
+    donnees.set('prenom', prenom.value.trim());
+    donnees.set('nom', nom.value.trim());
+    donnees.set('courriel', courriel.value.trim());
+    donnees.set('mobile', mobile.value.trim());
+    donnees.set('adresse', ($('#r-rue') as HTMLInputElement).value.trim());
+    donnees.set('appartement', ($('#r-app') as HTMLInputElement).value.trim());
     donnees.set('code_postal', etat.codePostal);
     donnees.set('instructions_acces', ($('#r-acces') as HTMLInputElement).value.trim());
     donnees.set('jour', jourLong);
-    donnees.set('fenetre', etat.fenetre);
+    donnees.set('fenetre_de_cueillette', etat.fenetre);
     donnees.set(
       'retour',
       etat.retour === RETOUR_CONVENIR
         ? 'à convenir ensemble'
         : `${etat.retour} (${etat.retourDate}), 17 h 30 – 19 h 30`
     );
-    donnees.set('tranche_pieces', etat.tranche);
-    donnees.set('notes', ($('#r-notes') as HTMLTextAreaElement).value.trim());
-    donnees.set('prenom', prenom.value.trim());
-    donnees.set('nom', nom.value.trim());
-    donnees.set('courriel', courriel.value.trim());
-    donnees.set('mobile', mobile.value.trim());
+    donnees.set('tranche_de_pieces', `${etat.tranche} pièces`);
+    donnees.set('precision', ($('#r-notes') as HTMLTextAreaElement).value.trim());
     donnees.set('infolettre', ($('#r-infolettre') as HTMLInputElement).checked ? 'oui' : 'non');
 
     try {
