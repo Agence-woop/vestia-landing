@@ -51,7 +51,14 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imagePartage} />
 
-    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <!-- Favicon Vestia : monogramme V doré sur nuit pétrole, décliné
+         depuis assets-source/vestia-favicon-source.png. Chemins relatifs
+         à la base URL — valides après le branchement de vestia.ca. -->
+    <link rel="icon" href={`${base}/favicon.ico`} sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${base}/favicon-32.png`} />
+    <link rel="icon" type="image/png" sizes="16x16" href={`${base}/favicon-16.png`} />
+    <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
+    <link rel="manifest" href={`${base}/site.webmanifest`} />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#091E35" />
 
