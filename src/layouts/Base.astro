@@ -11,12 +11,19 @@ interface Props {
 }
 
 const {
-  title = 'Vestia — Repassage et cueillette à domicile | Griffintown, Montréal',
-  description = 'Cueillette à votre porte, repassage à la main, retour sur cintre le soir même ou le lendemain. Griffintown, Cité du Multimédia, Vieux-Port.',
+  title = 'Vestia — Repassage et cueillette à domicile, Montréal',
+  description = 'Vos vêtements cueillis à votre porte, repassés à la main, retournés sur cintre. Griffintown, Cité du Multimédia, Vieux-Montréal.',
   noindex = false,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* Partage (Open Graph / Twitter) : les plateformes exigent des URL
+   absolues. Elles se construisent depuis `site` (astro.config.mjs) —
+   à mettre à jour lors du branchement du domaine vestia.ca. */
+const urlCanonique = new URL(Astro.url.pathname, Astro.site).href;
+const imagePartage = new URL(`${base}/og-vestia.jpg`, Astro.site).href;
+const altPartage = 'Vestia — Repassage et cueillette à domicile';
 ---
 
 <!doctype html>
@@ -27,6 +34,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
+
+    <!-- Partage — image unique 1200×630 pour tout le site -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={urlCanonique} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imagePartage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={altPartage} />
+    <meta property="og:locale" content="fr_CA" />
+    <meta property="og:site_name" content="Vestia" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imagePartage} />
+
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#091E35" />
