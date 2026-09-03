@@ -1,0 +1,216 @@
+---
+/*
+ * Section « Questions d'usage » — accordéon en grille 2 × 2 (desktop),
+ * volontairement distinct de la section engagement qui précède : les
+ * questions se lisent en Libre Baskerville ivoire, casse normale ;
+ * aucun filet séparateur, aucun sceau — l'espacement sépare. Le
+ * chevron reprend la grammaire des médaillons numérotés du rituel
+ * (même cercle, même filet, même ocre). Balisage FAQPage en JSON-LD.
+ */
+const QUESTIONS = [
+  {
+    question: 'Que se passe-t-il si une pièce est abîmée?',
+    reponse:
+      'Chaque pièce est comptée avec vous à la cueillette et recomptée au retour. Si un dommage survenait de notre fait, signalez-le dans les 24 heures, photos à l\'appui, par courriel ou message texte. Notre responsabilité va jusqu\'à dix fois le tarif de traitement de la pièce.',
+  },
+  {
+    question: 'Comment se fait le paiement?',
+    reponse:
+      'À la livraison, par virement Interac ou en argent comptant. Prévoyez le montant exact: votre intendant n\'a pas de monnaie. Le pourboire reste à votre entière discrétion et n\'est jamais attendu.',
+  },
+  {
+    question: 'Et si je ne suis pas là au moment du retour?',
+    reponse:
+      'Vous choisissez le soir de votre retour au moment de la réservation, et un message vous annonce notre arrivée. Si un imprévu survient, écrivez-nous: nous convenons d\'un autre moment.',
+  },
+  {
+    question: 'Faut-il que mes vêtements soient lavés?',
+    reponse:
+      'Oui. Vestia repasse, mais ne lave pas. Vos pièces nous sont remises propres, prêtes à être pressées.',
+  },
+];
+
+const schemaFaq = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: QUESTIONS.map((q) => ({
+    '@type': 'Question',
+    name: q.question,
+    acceptedAnswer: { '@type': 'Answer', text: q.reponse },
+  })),
+};
+---
+
+<section class="section section--voile" id="questions">
+  <div class="section__inner">
+    <h2>Questions d'usage</h2>
+
+    <div class="entrees">
+      {
+        QUESTIONS.map((q, i) => (
+          <div class="entree">
+            <h3 class="porte">
+              <button
+                type="button"
+                class="question"
+                id={`question-${i + 1}`}
+                aria-expanded="false"
+                aria-controls={`reponse-${i + 1}`}
+              >
+                <span class="libelle">{q.question}</span>
+                <span class="medaillon" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+                    <path d="M4 6.25 8 10.25l4-4" stroke="currentColor" stroke-width="1.2" />
+                  </svg>
+                </span>
+              </button>
+            </h3>
+            <div class="reponse" id={`reponse-${i + 1}`} role="region" aria-labelledby={`question-${i + 1}`}>
+              <div>
+                <p>{q.reponse}</p>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(schemaFaq)} />
+
+<style>
+  /* La grille 2 × 2 : seule section de la page à l'utiliser. Les rangées
+     s'alignent naturellement ; align-items: start garde la voisine calée
+     en haut quand une entrée s'ouvre — pas de saut dans la rangée. */
+  .entrees {
+    display: grid;
+    gap: var(--espace-bloc-md);
+    margin-top: var(--espace-bloc-md);
+    align-items: start;
+  }
+
+  @media (min-width: 64rem) {
+    .entrees {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--espace-bloc-md) var(--espace-bloc-lg);
+    }
+  }
+
+  .porte {
+    margin: 0;
+  }
+
+  /* La question : Baskerville ivoire en casse normale — une phrase,
+     pas une étiquette */
+  .question {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--police-voix);
+    font-weight: 400;
+    font-size: clamp(1.15rem, 1.55vw, 1.3rem);
+    line-height: 1.45;
+    color: var(--texte);
+  }
+
+  .question:focus-visible {
+    outline: 1px solid var(--or-trait);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  /* Le chevron : la grammaire des médaillons du rituel — même cercle,
+     même filet or masqué fondu à 52°, même ocre */
+  .medaillon {
+    position: relative;
+    flex-shrink: 0;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--or-trait);
+  }
+
+  .medaillon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    background: linear-gradient(52deg, var(--or-trait) 0%, var(--or-trait) 38%, transparent 80%);
+    pointer-events: none;
+  }
+
+  /* Seul le chevron pivote : l'anneau garde son orientation */
+  .medaillon svg {
+    transition: transform 0.45s ease;
+  }
+
+  .entree.ouverte .medaillon svg {
+    transform: rotate(180deg);
+  }
+
+  /* Ouverture en douceur : hauteur (0fr → 1fr) + opacité ; la
+     réinitialisation globale de base.css rend la bascule instantanée
+     en prefers-reduced-motion. visibility retire la réponse fermée du
+     flux des lecteurs d'écran. */
+  .reponse {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      grid-template-rows 0.45s ease,
+      opacity 0.45s ease,
+      visibility 0s 0.45s;
+  }
+
+  .reponse > div {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .entree.ouverte .reponse {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.45s ease,
+      opacity 0.45s ease,
+      visibility 0s;
+  }
+
+  /* La réponse, au corps de texte du site */
+  .reponse p {
+    padding-top: 0.7rem;
+    font-size: var(--taille-courant);
+    opacity: 0.9;
+    max-width: 58ch;
+  }
+</style>
+
+<script>
+  /* Plusieurs entrées peuvent être ouvertes à la fois ; toutes fermées
+     au chargement (état du HTML) */
+  for (const bouton of document.querySelectorAll('#questions .question')) {
+    bouton.addEventListener('click', () => {
+      const entree = bouton.closest('.entree') as HTMLElement;
+      const ouverte = entree.classList.toggle('ouverte');
+      bouton.setAttribute('aria-expanded', String(ouverte));
+    });
+  }
+</script>

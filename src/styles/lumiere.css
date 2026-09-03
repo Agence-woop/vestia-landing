@@ -73,6 +73,10 @@
   animation-duration: 14s;
 }
 
+#questions h2 {
+  animation-delay: -10.5s;
+}
+
 #final h2 {
   animation-delay: -7.5s;
   animation-duration: 13s;
