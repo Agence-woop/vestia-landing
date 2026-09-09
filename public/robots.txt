@@ -1,0 +1,3 @@
+# À RETIRER AU LANCEMENT — exploration interdite avant l'ouverture officielle
+User-agent: *
+Disallow: /
