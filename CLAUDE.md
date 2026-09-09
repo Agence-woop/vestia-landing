@@ -39,12 +39,12 @@ Tous dans `assets-source/` :
 - **Noindex temporaire sur tout le site** (meta robots dans `Base.astro` + `public/robots.txt`),
   balisé « À RETIRER AU LANCEMENT ».
 - Soie du fond : `public/soie-nuit-petrole.mp4` — soie desktop officielle (1600×900, 32 s,
-  768 images, image-clé toutes les 12 images) ; affiche `public/soie-poster.jpg` tirée de sa
+  768 images, image-clé toutes les 12 images) ; affiche `public/soie-poster.webp` (WebP q80) tirée de sa
   première image. En cas de scrubbing saccadé, la version tout-intra
   `assets-source/vestia-soie-desktop-intra.mp4` la remplace telle quelle.
 - Soie mobile : `public/soie-nuit-petrole-mobile.mp4` (810×1440, même étalonnage), servie via
   `<source media="(orientation: portrait)">` — un seul fichier téléchargé ; affiche
-  `public/soie-poster-mobile.jpg`. Sur les pages trop courtes pour le scrubbing, la boucle de
+  `public/soie-poster-mobile.webp`. Sur les pages trop courtes pour le scrubbing, la boucle de
   repli tourne à `playbackRate = 0.4`.
 - **Sections : la règle des sections alternées du brief est remplacée par « soie visible
   partout, sections transparentes ».** Lisibilité par ombres de texte subtiles et léger voile

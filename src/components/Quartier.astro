@@ -101,14 +101,42 @@ import ZoneVisual from './ZoneVisual.astro';
     }
   }
 
-  /* En mobile, la carte passe au-dessus du bloc texte + vérificateur */
-  .deux-colonnes :global(.zone-visuel) {
-    order: -1;
+  /* En mobile, la section s'ouvre sur son titre comme les autres, et la
+     carte s'intercale entre les paragraphes et le vérificateur — une
+     confirmation visuelle juste avant la saisie du code postal.
+     display: contents fait des enfants de la colonne texte des items de
+     la grille, réordonnés par `order` sans toucher au DOM ; le gap de
+     grille est neutralisé au profit des marges propres des blocs.
+     Portée mobile seulement (≤ 480 px) : la tablette garde l'ordre
+     actuel, carte en tête. */
+  @media (max-width: 30rem) {
+    .deux-colonnes {
+      gap: 0;
+    }
+
+    .colonne-texte {
+      display: contents;
+    }
+
+    .deux-colonnes :global(.zone-visuel) {
+      order: 1;
+      margin-top: var(--espace-bloc-md);
+    }
+
+    .verificateur {
+      order: 2;
+    }
+
+    .resultat {
+      order: 3;
+    }
   }
 
-  @media (min-width: 64rem) {
+  /* Tablette (au-delà de 480 px, sous la grille desktop) : l'ordre
+     d'avant est conservé — la carte passe en tête de la colonne */
+  @media (min-width: 30.0625rem) and (max-width: 63.9375rem) {
     .deux-colonnes :global(.zone-visuel) {
-      order: 0;
+      order: -1;
     }
   }
 

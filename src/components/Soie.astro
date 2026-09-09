@@ -16,7 +16,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <div class="soie" aria-hidden="true">
   <!-- Une seule vidéo est téléchargée : la source portrait pour les
        écrans mobiles, la source desktop 16:9 pour les écrans larges -->
-  <video id="soie-video" muted playsinline autoplay loop preload="auto">
+  <video
+    id="soie-video"
+    muted
+    playsinline
+    webkit-playsinline
+    autoplay
+    loop
+    preload="auto"
+    disableremoteplayback
+  >
     <source
       src={`${base}/soie-nuit-petrole-mobile.mp4`}
       type="video/mp4"
@@ -28,11 +37,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </div>
 
 <!-- L'affiche suit le format servi ; posée ici en synchrone pour
-     qu'un seul des deux jpg soit jamais demandé -->
+     qu'une seule des deux images soit jamais demandée. WebP q80 tirée
+     de la première image de chaque soie : vidéo en pause = même image
+     nuit pétrole, sans rupture. -->
 <script is:inline define:vars={{ base }}>
   document.getElementById('soie-video').poster = matchMedia('(orientation: portrait)').matches
-    ? `${base}/soie-poster-mobile.jpg`
-    : `${base}/soie-poster.jpg`;
+    ? `${base}/soie-poster-mobile.webp`
+    : `${base}/soie-poster.webp`;
 </script>
 
 <style>
@@ -47,6 +58,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* La soie est un fond : aucune interaction directe possible */
+    pointer-events: none;
+  }
+
+  /* iOS : quand l'économie d'énergie bloque l'autoplay, Safari pose son
+     bouton de lecture natif par-dessus la vidéo — on masque ces
+     contrôles WebKit, pour la soie seulement */
+  .soie video::-webkit-media-controls,
+  .soie video::-webkit-media-controls-start-playback-button,
+  .soie video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
   }
 
   /* Le voile assombrissant qui garantit le contraste du texte */
@@ -71,8 +95,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   if (video) {
     const mouvementReduit = matchMedia('(prefers-reduced-motion: reduce)');
+    /* Vrai quand le défilement pilote la vidéo : une relance de lecture
+       doit alors re-pauser aussitôt (le play ne sert qu'à décoder) */
+    let modeScrub = false;
 
     const enBoucle = () => {
+      modeScrub = false;
       video.loop = true;
       /* Sur les pages trop courtes pour le scrubbing, la boucle est
          ralentie en respiration à peine perceptible : le mouvement ne
@@ -97,6 +125,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       }
 
       /* Scroll-scrubbing : le défilement pilote currentTime sur toute la page */
+      modeScrub = true;
       video.loop = false;
       /* Un aller-retour lecture/pause force le décodage sur iOS */
       video.play().then(() => video.pause()).catch(() => {});
@@ -136,5 +165,39 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     } else {
       video.addEventListener('loadedmetadata', demarrer, { once: true });
     }
+
+    /* Relance après un refus d'autoplay (iOS en économie d'énergie) :
+       tentative silencieuse à la première interaction ou au retour
+       d'onglet ; les écouteurs se retirent dès que la lecture reprend.
+       En mouvement réduit, l'image reste volontairement fixe. */
+    const retirerRelance = () => {
+      window.removeEventListener('touchstart', relance);
+      window.removeEventListener('click', relance);
+      document.removeEventListener('visibilitychange', relance);
+    };
+    const relance = () => {
+      if (mouvementReduit.matches) {
+        retirerRelance();
+        return;
+      }
+      if (document.visibilityState === 'hidden') return;
+      /* Lecture déjà en cours : plus rien à relancer */
+      if (!video.paused) {
+        retirerRelance();
+        return;
+      }
+      const tentative = video.play();
+      if (tentative) {
+        tentative
+          .then(() => {
+            if (modeScrub) video.pause();
+            retirerRelance();
+          })
+          .catch(() => {});
+      }
+    };
+    window.addEventListener('touchstart', relance, { passive: true });
+    window.addEventListener('click', relance, { passive: true });
+    document.addEventListener('visibilitychange', relance);
   }
 </script>

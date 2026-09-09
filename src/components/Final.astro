@@ -28,4 +28,22 @@ import Cta from './Cta.astro';
     font-size: clamp(3.6rem, 9.75vw, 6.3rem);
     margin-bottom: 0;
   }
+
+  /* Mobile : « Prêt-à-porter. » tient sur une seule ligne, point final
+     compris — taille fluide bornée, calibrée pour 320 px avec le padding
+     latéral existant (texte Baskerville ≈ 5,3 × corps) ; à 640 px le
+     plafond rejoint exactement la taille desktop, sans saut de règle */
+  @media (max-width: 40rem) {
+    /* L'item flex, sinon élargi au max-content du CTA (~341 px),
+       décalait le centrage sous ~350 px : borné à la largeur
+       disponible, titre et bouton se centrent sur le viewport */
+    .section__inner {
+      max-width: 100%;
+    }
+
+    .mot {
+      white-space: nowrap;
+      font-size: clamp(3rem, 11vw, 3.6rem);
+    }
+  }
 </style>
