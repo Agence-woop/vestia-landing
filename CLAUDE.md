@@ -31,9 +31,13 @@ Tous dans `assets-source/` :
 - Le manifeste est composé dans la sans éditoriale (Montserrat ExtraLight), à l'échelle
   éditoriale ; la Libre Baskerville reste réservée aux titres de sections.
 - Formulaires (Mission 4, « Prévenez-moi ») : **Formspree** plutôt que Netlify Forms.
-- Hébergement : **GitHub Pages** — `https://agence-woop.github.io/vestia-landing` (`base: '/vestia-landing'`
-  dans `astro.config.mjs` ; préfixer les URL d'assets de `public/` avec `import.meta.env.BASE_URL`).
-  Déploiement automatique à chaque push sur `main` via `.github/workflows/deploy.yml`.
+- Hébergement : **GitHub Pages sous le domaine `https://vestia.ca`**, servi à la racine (aucun
+  `base` dans `astro.config.mjs` ; les URL d'assets de `public/` restent préfixées de
+  `import.meta.env.BASE_URL`, qui vaut désormais `/`). `public/CNAME` déclare le domaine dans
+  l'artefact déployé. Déploiement automatique à chaque push sur `main` via
+  `.github/workflows/deploy.yml`.
+- **Noindex temporaire sur tout le site** (meta robots dans `Base.astro` + `public/robots.txt`),
+  balisé « À RETIRER AU LANCEMENT ».
 - Soie du fond : `public/soie-nuit-petrole.mp4` — soie desktop officielle (1600×900, 32 s,
   768 images, image-clé toutes les 12 images) ; affiche `public/soie-poster.jpg` tirée de sa
   première image. En cas de scrubbing saccadé, la version tout-intra

@@ -1,9 +1,9 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-// Déployé sur GitHub Pages : https://agence-woop.github.io/vestia-landing
+// Servi à la racine du domaine : https://vestia.ca (GitHub Pages, domaine
+// personnalisé — déploiement via .github/workflows/deploy.yml)
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://agence-woop.github.io',
-  base: '/vestia-landing',
+  site: 'https://vestia.ca',
 });

@@ -19,8 +19,7 @@ const {
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 /* Partage (Open Graph / Twitter) : les plateformes exigent des URL
-   absolues. Elles se construisent depuis `site` (astro.config.mjs) —
-   à mettre à jour lors du branchement du domaine vestia.ca. */
+   absolues, construites depuis `site` (astro.config.mjs). */
 const urlCanonique = new URL(Astro.url.pathname, Astro.site).href;
 const imagePartage = new URL(`${base}/og-vestia.jpg`, Astro.site).href;
 const altPartage = 'Vestia — Repassage et cueillette à domicile';
@@ -33,6 +32,12 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <!-- À RETIRER AU LANCEMENT : le site entier reste non indexable
+         jusqu'à l'ouverture officielle (robots.txt fait de même). Le
+         noindex par page ci-dessous (prop `noindex`, /reserver)
+         reprendra alors son rôle. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- Fin du bloc à retirer au lancement -->
     {noindex && <meta name="robots" content="noindex" />}
 
     <!-- Partage — image unique 1200×630 pour tout le site -->

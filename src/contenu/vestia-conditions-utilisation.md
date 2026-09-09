@@ -82,7 +82,7 @@ Rien dans les présentes conditions ne limite les droits que vous confèrent les
 
 ## 10. Vos renseignements personnels
 
-Les renseignements recueillis dans le cadre du service (coordonnées, adresse, historique de commandes) sont traités conformément à notre [Politique de confidentialité](/vestia-landing/politique-de-confidentialite/), dans le respect de la Loi 25.
+Les renseignements recueillis dans le cadre du service (coordonnées, adresse, historique de commandes) sont traités conformément à notre [Politique de confidentialité](/politique-de-confidentialite/), dans le respect de la Loi 25.
 
 ## 11. Modifications
 
