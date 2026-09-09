@@ -522,16 +522,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       return;
     }
     gaCharge = true;
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
-    document.head.appendChild(s);
     const w = window as any;
+    /* L'amorce officielle d'abord, indépendante du chargement réseau :
+       les appels s'empilent dans dataLayer et gtag.js les consomme à
+       son arrivée. gtag doit empiler l'objet `arguments` lui-même —
+       jamais un tableau, que la bibliothèque ignorerait. */
     w.dataLayer = w.dataLayer || [];
-    const gtag = (...args: unknown[]) => {
-      w.dataLayer.push(args);
-    };
-    w.gtag = w.gtag || gtag;
+    w.gtag =
+      w.gtag ||
+      function () {
+        // eslint-disable-next-line prefer-rest-params
+        w.dataLayer.push(arguments);
+      };
     w.gtag('js', new Date());
     /* IP anonymisée, aucun signal publicitaire supplémentaire */
     w.gtag('config', GA4_MEASUREMENT_ID, {
@@ -539,6 +541,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       allow_google_signals: false,
       allow_ad_personalization_signals: false,
     });
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
+    document.head.appendChild(s);
   }
 
   function chargerMeta() {
@@ -549,22 +555,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     }
     metaCharge = true;
     const w = window as any;
+    /* La file d'attente du snippet officiel : fbq empile l'objet
+       `arguments` lui-même (jamais un tableau) et fbevents.js
+       consomme la file à son arrivée */
     if (!w.fbq) {
-      const n: any = (w.fbq = (...args: unknown[]) => {
-        n.callMethod ? n.callMethod(...args) : n.queue.push(args);
-      });
+      const n: any = function () {
+        // eslint-disable-next-line prefer-rest-params
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      w.fbq = n;
       if (!w._fbq) w._fbq = n;
       n.push = n;
       n.loaded = true;
       n.version = '2.0';
       n.queue = [];
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      document.head.appendChild(s);
     }
     w.fbq('init', META_PIXEL_ID);
     w.fbq('track', 'PageView');
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(s);
   }
 
   /* Suppression au mieux des témoins d'une catégorie retirée */
