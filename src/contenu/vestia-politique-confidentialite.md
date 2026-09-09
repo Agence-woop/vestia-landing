@@ -49,11 +49,11 @@ Vos renseignements sont conservés dans nos outils de gestion: les formulaires d
 
 Notre site utilise ou peut utiliser des témoins (cookies) et technologies similaires:
 
-- **Témoins nécessaires** au fonctionnement du site, qui ne requièrent pas de consentement;
-- **Témoins de mesure d'audience** (Google Analytics), pour comprendre la fréquentation du site;
-- **Témoins publicitaires** (Meta), pour mesurer l'efficacité de nos communications.
+- **Témoins essentiels** au fonctionnement du site, qui ne requièrent pas de consentement. Votre préférence de consentement elle-même est mémorisée dans le stockage local de votre navigateur (`vestia-consent`), pour une durée de 12 mois;
+- **Témoins de mesure d'audience** — Google Analytics 4 (`_ga`, `_ga_*`), pour comprendre la fréquentation du site. Durée maximale de 13 mois. Les données recueillies sont susceptibles d'être traitées à l'extérieur du Québec par Google;
+- **Témoins publicitaires** — pixel Meta (`_fbp`), pour mesurer l'efficacité de nos communications. Les données recueillies sont susceptibles d'être traitées à l'extérieur du Québec par Meta.
 
-Les témoins non nécessaires ne sont déposés qu'avec votre consentement, recueilli par la bannière prévue à cet effet. Vous pouvez modifier vos choix en tout temps via le lien « Gérer les témoins » au bas du site. Refuser les témoins n'affecte en rien votre accès au service.
+Les témoins non essentiels ne sont déposés qu'avec votre consentement, recueilli par la bannière prévue à cet effet. Vous pouvez modifier vos choix ou retirer votre consentement en tout temps via le lien « Gérer les témoins » au bas du site. Refuser les témoins n'affecte en rien votre accès au service.
 
 ## 7. Durée de conservation
 
