@@ -9,5 +9,5 @@
 /* Identifiant de mesure Google Analytics 4 du compte Vestia */
 export const GA4_MEASUREMENT_ID = 'G-GCY9R2HMLC';
 
-/* TODO : identifiant du pixel Meta */
-export const META_PIXEL_ID = '000000000000000';
+/* Identifiant du pixel Meta du compte Vestia */
+export const META_PIXEL_ID = '2376276906236726';
