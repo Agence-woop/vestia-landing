@@ -1,0 +1,596 @@
+---
+/*
+ * Gestion du consentement aux témoins (Loi 25) — solution maison.
+ * Bannière flottante en coin inférieur gauche à la première visite,
+ * modale de personnalisation (aussi ouverte par « Gérer les témoins »
+ * du footer), stockage local horodaté et versionné, et chargeur
+ * conditionnel des tags (GA4, pixel Meta) : aucun script tiers ne
+ * part avant un consentement explicite. Refuser vaut accepter — même
+ * poids visuel, même nombre de clics — et un refus est un choix
+ * enregistré. Inclus par Base.astro sur toutes les pages.
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<div class="temoins-banniere" id="t-banniere" hidden>
+  <h2 class="t-titre">Témoins de navigation</h2>
+  <p class="t-texte">
+    Vestia utilise des témoins essentiels au fonctionnement du site, ainsi que des témoins de
+    mesure d'audience et de publicité, déposés uniquement avec votre consentement. Vous pouvez
+    modifier votre choix en tout temps depuis le lien «&nbsp;Gérer les témoins&nbsp;» au bas de
+    la page.
+  </p>
+  <p class="t-politique">
+    <a href={`${base}/politique-de-confidentialite`}>Politique de confidentialité</a>
+  </p>
+  <div class="t-actions">
+    <button type="button" class="btn-secondaire" id="t-accepter">Tout accepter</button>
+    <button type="button" class="btn-secondaire" id="t-refuser">Tout refuser</button>
+  </div>
+  <button type="button" class="t-personnaliser" id="t-personnaliser">Personnaliser</button>
+</div>
+
+<div class="temoins-voile" id="t-voile" hidden>
+  <div
+    class="temoins-modale"
+    id="t-modale"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="t-modale-titre"
+  >
+    <button type="button" class="t-fermer" id="t-fermer" aria-label="Fermer">×</button>
+    <h2 class="t-titre" id="t-modale-titre">Gérer les témoins</h2>
+
+    <div class="t-categorie">
+      <div class="t-cat-tete">
+        <h3>Témoins essentiels</h3>
+        <button type="button" class="t-inter verrou" role="switch" aria-checked="true" disabled>
+          <span class="t-bille"></span>
+        </button>
+      </div>
+      <p>
+        Nécessaires au fonctionnement du site, dont la mémorisation de vos préférences de
+        témoins. Toujours actifs.
+      </p>
+    </div>
+
+    <div class="t-categorie">
+      <div class="t-cat-tete">
+        <h3 id="t-lib-analytics">Mesure d'audience</h3>
+        <button
+          type="button"
+          class="t-inter"
+          id="t-sw-analytics"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="t-lib-analytics"
+        >
+          <span class="t-bille"></span>
+        </button>
+      </div>
+      <p>Nous aident à comprendre la fréquentation du site (Google Analytics). Désactivé par défaut.</p>
+    </div>
+
+    <div class="t-categorie">
+      <div class="t-cat-tete">
+        <h3 id="t-lib-marketing">Publicité et médias sociaux</h3>
+        <button
+          type="button"
+          class="t-inter"
+          id="t-sw-marketing"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="t-lib-marketing"
+        >
+          <span class="t-bille"></span>
+        </button>
+      </div>
+      <p>Permettent de mesurer l'efficacité de nos communications (Meta). Désactivé par défaut.</p>
+    </div>
+
+    <p class="t-note" id="t-note" hidden>Le retrait prend effet au prochain chargement de page.</p>
+
+    <div class="t-actions t-actions-modale">
+      <button type="button" class="btn-secondaire" id="t-enregistrer">Enregistrer mes choix</button>
+      <button type="button" class="btn-secondaire" id="t-m-accepter">Tout accepter</button>
+      <button type="button" class="btn-secondaire" id="t-m-refuser">Tout refuser</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* La carte et la modale vivent hors des sections : les valeurs nuit
+     y sont imposées localement, quel que soit le thème */
+  .temoins-banniere,
+  .temoins-modale {
+    --texte: #faf7f0;
+    --or-trait: #c4a03c;
+    --filet: rgba(250, 247, 240, 0.14);
+
+    background-color: #091e35;
+    border: 1px solid #c4a03c;
+    border-radius: var(--rayon-tuile);
+    box-shadow: 0 18px 48px rgba(4, 14, 26, 0.5);
+    color: var(--texte);
+    font-family: var(--police-courant);
+  }
+
+  /* ---------- la bannière flottante ---------- */
+  .temoins-banniere {
+    position: fixed;
+    left: 24px;
+    bottom: 24px;
+    z-index: 60;
+    max-width: 400px;
+    padding: 1.4rem 1.5rem 1.2rem;
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.35s ease,
+      transform 0.35s ease;
+  }
+
+  .temoins-banniere.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Mobile : carte compacte ancrée en bas, jamais bord à bord */
+  @media (max-width: 48rem) {
+    .temoins-banniere {
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      max-width: none;
+    }
+
+    .t-actions {
+      flex-direction: column;
+    }
+
+    .t-actions .btn-secondaire {
+      width: 100%;
+    }
+  }
+
+  .t-titre {
+    font-family: var(--police-voix);
+    font-weight: 400;
+    font-size: 1.25rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .t-texte,
+  .t-categorie p {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    opacity: 0.9;
+  }
+
+  .t-politique {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .t-politique a,
+  .t-personnaliser {
+    color: var(--texte);
+    opacity: 0.9;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: opacity 0.3s ease;
+  }
+
+  .t-politique a:hover,
+  .t-politique a:focus-visible,
+  .t-personnaliser:hover,
+  .t-personnaliser:focus-visible {
+    opacity: 1;
+  }
+
+  /* « Tout accepter » et « Tout refuser » : même poids, même taille */
+  .t-actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+  }
+
+  .t-actions .btn-secondaire {
+    flex: 1;
+    text-align: center;
+    padding-inline: 1rem;
+    white-space: nowrap;
+  }
+
+  .t-personnaliser {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  /* ---------- la modale ---------- */
+  .temoins-voile {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(4, 14, 26, 0.6);
+  }
+
+  /* display: flex l'emporterait sinon sur l'attribut hidden */
+  .temoins-voile[hidden] {
+    display: none;
+  }
+
+  .temoins-modale {
+    position: relative;
+    width: min(30rem, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1.6rem 1.7rem 1.4rem;
+  }
+
+  .t-fermer {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.9rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--texte);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0.3rem;
+    transition: opacity 0.3s ease;
+  }
+
+  .t-fermer:hover,
+  .t-fermer:focus-visible {
+    opacity: 1;
+  }
+
+  .t-categorie {
+    margin-top: 1.1rem;
+  }
+
+  .t-cat-tete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .t-categorie h3 {
+    font-family: var(--police-courant);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--or-trait);
+  }
+
+  .t-categorie p {
+    margin-top: 0.35rem;
+    max-width: 46ch;
+  }
+
+  /* ---------- les interrupteurs ---------- */
+  .t-inter {
+    flex-shrink: 0;
+    width: 2.6rem;
+    height: 1.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--filet);
+    background: rgba(250, 247, 240, 0.08);
+    position: relative;
+    cursor: pointer;
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .t-bille {
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: rgba(250, 247, 240, 0.75);
+    transform: translateY(-50%);
+    transition:
+      left 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .t-inter[aria-checked='true'] {
+    background: rgba(196, 160, 60, 0.35);
+    border-color: var(--or-trait);
+  }
+
+  .t-inter[aria-checked='true'] .t-bille {
+    left: calc(100% - 1rem - 3px);
+    background: var(--or-trait);
+  }
+
+  /* L'essentiel, verrouillé : visuellement distinct, non interactif */
+  .t-inter.verrou {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .t-inter:focus-visible,
+  .t-fermer:focus-visible,
+  .t-personnaliser:focus-visible {
+    outline: 1px solid var(--or-trait);
+    outline-offset: 3px;
+  }
+
+  .t-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--or-trait);
+  }
+
+  .t-actions-modale {
+    flex-wrap: wrap;
+  }
+
+  .t-actions-modale .btn-secondaire {
+    flex: 1 1 auto;
+  }
+</style>
+
+<script>
+  import { GA4_MEASUREMENT_ID, META_PIXEL_ID } from '../config/mesure';
+
+  /* ================= consentement ================= */
+  const VERSION = 1;
+  const CLE = 'vestia-consent';
+  const DOUZE_MOIS = 365 * 24 * 60 * 60 * 1000;
+
+  type Consentement = { analytics: boolean; marketing: boolean };
+
+  function getConsent(): Consentement | null {
+    try {
+      const d = JSON.parse(localStorage.getItem(CLE) ?? 'null');
+      if (!d || d.version !== VERSION || !d.timestamp) return null;
+      if (Date.now() - Date.parse(d.timestamp) > DOUZE_MOIS) return null;
+      return { analytics: Boolean(d.analytics), marketing: Boolean(d.marketing) };
+    } catch {
+      return null;
+    }
+  }
+
+  function setConsent(partiel: Partial<Consentement>) {
+    const courant = getConsent() ?? { analytics: false, marketing: false };
+    const donnees = {
+      version: VERSION,
+      timestamp: new Date().toISOString(),
+      ...courant,
+      ...partiel,
+    };
+    try {
+      localStorage.setItem(CLE, JSON.stringify(donnees));
+    } catch {
+      /* stockage indisponible : le choix vaut pour la page en cours */
+    }
+    document.dispatchEvent(
+      new CustomEvent('vestia:consent-updated', {
+        detail: { analytics: donnees.analytics, marketing: donnees.marketing },
+      })
+    );
+  }
+
+  /* ================= éléments ================= */
+  const $ = (s: string) => document.querySelector(s) as HTMLElement;
+  const banniere = $('#t-banniere');
+  const voile = $('#t-voile');
+  const modale = $('#t-modale');
+  const note = $('#t-note');
+  const swAnalytics = $('#t-sw-analytics');
+  const swMarketing = $('#t-sw-marketing');
+
+  /* ================= bannière ================= */
+  function montrerBanniere() {
+    banniere.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => banniere.classList.add('visible')));
+  }
+
+  function masquerBanniere() {
+    if (banniere.hidden) return;
+    banniere.classList.remove('visible');
+    window.setTimeout(() => {
+      banniere.hidden = true;
+    }, 380);
+  }
+
+  /* ================= modale ================= */
+  let declencheur: HTMLElement | null = null;
+
+  const coche = (sw: HTMLElement) => sw.getAttribute('aria-checked') === 'true';
+  const poser = (sw: HTMLElement, v: boolean) => sw.setAttribute('aria-checked', String(v));
+
+  /* La note de retrait apparaît dès qu'une catégorie acceptée est
+     décochée — visible avant l'enregistrement */
+  function majNote() {
+    const stocke = getConsent() ?? { analytics: false, marketing: false };
+    note.hidden = !(
+      (stocke.analytics && !coche(swAnalytics)) ||
+      (stocke.marketing && !coche(swMarketing))
+    );
+  }
+
+  function ouvrirModale() {
+    declencheur = document.activeElement as HTMLElement | null;
+    const c = getConsent() ?? { analytics: false, marketing: false };
+    poser(swAnalytics, c.analytics);
+    poser(swMarketing, c.marketing);
+    note.hidden = true;
+    voile.hidden = false;
+    ($('#t-fermer') as HTMLButtonElement).focus();
+    document.addEventListener('keydown', clavierModale);
+  }
+
+  function fermerModale() {
+    voile.hidden = true;
+    document.removeEventListener('keydown', clavierModale);
+    declencheur?.focus();
+  }
+
+  /* Piège de focus + Échap */
+  function clavierModale(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      fermerModale();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const focusables = Array.from(
+      modale.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]')
+    );
+    const premier = focusables[0];
+    const dernier = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === premier) {
+      e.preventDefault();
+      dernier.focus();
+    } else if (!e.shiftKey && document.activeElement === dernier) {
+      e.preventDefault();
+      premier.focus();
+    }
+  }
+
+  function enregistrer(analytics: boolean, marketing: boolean) {
+    setConsent({ analytics, marketing });
+    fermerModale();
+    masquerBanniere();
+  }
+
+  swAnalytics.addEventListener('click', () => {
+    poser(swAnalytics, !coche(swAnalytics));
+    majNote();
+  });
+  swMarketing.addEventListener('click', () => {
+    poser(swMarketing, !coche(swMarketing));
+    majNote();
+  });
+
+  $('#t-fermer').addEventListener('click', fermerModale);
+  voile.addEventListener('click', (e) => {
+    if (e.target === voile) fermerModale();
+  });
+  $('#t-enregistrer').addEventListener('click', () => enregistrer(coche(swAnalytics), coche(swMarketing)));
+  $('#t-m-accepter').addEventListener('click', () => enregistrer(true, true));
+  $('#t-m-refuser').addEventListener('click', () => enregistrer(false, false));
+
+  $('#t-accepter').addEventListener('click', () => {
+    setConsent({ analytics: true, marketing: true });
+    masquerBanniere();
+  });
+  $('#t-refuser').addEventListener('click', () => {
+    setConsent({ analytics: false, marketing: false });
+    masquerBanniere();
+  });
+  $('#t-personnaliser').addEventListener('click', ouvrirModale);
+
+  /* « Gérer les témoins » du footer, sur toutes les pages */
+  const lienFooter = document.getElementById('gerer-temoins');
+  lienFooter?.addEventListener('click', (e) => {
+    e.preventDefault();
+    ouvrirModale();
+  });
+
+  /* Bannière à la première visite seulement (clé absente, version
+     dépassée ou consentement de plus de 12 mois) */
+  if (getConsent() === null) montrerBanniere();
+
+  /* Module exposé pour les scripts du site */
+  (window as any).vestiaTemoins = { getConsent, setConsent, openManager: ouvrirModale };
+
+  /* ================= chargeur de tags ================= */
+  const gabaritGA = GA4_MEASUREMENT_ID.includes('X');
+  const gabaritMeta = /^0+$/.test(META_PIXEL_ID);
+  let gaCharge = false;
+  let metaCharge = false;
+
+  function chargerGA() {
+    if (gaCharge) return;
+    if (gabaritGA) {
+      if (import.meta.env.DEV) console.warn('Témoins : identifiant GA4 non configuré (gabarit).');
+      return;
+    }
+    gaCharge = true;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
+    document.head.appendChild(s);
+    const w = window as any;
+    w.dataLayer = w.dataLayer || [];
+    const gtag = (...args: unknown[]) => {
+      w.dataLayer.push(args);
+    };
+    w.gtag = w.gtag || gtag;
+    w.gtag('js', new Date());
+    /* IP anonymisée, aucun signal publicitaire supplémentaire */
+    w.gtag('config', GA4_MEASUREMENT_ID, {
+      anonymize_ip: true,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+    });
+  }
+
+  function chargerMeta() {
+    if (metaCharge) return;
+    if (gabaritMeta) {
+      if (import.meta.env.DEV) console.warn('Témoins : identifiant du pixel Meta non configuré (gabarit).');
+      return;
+    }
+    metaCharge = true;
+    const w = window as any;
+    if (!w.fbq) {
+      const n: any = (w.fbq = (...args: unknown[]) => {
+        n.callMethod ? n.callMethod(...args) : n.queue.push(args);
+      });
+      if (!w._fbq) w._fbq = n;
+      n.push = n;
+      n.loaded = true;
+      n.version = '2.0';
+      n.queue = [];
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      document.head.appendChild(s);
+    }
+    w.fbq('init', META_PIXEL_ID);
+    w.fbq('track', 'PageView');
+  }
+
+  /* Suppression au mieux des témoins d'une catégorie retirée */
+  function purgerTemoins(garder: Consentement) {
+    const noms = document.cookie.split(';').map((c) => c.split('=')[0].trim());
+    const aSupprimer = noms.filter(
+      (n) =>
+        (!garder.analytics && (n === '_ga' || n.startsWith('_ga_'))) ||
+        (!garder.marketing && n === '_fbp')
+    );
+    for (const n of aSupprimer) {
+      for (const domaine of ['', `; domain=${location.hostname}`, `; domain=.${location.hostname}`]) {
+        document.cookie = `${n}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domaine}`;
+      }
+    }
+  }
+
+  function appliquer(c: Consentement | null) {
+    if (!c) return;
+    if (c.analytics) chargerGA();
+    if (c.marketing) chargerMeta();
+    purgerTemoins(c);
+  }
+
+  appliquer(getConsent());
+  document.addEventListener('vestia:consent-updated', (e) => {
+    appliquer((e as CustomEvent).detail as Consentement);
+  });
+</script>

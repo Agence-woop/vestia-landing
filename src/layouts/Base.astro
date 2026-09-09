@@ -3,6 +3,7 @@ import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/sections.css';
 import '../styles/lumiere.css';
+import Temoins from '../components/Temoins.astro';
 
 interface Props {
   title?: string;
@@ -90,5 +91,8 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
   </head>
   <body>
     <slot />
+    <!-- Consentement aux témoins (Loi 25) : bannière, modale et
+         chargeur conditionnel des tags — sur toutes les pages -->
+    <Temoins />
   </body>
 </html>

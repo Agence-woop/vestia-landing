@@ -23,6 +23,10 @@ Tous dans `assets-source/` :
 - `src/styles/base.css` — réinitialisation et typographie de base
 - `src/styles/sections.css` — échafaudage commun des sections (champs, bouton secondaire, voile local, surface de tuile `.surface-tuile`, texte champagne `.texte-champagne` dans lumiere.css)
 - `src/layouts/Base.astro` — head commun : meta, polices Google Fonts, script d'initialisation du thème
+- `src/components/Temoins.astro` — consentement aux témoins (Loi 25) : bannière, modale, stockage
+  local `vestia-consent` (12 mois, versionné), événement `vestia:consent-updated`, chargeur
+  conditionnel GA4/Meta ; identifiants dans `src/config/mesure.ts` (gabarits `TODO` — rien ne se
+  charge tant qu'ils ne sont pas remplacés)
 
 ## Décisions prises à l'intégration
 
