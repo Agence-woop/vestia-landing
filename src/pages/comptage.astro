@@ -76,11 +76,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <p class="etiquette texte-champagne">Le client</p>
             <!-- Contact Picker : le bouton n'existe que si l'API existe -->
             <button type="button" class="btn-secondaire" id="c-contact" hidden>Choisir un contact</button>
-            <div class="sous-bloc">
-              <label class="souslabel" for="c-nom">Prénom et nom</label>
-              <input class="champ" type="text" id="c-nom" name="nom" autocomplete="name" />
-              <p class="erreur" aria-live="polite" hidden>Veuillez indiquer le prénom et le nom du client.</p>
+            <div class="duo">
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-prenom">Prénom</label>
+                <input class="champ" type="text" id="c-prenom" name="prenom" autocomplete="given-name" />
+              </div>
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-nom">Nom</label>
+                <input class="champ" type="text" id="c-nom" name="nom" autocomplete="family-name" />
+              </div>
             </div>
+            <p class="erreur" id="c-erreur-nom" aria-live="polite" hidden>Veuillez indiquer le prénom et le nom du client.</p>
             <div class="duo">
               <div class="sous-bloc">
                 <label class="souslabel" for="c-adresse">Adresse</label>
@@ -93,13 +99,25 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             </div>
             <div class="duo">
               <div class="sous-bloc">
+                <label class="souslabel" for="c-code-postal">Code postal</label>
+                <input
+                  class="champ"
+                  type="text"
+                  id="c-code-postal"
+                  name="code-postal"
+                  autocomplete="postal-code"
+                  maxlength="7"
+                  placeholder="H3C 1A1"
+                />
+              </div>
+              <div class="sous-bloc">
                 <label class="souslabel" for="c-tel">Téléphone</label>
                 <input class="champ" type="tel" id="c-tel" name="telephone" autocomplete="tel" />
               </div>
-              <div class="sous-bloc">
-                <label class="souslabel" for="c-quartier">Quartier <span class="optionnel">(optionnel)</span></label>
-                <input class="champ" type="text" id="c-quartier" name="quartier" placeholder="Griffintown" />
-              </div>
+            </div>
+            <div class="sous-bloc">
+              <label class="souslabel" for="c-courriel">Courriel <span class="optionnel">(optionnel)</span></label>
+              <input class="champ" type="email" id="c-courriel" name="courriel" autocomplete="email" inputmode="email" />
             </div>
           </div>
 
@@ -135,6 +153,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <legend class="etiquette texte-champagne">Paiement attendu</legend>
             <div class="capsules" data-groupe="paiement">
               <label><input type="radio" name="paiement" value="Interac" checked /><span>Interac</span></label>
+              <label><input type="radio" name="paiement" value="Carte débit" /><span>Carte débit</span></label>
+              <label><input type="radio" name="paiement" value="Carte crédit" /><span>Carte crédit</span></label>
               <label><input type="radio" name="paiement" value="Comptant" /><span>Comptant</span></label>
             </div>
           </fieldset>
@@ -271,21 +291,39 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         boutonContact.hidden = false;
         boutonContact.addEventListener('click', async () => {
           try {
-            const [contact] = await (navigator as any).contacts.select(['name', 'tel', 'address'], {
-              multiple: false,
-            });
+            const [contact] = await (navigator as any).contacts.select(
+              ['name', 'tel', 'email', 'address'],
+              { multiple: false }
+            );
             if (!contact) return;
-            if (contact.name?.[0]) ($('#c-nom') as HTMLInputElement).value = contact.name[0];
+            /* L'API rend le nom en bloc : premier segment en prénom, le
+               reste en nom — les deux champs restent modifiables */
+            if (contact.name?.[0]) {
+              const segments = contact.name[0].trim().split(/\s+/);
+              ($('#c-prenom') as HTMLInputElement).value = segments[0] || '';
+              ($('#c-nom') as HTMLInputElement).value = segments.slice(1).join(' ');
+            }
             if (contact.tel?.[0]) ($('#c-tel') as HTMLInputElement).value = contact.tel[0];
+            if (contact.email?.[0]) ($('#c-courriel') as HTMLInputElement).value = contact.email[0];
             const adr = contact.address?.[0];
             if (adr) {
               ($('#c-adresse') as HTMLInputElement).value = (adr.addressLine || []).join(', ');
+              if (adr.postalCode) ($('#c-code-postal') as HTMLInputElement).value = adr.postalCode;
             }
           } catch {
             /* Sélection annulée : rien à faire */
           }
         });
       }
+
+      /* Code postal québécois : majuscules et espace médian posés au fil
+         de la saisie — mise en forme de confort, jamais bloquante */
+      const codePostal = $('#c-code-postal') as HTMLInputElement;
+      codePostal.addEventListener('input', () => {
+        let v = codePostal.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+        if (v.length > 3) v = `${v.slice(0, 3)} ${v.slice(3)}`;
+        codePostal.value = v;
+      });
 
       /* ================= Signature ================= */
       /* Les tracés sont mémorisés en points : rendus ivoire à l'écran
@@ -413,15 +451,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           const d = donneesCueillette;
           $('#c-mode').textContent = 'Livraison retour';
           $('#c-titre').textContent = 'Bordereau — livraison retour';
+          ($('#c-prenom') as HTMLInputElement).value = d.prenom || '';
           ($('#c-nom') as HTMLInputElement).value = d.nom || '';
           ($('#c-adresse') as HTMLInputElement).value = d.adresse || '';
           ($('#c-app') as HTMLInputElement).value = d.appartement || '';
+          ($('#c-code-postal') as HTMLInputElement).value = d.codePostal || '';
           ($('#c-tel') as HTMLInputElement).value = d.telephone || '';
-          ($('#c-quartier') as HTMLInputElement).value = d.quartier || '';
+          ($('#c-courriel') as HTMLInputElement).value = d.courriel || '';
           ($('#c-notes') as HTMLTextAreaElement).value = d.notes || '';
-          const paiement = document.querySelector(
-            `input[name="paiement"][value="${d.paiement === 'Comptant' ? 'Comptant' : 'Interac'}"]`
-          ) as HTMLInputElement;
+          const paiement = Array.from(
+            document.querySelectorAll('input[name="paiement"]') as NodeListOf<HTMLInputElement>
+          ).find((r) => r.value === d.paiement);
           if (paiement) paiement.checked = true;
           quantitesCueillette = (d.quantites || []).slice();
           (d.quantites || []).forEach((q: number, i: number) => (quantites[i] = q || 0));
@@ -448,11 +488,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       /* ================= Génération et partage ================= */
       const lireChamps = () => ({
+        prenom: ($('#c-prenom') as HTMLInputElement).value.trim(),
         nom: ($('#c-nom') as HTMLInputElement).value.trim(),
         adresse: ($('#c-adresse') as HTMLInputElement).value.trim(),
         appartement: ($('#c-app') as HTMLInputElement).value.trim(),
+        codePostal: ($('#c-code-postal') as HTMLInputElement).value.trim(),
         telephone: ($('#c-tel') as HTMLInputElement).value.trim(),
-        quartier: ($('#c-quartier') as HTMLInputElement).value.trim(),
+        courriel: ($('#c-courriel') as HTMLInputElement).value.trim(),
         notes: ($('#c-notes') as HTMLTextAreaElement).value.trim(),
         paiement:
           (document.querySelector('input[name="paiement"]:checked') as HTMLInputElement)?.value ||
@@ -482,8 +524,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         const pieces = quantites.reduce((s, n) => s + n, 0);
 
         let valide = true;
-        ($('#c-nom').parentElement!.querySelector('.erreur') as HTMLElement).hidden = !!champs.nom;
-        if (!champs.nom) valide = false;
+        const nomComplet = !!champs.prenom && !!champs.nom;
+        ($('#c-erreur-nom') as HTMLElement).hidden = nomComplet;
+        if (!nomComplet) valide = false;
         ($('#c-erreur-pieces') as HTMLElement).hidden = pieces > 0;
         if (pieces === 0) valide = false;
         ($('#c-erreur-signature') as HTMLElement).hidden = !signature.vide();
@@ -510,7 +553,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             signatureCueillette: donnees.signatureCueillette,
             lienReprise: lien,
           });
-          await partager(blob, `CUEILLETTE - Bordereau comptage - ${champs.nom}.pdf`);
+          await partager(blob, `CUEILLETTE - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`);
           ($('#c-lien') as HTMLInputElement).value = lien;
           ($('#c-reprise') as HTMLElement).hidden = false;
         } else {
@@ -526,7 +569,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             horodatageRetour: maintenant,
             signatureRetour: signature.exporter(),
           });
-          await partager(blob, `LIVRAISON RETOUR - Bordereau comptage - ${champs.nom}.pdf`);
+          await partager(blob, `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`);
         }
       });
 
@@ -795,10 +838,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         color: var(--or-trait);
       }
 
+      /* L'avertissement du minimum : le rose carmin des erreurs de
+         formulaire (comme /reserver) — il informe sans bloquer */
       .avert {
         margin-top: 0.7rem;
         font-size: 0.9rem;
-        color: var(--or-trait);
+        color: var(--erreur);
         opacity: 0.9;
       }
 
