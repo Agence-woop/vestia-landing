@@ -132,7 +132,9 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFontSize(7.2);
   doc.setTextColor(OCRE);
   texteEspace(doc, 'CLIENT', MARGE, 150, 1.8);
-  texteEspace(doc, 'PAIEMENT ATTENDU', 356, 150, 1.8);
+  /* À la cueillette le paiement est attendu ; à la livraison, c'est le
+     mode retenu — même traitement visuel */
+  texteEspace(doc, d.mode === 'retour' ? 'MODE DE PAIEMENT' : 'PAIEMENT ATTENDU', 356, 150, 1.8);
 
   doc.setTextColor(NUIT);
   doc.setFontSize(10.5);
@@ -236,11 +238,15 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setTextColor(OCRE);
   doc.text(formaterMontant(montantFinal), colSousTotal, y - 6, { align: 'right' });
 
-  y += 14;
   doc.setFont('Baskerville', 'italic');
   doc.setFontSize(8);
   doc.setTextColor(GRIS);
-  doc.text('Montant estimé, sous réserve que toutes les pièces puissent être traitées.', MARGE + 12, y);
+  /* La réserve n'a de sens qu'à la cueillette : au retour, les
+     quantités sont ajustées et le montant est définitif */
+  if (d.mode !== 'retour') {
+    y += 14;
+    doc.text('Montant estimé, sous réserve que toutes les pièces puissent être traitées.', MARGE + 12, y);
+  }
 
   /* Écart de compte au retour, en toutes lettres */
   if (anciennes) {
