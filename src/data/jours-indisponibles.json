@@ -1,5 +1,14 @@
 {
-  "note": "Dates non réservables. Format AAAA-MM-JJ. Retirer les dates passées de temps en temps.",
-  "feries": ["2026-09-07"],
-  "complets": ["2026-09-09"]
+  "note": "Dates où aucune cueillette n'est possible. Pour ajouter une date, inscrivez-la entre guillemets au format AAAA-MM-JJ (exemple : \"2027-10-11\"), séparée des autres par une virgule. « feries » : jours fériés où Vestia ne circule pas. « complets » : jours où la limite de cueillettes est atteinte. Une date passée est ignorée par le site et peut rester dans la liste sans aucun effet — la retirer est une simple question de propreté.",
+  "feries": [
+    "2026-10-12",
+    "2026-12-25",
+    "2027-01-01",
+    "2027-03-26",
+    "2027-05-24",
+    "2027-06-24",
+    "2027-07-01",
+    "2027-09-06"
+  ],
+  "complets": []
 }
