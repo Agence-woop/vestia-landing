@@ -74,8 +74,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <!-- ================= Le client ================= -->
           <div class="bloc">
             <p class="etiquette texte-champagne">Le client</p>
-            <!-- Contact Picker : le bouton n'existe que si l'API existe -->
-            <button type="button" class="btn-secondaire" id="c-contact" hidden>Choisir un contact</button>
+            <!-- Le préremplissage passe par la suggestion native d'iOS
+                 (« Préremplir le contact »), déclenchée par les attributs
+                 autocomplete des champs — pas d'API Contact Picker -->
             <div class="duo">
               <div class="sous-bloc">
                 <label class="souslabel" for="c-prenom">Prénom</label>
@@ -94,7 +95,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
               </div>
               <div class="sous-bloc">
                 <label class="souslabel" for="c-app">Appartement <span class="optionnel">(optionnel)</span></label>
-                <input class="champ" type="text" id="c-app" name="appartement" />
+                <input class="champ" type="text" id="c-app" name="appartement" autocomplete="address-line2" />
               </div>
             </div>
             <div class="duo">
@@ -131,6 +132,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                     <div class="cat-infos">
                       <p class="cat-nom">{cat.nom}</p>
                       <p class="cat-prix">{cat.prix}&nbsp;$ la pièce</p>
+                      <p class="cat-vetements">{cat.vetements}</p>
                     </div>
                     <div class="pas" data-cat={i}>
                       <button type="button" class="pas-btn moins" aria-label={`Retirer une ${cat.nom.toLowerCase()}`}>−</button>
@@ -282,39 +284,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           majTotaux();
         });
       });
-
-      /* ================= Contact Picker ================= */
-      /* Détection stricte : sans l'API, le bouton n'apparaît pas et la
-         saisie reste manuelle (les autocomplete natifs font le reste) */
-      const boutonContact = $('#c-contact') as HTMLButtonElement;
-      if ('contacts' in navigator && 'ContactsManager' in window) {
-        boutonContact.hidden = false;
-        boutonContact.addEventListener('click', async () => {
-          try {
-            const [contact] = await (navigator as any).contacts.select(
-              ['name', 'tel', 'email', 'address'],
-              { multiple: false }
-            );
-            if (!contact) return;
-            /* L'API rend le nom en bloc : premier segment en prénom, le
-               reste en nom — les deux champs restent modifiables */
-            if (contact.name?.[0]) {
-              const segments = contact.name[0].trim().split(/\s+/);
-              ($('#c-prenom') as HTMLInputElement).value = segments[0] || '';
-              ($('#c-nom') as HTMLInputElement).value = segments.slice(1).join(' ');
-            }
-            if (contact.tel?.[0]) ($('#c-tel') as HTMLInputElement).value = contact.tel[0];
-            if (contact.email?.[0]) ($('#c-courriel') as HTMLInputElement).value = contact.email[0];
-            const adr = contact.address?.[0];
-            if (adr) {
-              ($('#c-adresse') as HTMLInputElement).value = (adr.addressLine || []).join(', ');
-              if (adr.postalCode) ($('#c-code-postal') as HTMLInputElement).value = adr.postalCode;
-            }
-          } catch {
-            /* Sélection annulée : rien à faire */
-          }
-        });
-      }
 
       /* Code postal québécois : majuscules et espace médian posés au fil
          de la saisie — mise en forme de confort, jamais bloquante */
@@ -674,12 +643,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         margin-bottom: 0.6rem;
       }
 
-      /* Le display du bouton secondaire l'emporterait sur l'attribut
-         hidden : sans l'API Contact Picker, le bouton n'existe pas */
-      #c-contact[hidden] {
-        display: none;
-      }
-
       .souslabel {
         display: block;
         font-size: 0.72rem;
@@ -788,6 +751,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         font-size: 0.75rem;
         opacity: 0.65;
         margin-top: 0.15rem;
+      }
+
+      /* Aide-mémoire des vêtements : annotation discrète sous le prix,
+         reprise telle quelle des tuiles tarifaires de l'accueil —
+         hiérarchie : catégorie > prix unitaire > liste */
+      .cat-vetements {
+        font-size: 0.68rem;
+        line-height: 1.45;
+        opacity: 0.45;
+        margin-top: 0.2rem;
       }
 
       .pas {
