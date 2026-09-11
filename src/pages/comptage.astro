@@ -148,6 +148,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
               Le compte est sous le minimum de {MINIMUM_PIECES} pièces.
             </p>
             <p class="erreur" id="c-erreur-pieces" aria-live="polite" hidden>Veuillez compter au moins une pièce.</p>
+            <!-- Mode retour, quantité réduite : la raison du non-traitement,
+                 toujours facultative — la pièce est rendue, pas facturée -->
+            <div class="sous-bloc" id="c-motif-bloc" hidden>
+              <label class="souslabel" for="c-motif">Motif du non-traitement <span class="optionnel">(optionnel)</span></label>
+              <input class="champ" type="text" id="c-motif" placeholder="Tache non traitable, matière délicate…" />
+            </div>
           </div>
 
           <!-- ================= Paiement attendu ================= -->
@@ -273,6 +279,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         $('#c-total-montant').textContent = formaterMontant(montant);
         ($('#c-minimum') as HTMLElement).hidden = !(pieces > 0 && pieces < MINIMUM_PIECES);
         if (pieces > 0) ($('#c-erreur-pieces') as HTMLElement).hidden = true;
+        /* Le motif de non-traitement n'existe qu'au retour, quand au
+           moins une quantité est ajustée à la baisse */
+        const baisse =
+          !!quantitesCueillette && quantites.some((q, i) => q < (quantitesCueillette![i] ?? 0));
+        ($('#c-motif-bloc') as HTMLElement).hidden = !baisse;
       }
       document.querySelectorAll('.pas').forEach((pas, i) => {
         pas.querySelector('.moins')!.addEventListener('click', () => {
@@ -561,6 +572,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             signatureCueillette: d.signatureCueillette,
             horodatageRetour: maintenant,
             signatureRetour: signature.exporter(),
+            motif: ($('#c-motif-bloc') as HTMLElement).hidden
+              ? ''
+              : ($('#c-motif') as HTMLInputElement).value.trim(),
           });
           await partager(blob, `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`);
         }

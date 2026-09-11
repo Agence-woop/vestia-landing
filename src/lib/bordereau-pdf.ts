@@ -37,8 +37,14 @@ export interface DonneesBordereau {
   signatureCueillette: string; /* PNG (data URL), encre nuit sur fond transparent */
   horodatageRetour?: string;
   signatureRetour?: string;
+  /* Mode retour : raison facultative d'un non-traitement */
+  motif?: string;
   lienReprise?: string;
 }
+
+/* Accord en nombre : « 1 pièce confiée », « 2 pièces confiées » */
+const accorder = (n: number, singulier: string, pluriel: string) =>
+  `${n} ${n > 1 ? pluriel : singulier}`;
 
 /* Palette de la maquette */
 const CREME = '#FAF6EE';
@@ -156,8 +162,18 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   /* ---------- Tableau des pièces ---------- */
   const tableauY = Math.max(226, 183 + lignesClient.length * 14 + 26);
   const colQte = 348;
+  const colConfiees = 320;
+  const colTraitees = 388;
   const colUnite = 448;
   const colSousTotal = DROITE - 12;
+
+  /* Les pièces confiées sont toutes rendues ; seules les pièces
+     traitées sont facturées. Le dédoublement CONFIÉES / TRAITÉES
+     n'apparaît qu'au retour, et seulement si un compte a été ajusté —
+     partout ailleurs, la colonne QTÉ unique suffit. */
+  const anciennes = d.quantitesCueillette;
+  const ajuste =
+    !!anciennes && CATEGORIES.some((_, i) => (anciennes[i] ?? 0) !== (d.quantites[i] ?? 0));
 
   doc.setFillColor(NUIT);
   doc.rect(MARGE, tableauY, DROITE - MARGE, 24, 'F');
@@ -165,14 +181,18 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFontSize(7.2);
   doc.setTextColor(CREME);
   texteEspace(doc, 'CATÉGORIE', MARGE + 12, tableauY + 15, 1.8);
-  texteEspace(doc, 'QTÉ', colQte, tableauY + 15, 1.8, true);
+  if (ajuste) {
+    texteEspace(doc, 'CONFIÉES', colConfiees, tableauY + 15, 1.8, true);
+    texteEspace(doc, 'TRAITÉES', colTraitees, tableauY + 15, 1.8, true);
+  } else {
+    texteEspace(doc, 'QTÉ', colQte, tableauY + 15, 1.8, true);
+  }
   texteEspace(doc, 'UNITÉ', colUnite, tableauY + 15, 1.8, true);
   texteEspace(doc, 'SOUS-TOTAL', colSousTotal, tableauY + 15, 1.8, true);
 
   /* Une ligne par catégorie ayant une quantité non nulle — au retour,
      une catégorie comptée à la cueillette reste visible même ramenée
      à zéro, pour que l'écart se lise */
-  const anciennes = d.quantitesCueillette;
   let y = tableauY + 24;
   let totalPieces = 0;
   let montant = 0;
@@ -188,8 +208,12 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     doc.setFontSize(10);
     doc.setTextColor(NUIT);
     doc.text(cat.nom, MARGE + 12, y - 8);
-    const qteTexte = anciennes && avant !== qte ? `${avant} → ${qte}` : String(qte);
-    doc.text(qteTexte, colQte, y - 8, { align: 'right' });
+    if (ajuste) {
+      doc.text(String(avant), colConfiees, y - 8, { align: 'right' });
+      doc.text(String(qte), colTraitees, y - 8, { align: 'right' });
+    } else {
+      doc.text(String(qte), colQte, y - 8, { align: 'right' });
+    }
     doc.text(formaterMontant(cat.prix), colUnite, y - 8, { align: 'right' });
     doc.text(formaterMontant(qte * cat.prix), colSousTotal, y - 8, { align: 'right' });
 
@@ -225,7 +249,9 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(NUIT);
-  const pieces = `${totalPieces} ${totalPieces > 1 ? 'pièces' : 'pièce'}`;
+  const pieces = ajuste
+    ? accorder(totalPieces, 'pièce traitée', 'pièces traitées')
+    : accorder(totalPieces, 'pièce', 'pièces');
   doc.text(pieces, MARGE + 12, y - 8);
   if (TAXES.inscrit) {
     doc.setFont('Montserrat', 'normal');
@@ -248,16 +274,26 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     doc.text('Montant estimé, sous réserve que toutes les pièces puissent être traitées.', MARGE + 12, y);
   }
 
-  /* Écart de compte au retour, en toutes lettres */
-  if (anciennes) {
-    const piecesCueillette = anciennes.reduce((s, n) => s + n, 0);
-    if (piecesCueillette !== totalPieces) {
-      y += 14;
-      doc.text(
-        `Compte ajusté au retour — cueillette : ${piecesCueillette} pièces · retour : ${totalPieces} pièces.`,
-        MARGE + 12,
-        y
+  /* Synthèse du retour : toutes les pièces confiées sont rendues —
+     celles qui n'ont pas été traitées ne sont simplement pas facturées */
+  if (ajuste && anciennes) {
+    const confiees = anciennes.reduce((s, n) => s + n, 0);
+    const sansTraitement = confiees - totalPieces;
+    const segments = [
+      accorder(confiees, 'pièce confiée', 'pièces confiées'),
+      accorder(totalPieces, 'pièce traitée', 'pièces traitées'),
+    ];
+    if (sansTraitement > 0) {
+      segments.push(
+        accorder(sansTraitement, 'pièce retournée sans traitement', 'pièces retournées sans traitement')
       );
+    }
+    y += 14;
+    doc.text(segments.join(' · '), MARGE + 12, y);
+    /* Le motif, s'il a été précisé — jamais de libellé orphelin */
+    if (d.motif) {
+      y += 12;
+      doc.text(`Motif — ${d.motif}`, MARGE + 12, y);
     }
   }
 
