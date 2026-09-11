@@ -117,14 +117,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                   <p class="cal-voile" id="cal-voile" hidden>Ouverture des cueillettes prochainement</p>
                 </div>
               </div>
-              <div class="legende" id="cal-legende" hidden>
-                <p class="legende-item" id="leg-complet" hidden>
+              <!-- La légende explique la grammaire du calendrier : elle
+                   reste visible quel que soit le mois affiché, même sans
+                   date actuellement marquée -->
+              <div class="legende" id="cal-legende">
+                <p class="legende-item">Les cueillettes s'ouvrent trois semaines à l'avance</p>
+                <p class="legende-item">
                   <span class="marque-complet" aria-hidden="true"></span>
                   <span><strong>Complet</strong> — la limite de cueillettes est atteinte</span>
                 </p>
-                <p class="legende-item" id="leg-ferie" hidden>
+                <p class="legende-item">
                   <span class="marque-ferie" aria-hidden="true"></span>
-                  <span><strong>Fin de semaine ou férié</strong> — Vestia ne circule pas</span>
+                  <span><strong>Férié</strong> — Vestia ne circule pas</span>
                 </p>
               </div>
               <p class="erreur" aria-live="polite" hidden>Veuillez choisir un jour de cueillette.</p>
@@ -1191,8 +1195,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     for (let v = 0; v < decalage; v += 1) grille.appendChild(document.createElement('span'));
 
     const fin = new Date(annee, mois + 1, 0).getDate();
-    let moisAFerie = false;
-    let moisAComplet = false;
     for (let j = 1; j <= fin; j += 1) {
       const date = new Date(annee, mois, j);
       const b = document.createElement('button');
@@ -1222,12 +1224,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         } else if (semaine && FERIES.has(cle(date))) {
           b.setAttribute('aria-label', `${formatLong(date)} — férié`);
           b.setAttribute('aria-disabled', 'true');
-          moisAFerie = true;
         } else if (semaine && COMPLETS.has(cle(date))) {
           b.classList.add('complet');
           b.setAttribute('aria-label', `${formatLong(date)} — complet`);
           b.setAttribute('aria-disabled', 'true');
-          moisAComplet = true;
         }
       } else {
         b.addEventListener('click', () => {
@@ -1245,10 +1245,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       grille.appendChild(b);
     }
 
-    /* Les entrées de légende suivent le mois affiché */
-    ($('#leg-ferie') as HTMLElement).hidden = !moisAFerie;
-    ($('#leg-complet') as HTMLElement).hidden = !moisAComplet;
-    ($('#cal-legende') as HTMLElement).hidden = !(moisAFerie || moisAComplet);
   }
 
   $('#cal-prec').addEventListener('click', () => {
