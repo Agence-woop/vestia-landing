@@ -50,7 +50,7 @@ Vos renseignements sont conservés dans nos outils de gestion: les formulaires d
 Notre site utilise ou peut utiliser des témoins (cookies) et technologies similaires:
 
 - **Témoins essentiels** au fonctionnement du site, qui ne requièrent pas de consentement. Votre préférence de consentement elle-même est mémorisée dans le stockage local de votre navigateur (`vestia-consent`), pour une durée de 12 mois;
-- **Témoins de mesure d'audience** — Google Analytics 4 (`_ga`, `_ga_*`), pour comprendre la fréquentation du site. Durée maximale de 13 mois. Les données recueillies sont susceptibles d'être traitées à l'extérieur du Québec par Google;
+- **Témoins de mesure d'audience** — Google Analytics 4 (`_ga`, `_ga_*`), pour comprendre la fréquentation du site. Votre localisation est déterminée au niveau de la ville, à partir de votre adresse IP; l'adresse elle-même n'est pas conservée, mais la localisation qui en découle l'est. Cette information nous permet d'évaluer d'où proviennent les personnes intéressées à l'extérieur du territoire actuellement desservi, et éclaire nos décisions d'étendre le service à de nouveaux quartiers. Durée maximale de 13 mois. Les données recueillies sont susceptibles d'être traitées à l'extérieur du Québec par Google;
 - **Témoins publicitaires** — pixel Meta (`_fbp`), pour mesurer l'efficacité de nos communications. Les données recueillies sont susceptibles d'être traitées à l'extérieur du Québec par Meta.
 
 Les témoins non essentiels ne sont déposés qu'avec votre consentement, recueilli par la bannière prévue à cet effet. Vous pouvez modifier vos choix ou retirer votre consentement en tout temps via le lien « Gérer les témoins » au bas du site. Refuser les témoins n'affecte en rien votre accès au service.
