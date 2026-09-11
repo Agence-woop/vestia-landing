@@ -633,8 +633,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .cal-grille :global(button.jour.complet)::after {
     content: '';
     position: absolute;
-    /* Trait divisé par deux (66 % → 33 % du diamètre de la case) */
-    inset: 33.5%;
+    /* Trait à 50 % du diamètre de la case (66 % à l'origine) */
+    inset: 25%;
     border-radius: inherit;
     background: linear-gradient(
       to bottom right,
@@ -751,9 +751,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .marque-complet {
     flex-shrink: 0;
-    /* Suit la réduction de moitié du trait de la grille */
-    width: 3.5px;
-    height: 3.5px;
+    /* Suit la proportion du trait de la grille (50 % de l'origine) */
+    width: 5.25px;
+    height: 5.25px;
     background: linear-gradient(
       to bottom right,
       transparent calc(50% - 0.75px),
