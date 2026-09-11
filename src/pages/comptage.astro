@@ -285,6 +285,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         });
       });
 
+      /* Téléphone au format nord-américain (XXX) XXX-XXXX, à la frappe
+         comme au remplissage automatique d'iOS — d'où l'écoute d'input
+         ET de change, l'autoremplissage ne passant pas toujours par les
+         mêmes événements que le clavier. Normalisation : chiffres
+         seulement ; 11 chiffres commençant par 1 → le 1 tombe ; le
+         format ne s'applique que sur exactement dix chiffres — tout
+         autre compte (international, saisie partielle, numéro court)
+         reste rigoureusement intact. Jamais de reformatage pendant un
+         effacement, pour ne pas coincer la correction d'un séparateur. */
+      const telephone = $('#c-tel') as HTMLInputElement;
+      const formaterTelephone = (v: string): string | null => {
+        let c = v.replace(/\D/g, '');
+        if (c.length === 11 && c.startsWith('1')) c = c.slice(1);
+        if (c.length !== 10) return null;
+        return `(${c.slice(0, 3)}) ${c.slice(3, 6)}-${c.slice(6)}`;
+      };
+      const appliquerFormatTelephone = (e?: Event) => {
+        if (e && (e as InputEvent).inputType?.startsWith('delete')) return;
+        const formate = formaterTelephone(telephone.value);
+        if (formate !== null && formate !== telephone.value) telephone.value = formate;
+      };
+      telephone.addEventListener('input', appliquerFormatTelephone);
+      telephone.addEventListener('change', appliquerFormatTelephone);
+
       /* Code postal québécois : majuscules et espace médian posés au fil
          de la saisie — mise en forme de confort, jamais bloquante */
       const codePostal = $('#c-code-postal') as HTMLInputElement;
