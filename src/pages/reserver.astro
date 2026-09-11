@@ -971,6 +971,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <script>
   import zones from '../data/zones.json';
   import joursIndisponibles from '../data/jours-indisponibles.json';
+  import { RETOUR_CONVENIR, optionsRetour as optionsRetourPartagees } from '../lib/retour';
 
   /* ----------------------------------------------------------------
      Endpoints Formspree du compte Vestia. Isolés ici volontairement :
@@ -1295,39 +1296,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
      Samedi, dimanche et fériés du JSON sont sautés. Les dates sont
      manipulées en heure locale et en jours de calendrier (jamais en
      durées de 24 h) : le calcul reste juste au changement d'heure. */
-  const RETOUR_CONVENIR = 'On en convient ensemble';
-
-  const jourOuvrableSuivant = (d: Date) => {
-    let n = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-    while (n.getDay() === 0 || n.getDay() === 6 || FERIES.has(cle(n))) {
-      n = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
-    }
-    return n;
-  };
-
-  /* « Mercredi soir » — majuscule initiale dans les capsules */
-  const libelleSoir = (cible: Date) => {
-    const nom = cible.toLocaleDateString('fr-CA', { weekday: 'long' });
-    return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} soir`;
-  };
-
-  /* Les trois options : libellé + date résolue (null pour « à convenir ») */
+  /* La mécanique (jours ouvrables, libellés, trois options) vit dans
+     src/lib/retour.ts, partagée avec /comptage. Ici, seuls les fériés
+     sont exclus — comportement historique de cette page. */
   function optionsRetour(): Array<{ libelle: string; date: Date | null }> {
     if (!etat.jour || !etat.fenetre) return [];
-    const j1 = jourOuvrableSuivant(etat.jour);
-    if (FENETRES_MATIN.includes(etat.fenetre)) {
-      return [
-        { libelle: libelleSoir(etat.jour), date: etat.jour },
-        { libelle: libelleSoir(j1), date: j1 },
-        { libelle: RETOUR_CONVENIR, date: null },
-      ];
-    }
-    const j2 = jourOuvrableSuivant(j1);
-    return [
-      { libelle: libelleSoir(j1), date: j1 },
-      { libelle: libelleSoir(j2), date: j2 },
-      { libelle: RETOUR_CONVENIR, date: null },
-    ];
+    return optionsRetourPartagees(etat.jour, FENETRES_MATIN.includes(etat.fenetre), FERIES);
   }
 
   /* (Re)construit les capsules de retour. Si un choix antérieur change,
