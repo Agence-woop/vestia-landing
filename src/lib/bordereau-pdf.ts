@@ -20,10 +20,13 @@ import { TAXES, CATEGORIES, COORDONNEES } from '../config/comptage';
 
 export interface DonneesBordereau {
   mode: 'cueillette' | 'retour';
+  prenom: string;
   nom: string;
   adresse: string;
   appartement: string;
-  quartier: string;
+  codePostal: string;
+  telephone: string;
+  courriel: string;
   quantites: number[];
   /* En mode retour : le compte d'origine, pour faire apparaître l'écart */
   quantitesCueillette?: number[];
@@ -133,18 +136,23 @@ export function genererBordereau(d: DonneesBordereau): Blob {
 
   doc.setTextColor(NUIT);
   doc.setFontSize(10.5);
-  doc.text(d.nom, MARGE, 168);
+  doc.text(`${d.prenom} ${d.nom}`.trim(), MARGE, 168);
   doc.setFont('Montserrat', 'normal');
   doc.setFontSize(9.5);
-  const adresse = d.appartement ? `${d.adresse}, app. ${d.appartement}` : d.adresse;
-  doc.text(adresse, MARGE, 183);
-  const ville = d.quartier ? `Montréal — ${d.quartier}` : 'Montréal (Québec)';
-  doc.text(ville, MARGE, 197);
+  /* Adresse avec appartement, puis la ligne de ville portant le code
+     postal ; téléphone, et courriel seulement s'il est renseigné */
+  const lignesClient = [
+    d.appartement ? `${d.adresse}, app. ${d.appartement}` : d.adresse,
+    d.codePostal ? `Montréal (Québec) ${d.codePostal}` : 'Montréal (Québec)',
+  ];
+  if (d.telephone) lignesClient.push(d.telephone);
+  if (d.courriel) lignesClient.push(d.courriel);
+  lignesClient.forEach((ligne, i) => doc.text(ligne, MARGE, 183 + i * 14));
   doc.setFontSize(10.5);
   doc.text(d.paiement, 356, 168);
 
   /* ---------- Tableau des pièces ---------- */
-  const tableauY = 226;
+  const tableauY = Math.max(226, 183 + lignesClient.length * 14 + 26);
   const colQte = 348;
   const colUnite = 448;
   const colSousTotal = DROITE - 12;
