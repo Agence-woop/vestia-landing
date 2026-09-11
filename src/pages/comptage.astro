@@ -206,6 +206,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
           <div class="actions">
             <Cta type="submit"><span id="c-cta-texte">Générer le bordereau PDF</span></Cta>
+            <!-- Repartir à zéro sans recharger : indispensable en mode
+                 application autonome, où la barre de Safari est absente -->
+            <div class="apres-generation" id="c-apres" hidden>
+              <button type="button" class="btn-secondaire" id="c-nouveau">Nouveau bordereau</button>
+            </div>
           </div>
         </form>
 
@@ -505,12 +510,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           'Interac',
       });
 
-      async function partager(blob: Blob, nomFichier: string) {
+      /* Rend vrai seulement si la feuille de partage a été menée au bout —
+         le repli en téléchargement ne dit rien de l'envoi */
+      async function partager(blob: Blob, nomFichier: string): Promise<boolean> {
         const fichier = new File([blob], nomFichier, { type: 'application/pdf' });
         if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
           try {
             await navigator.share({ files: [fichier] });
-            return;
+            return true;
           } catch {
             /* Partage annulé ou refusé : on retombe sur le téléchargement */
           }
@@ -520,6 +527,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         a.download = nomFichier;
         a.click();
         setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+        return false;
       }
 
       $('#c-form').addEventListener('submit', async (e) => {
@@ -557,9 +565,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             signatureCueillette: donnees.signatureCueillette,
             lienReprise: lien,
           });
-          await partager(blob, `CUEILLETTE - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`);
+          partageConfirme = await partager(
+            blob,
+            `CUEILLETTE - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
+          );
           ($('#c-lien') as HTMLInputElement).value = lien;
           ($('#c-reprise') as HTMLElement).hidden = false;
+          ($('#c-apres') as HTMLElement).hidden = false;
         } else {
           const d = donneesCueillette;
           const blob = genererBordereau({
@@ -576,8 +588,54 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
               ? ''
               : ($('#c-motif') as HTMLInputElement).value.trim(),
           });
-          await partager(blob, `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`);
+          partageConfirme = await partager(
+            blob,
+            `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
+          );
+          ($('#c-apres') as HTMLElement).hidden = false;
         }
+      });
+
+      /* ================= Nouveau bordereau ================= */
+      /* Sans barre de navigateur (application autonome), repartir à zéro
+         doit se faire sans rechargement. Confirmation obligatoire :
+         la page ne conserve rien, l'effacement est irréversible. */
+      let partageConfirme = false;
+      $('#c-nouveau').addEventListener('click', () => {
+        const question = 'Effacer ce bordereau et en commencer un nouveau ?';
+        const avertissement =
+          'Assurez-vous que le PDF a bien été envoyé avant de continuer. ';
+        if (!window.confirm(partageConfirme ? question : avertissement + question)) return;
+
+        /* Retour au bordereau de cueillette vierge, quel que soit le mode */
+        donneesCueillette = null;
+        quantitesCueillette = null;
+        for (const id of ['c-prenom', 'c-nom', 'c-adresse', 'c-app', 'c-code-postal', 'c-tel', 'c-courriel', 'c-notes', 'c-motif', 'c-lien']) {
+          ($(`#${id}`) as HTMLInputElement).value = '';
+        }
+        quantites.fill(0);
+        (document.querySelector('input[name="paiement"][value="Interac"]') as HTMLInputElement).checked = true;
+        signature.effacer();
+        /* Rang du jour incrémenté, numéro recomposé avec la date du jour */
+        const rangSuivant = (parseInt(rang.value.replace(/\D/g, ''), 10) || 1) + 1;
+        rang.value = String(Math.min(rangSuivant, 99)).padStart(2, '0');
+        rang.disabled = false;
+        $('#c-mode').textContent = 'Cueillette';
+        $('#c-titre').textContent = 'Bordereau de comptage';
+        ($('#c-ref') as HTMLElement).hidden = true;
+        $('#c-sign-titre').textContent = 'Signature du client';
+        ($('#c-reprise') as HTMLElement).hidden = true;
+        ($('#c-copie-ok') as HTMLElement).hidden = true;
+        ($('#c-apres') as HTMLElement).hidden = true;
+        ($('#c-erreur-nom') as HTMLElement).hidden = true;
+        ($('#c-erreur-pieces') as HTMLElement).hidden = true;
+        ($('#c-erreur-signature') as HTMLElement).hidden = true;
+        partageConfirme = false;
+        /* Le fragment de reprise tombe sans navigation ni rechargement */
+        if (location.hash) history.replaceState(null, '', location.pathname);
+        majNumero();
+        majTotaux();
+        scrollTo(0, 0);
       });
 
       /* Copie du lien de reprise */
@@ -993,6 +1051,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         pointer-events: none;
       }
 
+      /* Le display du guide l'emporterait sur l'attribut hidden : dès
+         le premier trait, le mot d'invite disparaît vraiment */
+      .sign-guide[hidden] {
+        display: none;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
       .sign-actions {
         margin-top: 0.8rem;
       }
@@ -1000,6 +1073,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       .actions {
         margin-top: var(--espace-bloc-lg);
         text-align: center;
+      }
+
+      .apres-generation {
+        margin-top: 1.2rem;
       }
 
       /* ---------- barre de totaux ---------- */
