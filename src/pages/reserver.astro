@@ -751,9 +751,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   .marque-complet {
     flex-shrink: 0;
-    /* Suit la proportion du trait de la grille (50 % de l'origine) */
-    width: 5.25px;
-    height: 5.25px;
+    /* Dimension propre à la légende, volontairement découplée du
+       trait de la grille : ici le trait se mesure à la ligne de
+       texte, pas à une case — ajuster l'un n'entraîne pas l'autre */
+    width: 7px;
+    height: 7px;
     background: linear-gradient(
       to bottom right,
       transparent calc(50% - 0.75px),
