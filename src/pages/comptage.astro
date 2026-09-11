@@ -1,0 +1,976 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/sections.css';
+import '../styles/lumiere.css';
+import Cta from '../components/Cta.astro';
+import { CATEGORIES, MINIMUM_PIECES } from '../config/comptage';
+
+/*
+ * /comptage — bordereau de comptage de terrain, outil interne.
+ *
+ * Contrainte d'architecture : aucun serveur, aucune base de données,
+ * aucun service tiers, aucun stockage persistant. Saisie, calculs,
+ * signatures et PDF vivent entièrement dans le navigateur ; rien ne
+ * quitte l'appareil hors le PDF que Kévin partage lui-même. Les
+ * données de reprise voyagent dans le fragment (#r=…) de l'URL — le
+ * fragment n'est jamais transmis au serveur qui héberge la page.
+ *
+ * Page volontairement hors de Base.astro : pas de bannière de
+ * témoins ni de chargeur de tags (aucune requête réseau au-delà du
+ * chargement), noindex permanent, manifeste et service worker
+ * propres pour l'usage hors ligne depuis l'écran d'accueil iOS.
+ * La soie est ici l'affiche fixe (pas la vidéo) : l'outil doit se
+ * mettre en cache léger et s'ouvrir vite dans un hall d'immeuble.
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<!doctype html>
+<html lang="fr" data-theme="nuit">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Bordereau de comptage — Vestia</title>
+    <!-- Outil interne : jamais indexé, quel que soit l'état du site -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <link rel="icon" href={`${base}/favicon.ico`} sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${base}/favicon-32.png`} />
+    <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
+    <link rel="manifest" href={`${base}/comptage.webmanifest`} />
+    <meta name="theme-color" content="#091E35" />
+    <!-- Plein écran depuis l'écran d'accueil iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Bordereau" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz@6..96&family=Libre+Baskerville:ital@0;1&family=Montserrat:wght@200;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- La soie en affiche fixe : même univers, poids contenu -->
+    <div class="fond-soie" aria-hidden="true"></div>
+
+    <main class="section section--voile parcours">
+      <header class="entete">
+        <p class="marque">Vestia</p>
+      </header>
+
+      <div class="cadre section__inner">
+        <div class="barre">
+          <p class="mode" id="c-mode">Cueillette</p>
+          <p class="numero" id="c-numero" aria-live="polite"></p>
+        </div>
+
+        <h2 id="c-titre">Bordereau de comptage</h2>
+
+        <form id="c-form" novalidate>
+          <!-- ================= Le client ================= -->
+          <div class="bloc">
+            <p class="etiquette texte-champagne">Le client</p>
+            <!-- Contact Picker : le bouton n'existe que si l'API existe -->
+            <button type="button" class="btn-secondaire" id="c-contact" hidden>Choisir un contact</button>
+            <div class="sous-bloc">
+              <label class="souslabel" for="c-nom">Prénom et nom</label>
+              <input class="champ" type="text" id="c-nom" name="nom" autocomplete="name" />
+              <p class="erreur" aria-live="polite" hidden>Veuillez indiquer le prénom et le nom du client.</p>
+            </div>
+            <div class="duo">
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-adresse">Adresse</label>
+                <input class="champ" type="text" id="c-adresse" name="adresse" autocomplete="street-address" />
+              </div>
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-app">Appartement <span class="optionnel">(optionnel)</span></label>
+                <input class="champ" type="text" id="c-app" name="appartement" />
+              </div>
+            </div>
+            <div class="duo">
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-tel">Téléphone</label>
+                <input class="champ" type="tel" id="c-tel" name="telephone" autocomplete="tel" />
+              </div>
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-quartier">Quartier <span class="optionnel">(optionnel)</span></label>
+                <input class="champ" type="text" id="c-quartier" name="quartier" placeholder="Griffintown" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= Les pièces ================= -->
+          <div class="bloc">
+            <p class="etiquette texte-champagne">Les pièces</p>
+            <div class="compteurs surface-tuile">
+              {
+                CATEGORIES.map((cat, i) => (
+                  <div class="ligne-cat">
+                    <div class="cat-infos">
+                      <p class="cat-nom">{cat.nom}</p>
+                      <p class="cat-prix">{cat.prix}&nbsp;$ la pièce</p>
+                    </div>
+                    <div class="pas" data-cat={i}>
+                      <button type="button" class="pas-btn moins" aria-label={`Retirer une ${cat.nom.toLowerCase()}`}>−</button>
+                      <output class="pas-val" aria-live="polite">0</output>
+                      <button type="button" class="pas-btn plus" aria-label={`Ajouter une ${cat.nom.toLowerCase()}`}>+</button>
+                    </div>
+                    <p class="cat-soustotal" aria-hidden="true">0&nbsp;$</p>
+                  </div>
+                ))
+              }
+            </div>
+            <p class="avert" id="c-minimum" aria-live="polite" hidden>
+              Le compte est sous le minimum de {MINIMUM_PIECES} pièces.
+            </p>
+            <p class="erreur" id="c-erreur-pieces" aria-live="polite" hidden>Veuillez compter au moins une pièce.</p>
+          </div>
+
+          <!-- ================= Paiement attendu ================= -->
+          <fieldset class="bloc groupe">
+            <legend class="etiquette texte-champagne">Paiement attendu</legend>
+            <div class="capsules" data-groupe="paiement">
+              <label><input type="radio" name="paiement" value="Interac" checked /><span>Interac</span></label>
+              <label><input type="radio" name="paiement" value="Comptant" /><span>Comptant</span></label>
+            </div>
+          </fieldset>
+
+          <!-- ================= Notes et rang ================= -->
+          <div class="bloc">
+            <div class="duo duo-notes">
+              <div class="sous-bloc">
+                <label class="souslabel" for="c-notes">Notes <span class="optionnel">(optionnel)</span></label>
+                <textarea class="champ" id="c-notes" name="notes" rows="2"></textarea>
+              </div>
+              <div class="sous-bloc rang-bloc">
+                <label class="souslabel" for="c-rang">Rang du jour</label>
+                <input class="champ champ-rang" type="text" id="c-rang" inputmode="numeric" maxlength="2" value="01" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ Référence de cueillette (mode retour) ============ -->
+          <div class="bloc" id="c-ref" hidden>
+            <p class="etiquette texte-champagne">La cueillette</p>
+            <div class="ref-carte">
+              <p class="ref-date" id="c-ref-date"></p>
+              <img class="ref-signature" id="c-ref-signature" alt="Signature du client à la cueillette" />
+              <p class="ref-legende">Signature du client — cueillette</p>
+            </div>
+          </div>
+
+          <!-- ================= Signature ================= -->
+          <div class="bloc">
+            <p class="etiquette texte-champagne" id="c-sign-titre">Signature du client</p>
+            <div class="signature surface-tuile">
+              <canvas id="c-sign" aria-label="Zone de signature au doigt"></canvas>
+              <p class="sign-guide" id="c-sign-guide" aria-hidden="true">Signer ici</p>
+            </div>
+            <div class="sign-actions">
+              <button type="button" class="btn-secondaire" id="c-effacer">Effacer</button>
+            </div>
+            <p class="erreur" id="c-erreur-signature" aria-live="polite" hidden>Veuillez faire signer le client.</p>
+          </div>
+
+          <div class="actions">
+            <Cta type="submit"><span id="c-cta-texte">Générer le bordereau PDF</span></Cta>
+          </div>
+        </form>
+
+        <!-- ============ Lien de reprise (après le PDF de cueillette) ============ -->
+        <div class="bloc" id="c-reprise" hidden>
+          <p class="etiquette texte-champagne">Livraison retour</p>
+          <p class="aide">
+            Ce lien rouvre le bordereau prérempli pour la seconde signature. Il figure aussi dans le
+            PDF, derrière la phrase du pied de page.
+          </p>
+          <div class="saisie">
+            <label class="visually-hidden" for="c-lien">Lien de reprise</label>
+            <input class="champ" type="text" id="c-lien" readonly />
+            <button type="button" class="btn-secondaire" id="c-copier">Copier</button>
+          </div>
+          <p class="suite" id="c-copie-ok" aria-live="polite" hidden>Lien copié.</p>
+        </div>
+      </div>
+
+      <!-- Totaux toujours visibles pendant le comptage -->
+      <div class="total-barre" role="status">
+        <span id="c-total-pieces">0 pièce</span>
+        <span class="total-montant texte-champagne" id="c-total-montant">0&nbsp;$</span>
+      </div>
+    </main>
+
+    <script>
+      import { genererBordereau, formaterDateHeure, formaterMontant } from '../lib/bordereau-pdf';
+      import { CATEGORIES, MINIMUM_PIECES, TAXES } from '../config/comptage';
+
+      const $ = (s: string) => document.querySelector(s) as HTMLElement;
+      const NUIT = '#091E35';
+
+      /* ================= État ================= */
+      const quantites = CATEGORIES.map(() => 0);
+      let quantitesCueillette: number[] | null = null; /* mode retour */
+      let donneesCueillette: any = null; /* charge du lien de reprise */
+      const modeRetour = () => donneesCueillette !== null;
+
+      /* ================= Numéro de bordereau ================= */
+      const rang = $('#c-rang') as HTMLInputElement;
+      function numeroDuJour(): string {
+        const d = new Date();
+        const jj = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const aa = String(d.getFullYear() % 100).padStart(2, '0');
+        const nn = (rang.value.replace(/\D/g, '') || '1').padStart(2, '0');
+        return `VST-${jj}${mm}${aa}-${nn}`;
+      }
+      function majNumero() {
+        $('#c-numero').textContent = modeRetour() ? donneesCueillette.numero : numeroDuJour();
+      }
+      rang.addEventListener('input', majNumero);
+
+      /* ================= Compteurs et totaux ================= */
+      function majTotaux() {
+        let pieces = 0;
+        let montant = 0;
+        document.querySelectorAll('.pas').forEach((pas, i) => {
+          const q = quantites[i];
+          (pas.querySelector('.pas-val') as HTMLElement).textContent = String(q);
+          pieces += q;
+          montant += q * CATEGORIES[i].prix;
+          const ligne = pas.closest('.ligne-cat') as HTMLElement;
+          (ligne.querySelector('.cat-soustotal') as HTMLElement).textContent = formaterMontant(q * CATEGORIES[i].prix);
+          ligne.classList.toggle('active', q > 0);
+        });
+        /* Le montant estimé suit le réglage des taxes (voir config/comptage.ts) */
+        if (TAXES.inscrit) montant *= 1 + TAXES.tauxTPS + TAXES.tauxTVQ;
+        $('#c-total-pieces').textContent = `${pieces} ${pieces > 1 ? 'pièces' : 'pièce'}`;
+        $('#c-total-montant').textContent = formaterMontant(montant);
+        ($('#c-minimum') as HTMLElement).hidden = !(pieces > 0 && pieces < MINIMUM_PIECES);
+        if (pieces > 0) ($('#c-erreur-pieces') as HTMLElement).hidden = true;
+      }
+      document.querySelectorAll('.pas').forEach((pas, i) => {
+        pas.querySelector('.moins')!.addEventListener('click', () => {
+          quantites[i] = Math.max(0, quantites[i] - 1);
+          majTotaux();
+        });
+        pas.querySelector('.plus')!.addEventListener('click', () => {
+          quantites[i] += 1;
+          majTotaux();
+        });
+      });
+
+      /* ================= Contact Picker ================= */
+      /* Détection stricte : sans l'API, le bouton n'apparaît pas et la
+         saisie reste manuelle (les autocomplete natifs font le reste) */
+      const boutonContact = $('#c-contact') as HTMLButtonElement;
+      if ('contacts' in navigator && 'ContactsManager' in window) {
+        boutonContact.hidden = false;
+        boutonContact.addEventListener('click', async () => {
+          try {
+            const [contact] = await (navigator as any).contacts.select(['name', 'tel', 'address'], {
+              multiple: false,
+            });
+            if (!contact) return;
+            if (contact.name?.[0]) ($('#c-nom') as HTMLInputElement).value = contact.name[0];
+            if (contact.tel?.[0]) ($('#c-tel') as HTMLInputElement).value = contact.tel[0];
+            const adr = contact.address?.[0];
+            if (adr) {
+              ($('#c-adresse') as HTMLInputElement).value = (adr.addressLine || []).join(', ');
+            }
+          } catch {
+            /* Sélection annulée : rien à faire */
+          }
+        });
+      }
+
+      /* ================= Signature ================= */
+      /* Les tracés sont mémorisés en points : rendus ivoire à l'écran
+         (fond nuit), ré-encrés en nuit pétrole sur transparent pour le
+         PDF crème. Pointer Events : doigt et stylet confondus. */
+      class Signature {
+        traces: Array<Array<[number, number]>> = [];
+        canvas: HTMLCanvasElement;
+        ctx: CanvasRenderingContext2D;
+        constructor(canvas: HTMLCanvasElement) {
+          this.canvas = canvas;
+          this.ctx = canvas.getContext('2d')!;
+          const redim = () => {
+            const r = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = r.width * dpr;
+            canvas.height = r.height * dpr;
+            this.rendre();
+          };
+          redim();
+          addEventListener('resize', redim);
+
+          let actif = false;
+          canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            canvas.setPointerCapture(e.pointerId);
+            actif = true;
+            this.traces.push([this.point(e)]);
+            this.rendre();
+          });
+          canvas.addEventListener('pointermove', (e) => {
+            if (!actif) return;
+            e.preventDefault();
+            this.traces[this.traces.length - 1].push(this.point(e));
+            this.rendre();
+          });
+          const fin = () => (actif = false);
+          canvas.addEventListener('pointerup', fin);
+          canvas.addEventListener('pointercancel', fin);
+        }
+        point(e: PointerEvent): [number, number] {
+          const r = this.canvas.getBoundingClientRect();
+          return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+        }
+        vide() {
+          return this.traces.every((t) => t.length < 2);
+        }
+        effacer() {
+          this.traces = [];
+          this.rendre();
+        }
+        rendre() {
+          const { ctx, canvas } = this;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          this.tracer(ctx, canvas.width, canvas.height, '#faf7f0', 2.2 * (window.devicePixelRatio || 1));
+          ($('#c-sign-guide') as HTMLElement).hidden = this.traces.length > 0;
+        }
+        tracer(ctx: CanvasRenderingContext2D, l: number, h: number, encre: string, epaisseur: number) {
+          ctx.strokeStyle = encre;
+          ctx.lineWidth = epaisseur;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          for (const trace of this.traces) {
+            if (trace.length < 2) continue;
+            ctx.beginPath();
+            ctx.moveTo(trace[0][0] * l, trace[0][1] * h);
+            for (let i = 1; i < trace.length; i += 1) ctx.lineTo(trace[i][0] * l, trace[i][1] * h);
+            ctx.stroke();
+          }
+        }
+        /* PNG encre nuit sur fond transparent, taille contenue */
+        exporter(): string {
+          const hors = document.createElement('canvas');
+          hors.width = 440;
+          hors.height = 160;
+          this.tracer(hors.getContext('2d')!, 440, 160, NUIT, 3);
+          return hors.toDataURL('image/png');
+        }
+      }
+      const signature = new Signature($('#c-sign') as HTMLCanvasElement);
+      $('#c-effacer').addEventListener('click', () => signature.effacer());
+
+      /* ================= Lien de reprise ================= */
+      /* Données dans le fragment #r=… : jamais transmises au serveur.
+         Déflate natif quand le navigateur l'offre (préfixe « 1. »),
+         base64 brut sinon (préfixe « 0. »). */
+      const versB64url = (o: Uint8Array) => {
+        let s = '';
+        for (let i = 0; i < o.length; i += 0x8000)
+          s += String.fromCharCode(...o.subarray(i, i + 0x8000));
+        return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      };
+      const depuisB64url = (s: string) =>
+        Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+
+      async function encoderReprise(donnees: object): Promise<string> {
+        const brut = new TextEncoder().encode(JSON.stringify(donnees));
+        if ('CompressionStream' in window) {
+          const flux = new Blob([brut]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+          const octets = new Uint8Array(await new Response(flux).arrayBuffer());
+          return `1.${versB64url(octets)}`;
+        }
+        return `0.${versB64url(brut)}`;
+      }
+      async function decoderReprise(fragment: string): Promise<any> {
+        const [version, corps] = [fragment.slice(0, 2), fragment.slice(2)];
+        let octets = depuisB64url(corps);
+        if (version === '1.') {
+          const flux = new Blob([octets]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+          octets = new Uint8Array(await new Response(flux).arrayBuffer());
+        }
+        return JSON.parse(new TextDecoder().decode(octets));
+      }
+
+      /* ================= Mode retour ================= */
+      async function initialiser() {
+        if (location.hash.startsWith('#r=')) {
+          try {
+            donneesCueillette = await decoderReprise(location.hash.slice(3));
+          } catch {
+            donneesCueillette = null;
+          }
+        }
+        if (modeRetour()) {
+          const d = donneesCueillette;
+          $('#c-mode').textContent = 'Livraison retour';
+          $('#c-titre').textContent = 'Bordereau — livraison retour';
+          ($('#c-nom') as HTMLInputElement).value = d.nom || '';
+          ($('#c-adresse') as HTMLInputElement).value = d.adresse || '';
+          ($('#c-app') as HTMLInputElement).value = d.appartement || '';
+          ($('#c-tel') as HTMLInputElement).value = d.telephone || '';
+          ($('#c-quartier') as HTMLInputElement).value = d.quartier || '';
+          ($('#c-notes') as HTMLTextAreaElement).value = d.notes || '';
+          const paiement = document.querySelector(
+            `input[name="paiement"][value="${d.paiement === 'Comptant' ? 'Comptant' : 'Interac'}"]`
+          ) as HTMLInputElement;
+          if (paiement) paiement.checked = true;
+          quantitesCueillette = (d.quantites || []).slice();
+          (d.quantites || []).forEach((q: number, i: number) => (quantites[i] = q || 0));
+          rang.value = (d.numero || '').split('-')[2] || '01';
+          rang.disabled = true;
+          /* La cueillette en lecture seule : horodatage et signature */
+          ($('#c-ref') as HTMLElement).hidden = false;
+          $('#c-ref-date').textContent = formaterDateHeure(d.horodatageCueillette);
+          ($('#c-ref-signature') as HTMLImageElement).src = d.signatureCueillette || '';
+          $('#c-sign-titre').textContent = 'Signature du client — retour';
+        }
+        majNumero();
+        majTotaux();
+      }
+      initialiser();
+      /* Ouvrir un lien de reprise alors que la page est déjà affichée ne
+         change que le fragment : on rejoue l'initialisation sur place —
+         aucun rechargement, donc valable aussi hors ligne */
+      addEventListener('hashchange', () => {
+        if (!location.hash.startsWith('#r=')) return;
+        signature.effacer();
+        initialiser();
+      });
+
+      /* ================= Génération et partage ================= */
+      const lireChamps = () => ({
+        nom: ($('#c-nom') as HTMLInputElement).value.trim(),
+        adresse: ($('#c-adresse') as HTMLInputElement).value.trim(),
+        appartement: ($('#c-app') as HTMLInputElement).value.trim(),
+        telephone: ($('#c-tel') as HTMLInputElement).value.trim(),
+        quartier: ($('#c-quartier') as HTMLInputElement).value.trim(),
+        notes: ($('#c-notes') as HTMLTextAreaElement).value.trim(),
+        paiement:
+          (document.querySelector('input[name="paiement"]:checked') as HTMLInputElement)?.value ||
+          'Interac',
+      });
+
+      async function partager(blob: Blob, nomFichier: string) {
+        const fichier = new File([blob], nomFichier, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+          try {
+            await navigator.share({ files: [fichier] });
+            return;
+          } catch {
+            /* Partage annulé ou refusé : on retombe sur le téléchargement */
+          }
+        }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = nomFichier;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      }
+
+      $('#c-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const champs = lireChamps();
+        const pieces = quantites.reduce((s, n) => s + n, 0);
+
+        let valide = true;
+        ($('#c-nom').parentElement!.querySelector('.erreur') as HTMLElement).hidden = !!champs.nom;
+        if (!champs.nom) valide = false;
+        ($('#c-erreur-pieces') as HTMLElement).hidden = pieces > 0;
+        if (pieces === 0) valide = false;
+        ($('#c-erreur-signature') as HTMLElement).hidden = !signature.vide();
+        if (signature.vide()) valide = false;
+        if (!valide) return;
+
+        const maintenant = new Date().toISOString();
+        if (!modeRetour()) {
+          const donnees = {
+            v: 1,
+            ...champs,
+            quantites,
+            numero: numeroDuJour(),
+            horodatageCueillette: maintenant,
+            signatureCueillette: signature.exporter(),
+          };
+          const lien = `${location.origin}${location.pathname}#r=${await encoderReprise(donnees)}`;
+          const blob = genererBordereau({
+            mode: 'cueillette',
+            ...champs,
+            quantites,
+            numero: donnees.numero,
+            horodatageCueillette: maintenant,
+            signatureCueillette: donnees.signatureCueillette,
+            lienReprise: lien,
+          });
+          await partager(blob, `CUEILLETTE - Bordereau comptage - ${champs.nom}.pdf`);
+          ($('#c-lien') as HTMLInputElement).value = lien;
+          ($('#c-reprise') as HTMLElement).hidden = false;
+        } else {
+          const d = donneesCueillette;
+          const blob = genererBordereau({
+            mode: 'retour',
+            ...champs,
+            quantites,
+            quantitesCueillette: quantitesCueillette || undefined,
+            numero: d.numero,
+            horodatageCueillette: d.horodatageCueillette,
+            signatureCueillette: d.signatureCueillette,
+            horodatageRetour: maintenant,
+            signatureRetour: signature.exporter(),
+          });
+          await partager(blob, `LIVRAISON RETOUR - Bordereau comptage - ${champs.nom}.pdf`);
+        }
+      });
+
+      /* Copie du lien de reprise */
+      $('#c-copier').addEventListener('click', async () => {
+        const lien = ($('#c-lien') as HTMLInputElement).value;
+        try {
+          await navigator.clipboard.writeText(lien);
+        } catch {
+          ($('#c-lien') as HTMLInputElement).select();
+          document.execCommand('copy');
+        }
+        ($('#c-copie-ok') as HTMLElement).hidden = false;
+      });
+
+      /* ================= Hors ligne ================= */
+      if ('serviceWorker' in navigator) {
+        const base = (import.meta as any).env.BASE_URL.replace(/\/$/, '');
+        navigator.serviceWorker
+          .register(`${base}/comptage-sw.js`, { scope: `${base}/comptage/` })
+          .catch(() => {
+            /* Sans service worker, la page fonctionne — en ligne seulement */
+          });
+      }
+    </script>
+
+    <style>
+      /* La soie en affiche : fixe, sous tout le contenu */
+      .fond-soie {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: #091e35 url('/soie-poster.webp') center / cover no-repeat;
+      }
+
+      .parcours {
+        min-height: 100svh;
+        padding-top: var(--espace-bloc-md);
+        /* La barre de totaux fixe ne doit jamais couvrir le contenu */
+        padding-bottom: 6.5rem;
+      }
+
+      .entete {
+        text-align: center;
+        margin-bottom: var(--espace-bloc-sm);
+      }
+
+      .marque {
+        font-family: var(--police-embleme);
+        font-weight: 400;
+        text-transform: uppercase;
+        font-size: clamp(1.7rem, 5.4vw, 2.5rem);
+        letter-spacing: 0.2em;
+        margin-right: -0.2em;
+        background-image: linear-gradient(
+          168deg,
+          #8e7429 0%,
+          #c4a03c 26%,
+          #f1da80 50%,
+          #c4a03c 74%,
+          #8e7429 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .cadre {
+        max-width: 44rem;
+      }
+
+      .barre {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.4rem;
+        min-height: 1.4rem;
+      }
+
+      .mode,
+      .numero {
+        font-size: 0.72rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--or-trait);
+        opacity: 0.75;
+      }
+
+      h2 {
+        font-size: clamp(1.9rem, 4.6vw, 2.6rem);
+      }
+
+      .bloc {
+        margin-top: var(--espace-bloc-md);
+      }
+
+      .etiquette {
+        display: block;
+        font-size: 1.05rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        margin-bottom: 0.6rem;
+      }
+
+      /* Le display du bouton secondaire l'emporterait sur l'attribut
+         hidden : sans l'API Contact Picker, le bouton n'existe pas */
+      #c-contact[hidden] {
+        display: none;
+      }
+
+      .souslabel {
+        display: block;
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin: 0.9rem 0 0.3rem;
+      }
+
+      .optionnel {
+        text-transform: none;
+        letter-spacing: 0.08em;
+        color: var(--or-trait);
+        opacity: 0.7;
+      }
+
+      /* Champs sur la soie : le fond des tuiles, comme /reserver */
+      .champ {
+        background-color: var(--surface);
+        -webkit-backdrop-filter: var(--flou-surface);
+        backdrop-filter: var(--flou-surface);
+        border-radius: 0.55rem 0.55rem 0 0;
+        padding: 0.65rem 0.8rem;
+      }
+
+      textarea.champ {
+        resize: vertical;
+        line-height: 1.6;
+      }
+
+      .duo {
+        display: grid;
+        gap: 0 1.5rem;
+      }
+
+      @media (min-width: 34rem) {
+        .duo {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .duo-notes {
+          grid-template-columns: 1fr 8rem;
+        }
+      }
+
+      .erreur {
+        margin-top: 0.6rem;
+        font-size: 0.9rem;
+        color: var(--erreur);
+        opacity: 0.9;
+      }
+
+      .aide {
+        margin-top: 0.6rem;
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+
+      .suite {
+        margin-top: 0.8rem;
+        font-size: 0.95rem;
+      }
+
+      .saisie {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+      }
+
+      .saisie .champ {
+        flex: 1;
+        min-width: 9rem;
+        font-size: 0.78rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ---------- compteurs de pièces ---------- */
+      .compteurs {
+        padding: 0.4rem 1.1rem;
+      }
+
+      .ligne-cat {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.7rem 0;
+      }
+
+      .ligne-cat + .ligne-cat {
+        border-top: 1px solid var(--filet);
+      }
+
+      .cat-infos {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .cat-nom {
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+      }
+
+      .cat-prix {
+        font-size: 0.75rem;
+        opacity: 0.65;
+        margin-top: 0.15rem;
+      }
+
+      .pas {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+      }
+
+      /* Zones tactiles généreuses : jamais de clavier numérique */
+      .pas-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        border: 1px solid var(--filet);
+        background: transparent;
+        color: var(--texte);
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: border-color 0.25s ease, color 0.25s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .pas-btn:hover,
+      .pas-btn:focus-visible {
+        border-color: var(--or-trait);
+        color: var(--or-trait);
+      }
+
+      .pas-val {
+        min-width: 2.1rem;
+        text-align: center;
+        font-size: 1.15rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .cat-soustotal {
+        min-width: 3.6rem;
+        text-align: right;
+        font-size: 0.9rem;
+        opacity: 0.5;
+        font-variant-numeric: tabular-nums;
+        transition: opacity 0.25s ease, color 0.25s ease;
+      }
+
+      .ligne-cat.active .cat-soustotal {
+        opacity: 1;
+        color: var(--or-trait);
+      }
+
+      .avert {
+        margin-top: 0.7rem;
+        font-size: 0.9rem;
+        color: var(--or-trait);
+        opacity: 0.9;
+      }
+
+      /* ---------- paiement ---------- */
+      .groupe {
+        border: 0;
+        padding: 0;
+        margin-inline: 0;
+      }
+
+      .capsules {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+
+      .capsules label {
+        cursor: pointer;
+      }
+
+      .capsules input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      .capsules span {
+        display: inline-block;
+        padding: 0.6em 1.4em;
+        border-radius: 999px;
+        border: 1px solid var(--filet);
+        background-color: var(--surface);
+        -webkit-backdrop-filter: var(--flou-surface);
+        backdrop-filter: var(--flou-surface);
+        font-size: 0.9rem;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease,
+          border-color 0.25s ease;
+      }
+
+      .capsules label:hover span,
+      .capsules input:focus-visible + span {
+        border-color: var(--or-trait);
+      }
+
+      .capsules input:focus-visible + span {
+        outline: 1px solid var(--or-trait);
+        outline-offset: 3px;
+      }
+
+      .capsules input:checked + span {
+        background-image:
+          linear-gradient(105deg, transparent 35%, rgba(255, 248, 225, 0.28) 50%, transparent 65%),
+          linear-gradient(#c4a03c, #c4a03c);
+        background-size:
+          320% 100%,
+          100% 100%;
+        background-position:
+          130% 0,
+          0 0;
+        border-color: #c4a03c;
+        color: #091e35;
+        font-weight: 500;
+        animation: lumiere-balayage 11s ease-in-out infinite;
+      }
+
+      .rang-bloc .champ-rang {
+        max-width: 8rem;
+        letter-spacing: 0.2em;
+        text-align: center;
+      }
+
+      /* ---------- référence de cueillette (mode retour) ---------- */
+      /* L'encre du client est nuit pétrole : la carte reprend la crème
+         du PDF pour la montrer telle qu'elle y figurera */
+      .ref-carte {
+        background: #faf6ee;
+        border-radius: var(--rayon-tuile);
+        padding: 1rem 1.2rem;
+        max-width: 24rem;
+      }
+
+      .ref-carte :is(p, .ref-legende) {
+        text-shadow: none;
+      }
+
+      .ref-date {
+        color: #091e35;
+        font-size: 0.9rem;
+      }
+
+      .ref-signature {
+        display: block;
+        width: min(100%, 15rem);
+        margin-top: 0.4rem;
+      }
+
+      .ref-legende {
+        color: #77705f;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        border-top: 1px solid #e6dec9;
+        padding-top: 0.5rem;
+      }
+
+      /* ---------- signature ---------- */
+      .signature {
+        position: relative;
+        height: 10rem;
+        overflow: hidden;
+      }
+
+      .signature canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        cursor: crosshair;
+      }
+
+      .sign-guide {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 0.85rem;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .sign-actions {
+        margin-top: 0.8rem;
+      }
+
+      .actions {
+        margin-top: var(--espace-bloc-lg);
+        text-align: center;
+      }
+
+      /* ---------- barre de totaux ---------- */
+      .total-barre {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        display: flex;
+        align-items: baseline;
+        gap: 1.4rem;
+        padding: 0.8rem 1.6rem;
+        border-radius: 999px;
+        background-color: rgba(9, 30, 53, 0.82);
+        -webkit-backdrop-filter: var(--flou-surface);
+        backdrop-filter: var(--flou-surface);
+        border: 1px solid var(--filet);
+        box-shadow: 0 12px 32px rgba(4, 14, 26, 0.4);
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+      }
+
+      .total-montant {
+        font-family: var(--police-voix);
+        font-size: 1.25rem;
+      }
+    </style>
+  </body>
+</html>

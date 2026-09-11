@@ -27,6 +27,13 @@ Tous dans `assets-source/` :
   local `vestia-consent` (12 mois, versionné), événement `vestia:consent-updated`, chargeur
   conditionnel GA4/Meta ; identifiants dans `src/config/mesure.ts` (gabarits `TODO` — rien ne se
   charge tant qu'ils ne sont pas remplacés)
+- `src/pages/comptage.astro` — bordereau de comptage de terrain (outil interne, noindex permanent,
+  aucune navigation n'y mène). **Tout côté client, aucun service tiers ni stockage persistant** :
+  compteurs, signatures tactiles, PDF (jsPDF + polices en sous-ensembles dans
+  `src/config/polices-pdf.ts`, maquette dans `src/lib/bordereau-pdf.ts`), reprise de livraison par
+  lien à fragment `#r=…`. Hors ligne via `public/comptage-sw.js` (portée `/comptage/`) et
+  `public/comptage.webmanifest`. Réglage des taxes (TPS/TVQ, inscrit: false) dans
+  `src/config/comptage.ts`
 
 ## Décisions prises à l'intégration
 
