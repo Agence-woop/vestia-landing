@@ -167,6 +167,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             </div>
           </fieldset>
 
+          <!-- ================= Le retour ================= -->
+          <!-- Capsules construites au script : les deux premiers soirs
+               possibles depuis maintenant (fins de semaine, fériés et
+               journées complètes sautés), puis « on en convient
+               ensemble ». Aucune sélection par défaut. -->
+          <fieldset class="bloc groupe" id="c-retour-groupe">
+            <legend class="etiquette texte-champagne">Le retour</legend>
+            <div class="capsules" data-groupe="retour" id="c-retours"></div>
+            <p class="rappel">Retour entre 17&nbsp;h&nbsp;30 et 19&nbsp;h&nbsp;30. Un message vous annonce notre arrivée.</p>
+            <p class="erreur" id="c-erreur-retour" aria-live="polite" hidden>Veuillez choisir le soir du retour.</p>
+          </fieldset>
+
           <!-- ================= Notes et rang ================= -->
           <div class="bloc">
             <div class="duo duo-notes">
@@ -186,6 +198,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <p class="etiquette texte-champagne">La cueillette</p>
             <div class="ref-carte">
               <p class="ref-date" id="c-ref-date"></p>
+              <p class="ref-retour" id="c-ref-retour" hidden></p>
               <img class="ref-signature" id="c-ref-signature" alt="Signature du client à la cueillette" />
               <p class="ref-legende">Signature du client — cueillette</p>
             </div>
@@ -240,6 +253,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <script>
       import { genererBordereau, formaterDateHeure, formaterMontant } from '../lib/bordereau-pdf';
       import { CATEGORIES, MINIMUM_PIECES, TAXES } from '../config/comptage';
+      import { CRENEAU_RETOUR, optionsRetour } from '../lib/retour';
+      import joursIndisponibles from '../data/jours-indisponibles.json';
 
       const $ = (s: string) => document.querySelector(s) as HTMLElement;
       const NUIT = '#091E35';
@@ -333,6 +348,49 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         if (v.length > 3) v = `${v.slice(0, 3)} ${v.slice(3)}`;
         codePostal.value = v;
       });
+
+      /* ================= Le retour ================= */
+      /* Options calculées depuis maintenant : la cueillette a lieu au
+         moment où le formulaire est rempli. Avant midi, le soir même
+         est encore possible ; après, on part du prochain soir ouvrable.
+         Fins de semaine, fériés et journées complètes sont sautés
+         (logique partagée avec /reserver dans src/lib/retour.ts). */
+      const JOURS_EXCLUS = new Set([...joursIndisponibles.feries, ...joursIndisponibles.complets]);
+      let retourEnClair = ''; /* « Jeudi 17 septembre 2026 » ou « À convenir » */
+
+      const dateComplete = (d: Date) => {
+        const t = d.toLocaleDateString('fr-CA', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+        return t.charAt(0).toUpperCase() + t.slice(1);
+      };
+
+      function rendreRetours() {
+        const conteneur = $('#c-retours');
+        conteneur.innerHTML = '';
+        retourEnClair = '';
+        const maintenant = new Date();
+        const jour = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate());
+        for (const o of optionsRetour(jour, maintenant.getHours() < 12, JOURS_EXCLUS)) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = 'retour';
+          input.value = o.libelle;
+          const pastille = document.createElement('span');
+          pastille.textContent = o.libelle;
+          label.append(input, pastille);
+          conteneur.appendChild(label);
+          input.addEventListener('change', () => {
+            retourEnClair = o.date ? dateComplete(o.date) : 'À convenir';
+            ($('#c-erreur-retour') as HTMLElement).hidden = true;
+          });
+        }
+      }
+      rendreRetours();
 
       /* ================= Signature ================= */
       /* Les tracés sont mémorisés en points : rendus ivoire à l'écran
@@ -476,6 +534,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           (d.quantites || []).forEach((q: number, i: number) => (quantites[i] = q || 0));
           rang.value = (d.numero || '').split('-')[2] || '01';
           rang.disabled = true;
+          /* Le retour a été convenu à la cueillette : plus de choix à
+             faire, la donnée s'affiche avec la référence */
+          ($('#c-retour-groupe') as HTMLElement).hidden = true;
+          retourEnClair = d.retour || '';
+          if (d.retour) {
+            ($('#c-ref-retour') as HTMLElement).hidden = false;
+            $('#c-ref-retour').textContent = `Retour convenu — ${d.retour}, ${CRENEAU_RETOUR}`;
+          }
           /* La cueillette en lecture seule : horodatage et signature */
           ($('#c-ref') as HTMLElement).hidden = false;
           $('#c-ref-date').textContent = formaterDateHeure(d.horodatageCueillette);
@@ -541,6 +607,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         if (!nomComplet) valide = false;
         ($('#c-erreur-pieces') as HTMLElement).hidden = pieces > 0;
         if (pieces === 0) valide = false;
+        /* Le soir du retour se choisit explicitement — en mode retour,
+           il vient du lien de reprise */
+        if (!modeRetour()) {
+          ($('#c-erreur-retour') as HTMLElement).hidden = !!retourEnClair;
+          if (!retourEnClair) valide = false;
+        }
         ($('#c-erreur-signature') as HTMLElement).hidden = !signature.vide();
         if (signature.vide()) valide = false;
         if (!valide) return;
@@ -551,6 +623,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             v: 1,
             ...champs,
             quantites,
+            retour: retourEnClair,
             numero: numeroDuJour(),
             horodatageCueillette: maintenant,
             signatureCueillette: signature.exporter(),
@@ -560,6 +633,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             mode: 'cueillette',
             ...champs,
             quantites,
+            retourConvenu: retourEnClair,
             numero: donnees.numero,
             horodatageCueillette: maintenant,
             signatureCueillette: donnees.signatureCueillette,
@@ -579,6 +653,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             ...champs,
             quantites,
             quantitesCueillette: quantitesCueillette || undefined,
+            retourConvenu: d.retour || '',
             numero: d.numero,
             horodatageCueillette: d.horodatageCueillette,
             signatureCueillette: d.signatureCueillette,
@@ -623,6 +698,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         $('#c-mode').textContent = 'Cueillette';
         $('#c-titre').textContent = 'Bordereau de comptage';
         ($('#c-ref') as HTMLElement).hidden = true;
+        ($('#c-ref-retour') as HTMLElement).hidden = true;
+        /* Les soirs proposés se recalculent depuis maintenant */
+        ($('#c-retour-groupe') as HTMLElement).hidden = false;
+        ($('#c-erreur-retour') as HTMLElement).hidden = true;
+        rendreRetours();
         $('#c-sign-titre').textContent = 'Signature du client';
         ($('#c-reprise') as HTMLElement).hidden = true;
         ($('#c-copie-ok') as HTMLElement).hidden = true;
@@ -818,7 +898,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         opacity: 0.9;
       }
 
-      .aide {
+      .aide,
+      .rappel {
         margin-top: 0.6rem;
         font-size: 0.85rem;
         opacity: 0.8;
@@ -956,11 +1037,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         gap: 0.6rem;
       }
 
-      .capsules label {
+      /* Portée globale : les capsules du retour sont créées au script
+         et ne portent pas l'attribut de scope d'Astro */
+      .capsules :global(label) {
         cursor: pointer;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
       }
 
-      .capsules input {
+      .capsules :global(input) {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -968,7 +1055,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         clip: rect(0 0 0 0);
       }
 
-      .capsules span {
+      .capsules :global(span) {
         display: inline-block;
         padding: 0.6em 1.4em;
         border-radius: 999px;
@@ -985,17 +1072,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           border-color 0.25s ease;
       }
 
-      .capsules label:hover span,
-      .capsules input:focus-visible + span {
+      .capsules :global(label:hover span),
+      .capsules :global(input:focus-visible + span) {
         border-color: var(--or-trait);
       }
 
-      .capsules input:focus-visible + span {
+      .capsules :global(input:focus-visible + span) {
         outline: 1px solid var(--or-trait);
         outline-offset: 3px;
       }
 
-      .capsules input:checked + span {
+      .capsules :global(input:checked + span) {
         background-image:
           linear-gradient(105deg, transparent 35%, rgba(255, 248, 225, 0.28) 50%, transparent 65%),
           linear-gradient(#c4a03c, #c4a03c);
@@ -1034,6 +1121,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       .ref-date {
         color: #091e35;
         font-size: 0.9rem;
+      }
+
+      .ref-retour {
+        color: #091e35;
+        font-size: 0.82rem;
+        margin-top: 0.25rem;
       }
 
       .ref-signature {

@@ -30,6 +30,8 @@ export interface DonneesBordereau {
   quantites: number[];
   /* En mode retour : le compte d'origine, pour faire apparaître l'écart */
   quantitesCueillette?: number[];
+  /* « Jeudi 17 septembre 2026 » ou « À convenir » — le créneau est fixe */
+  retourConvenu: string;
   paiement: string;
   notes: string;
   numero: string;
@@ -159,8 +161,23 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFontSize(10.5);
   doc.text(d.paiement, 356, 168);
 
+  /* Le retour convenu à la cueillette — conservé tel quel sur le PDF
+     de livraison : mis en regard de l'horodatage de la signature de
+     réception, c'est une preuve de ponctualité */
+  doc.setFont('Montserrat', 'bold');
+  doc.setFontSize(7.2);
+  doc.setTextColor(OCRE);
+  texteEspace(doc, 'RETOUR CONVENU', 356, 190, 1.8);
+  doc.setFont('Montserrat', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(NUIT);
+  doc.text(`${d.retourConvenu || 'À convenir'},`, 356, 206);
+  doc.setFontSize(8.5);
+  doc.setTextColor(GRIS);
+  doc.text('entre 17 h 30 et 19 h 30', 356, 219);
+
   /* ---------- Tableau des pièces ---------- */
-  const tableauY = Math.max(226, 183 + lignesClient.length * 14 + 26);
+  const tableauY = Math.max(242, 183 + lignesClient.length * 14 + 26);
   const colQte = 348;
   const colConfiees = 320;
   const colTraitees = 388;
