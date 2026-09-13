@@ -1,0 +1,108 @@
+---
+import type { Langue } from '../i18n';
+
+/*
+ * Sélecteur de langue — une seule pastille FR | EN en haut à droite de
+ * toutes les pages publiques : la langue active en pleine couleur,
+ * l'autre en retrait. Un clic sur la langue inactive mène à la page
+ * équivalente (jamais à l'accueil) et mémorise le choix dans le
+ * stockage local (`vestia-langue`) — préférence de fonctionnement,
+ * témoin essentiel au même titre que `vestia-consent` : aucune donnée
+ * ne quitte l'appareil, aucun consentement requis.
+ */
+interface Props {
+  langue: Langue;
+  cheminFr: string;
+  cheminEn: string;
+}
+
+const { langue, cheminFr, cheminEn } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<nav class="langues" aria-label={langue === 'en' ? 'Language' : 'Langue'}>
+  <a
+    class:list={['langue', { active: langue === 'fr' }]}
+    href={`${base}${cheminFr}`}
+    lang="fr"
+    hreflang="fr"
+    data-langue="fr"
+    aria-current={langue === 'fr' ? 'page' : undefined}
+  >FR</a>
+  <span class="separateur" aria-hidden="true">|</span>
+  <a
+    class:list={['langue', { active: langue === 'en' }]}
+    href={`${base}${cheminEn}`}
+    lang="en"
+    hreflang="en"
+    data-langue="en"
+    aria-current={langue === 'en' ? 'page' : undefined}
+  >EN</a>
+</nav>
+
+<style>
+  /* La famille des pastilles du site : contour ocre fin sur nuit
+     pétrole, coins pleinement arrondis */
+  .langues {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top));
+    right: max(1rem, env(safe-area-inset-right));
+    z-index: 55;
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.45em 1em;
+    border-radius: 999px;
+    border: 1px solid #c4a03c;
+    background-color: rgba(9, 30, 53, 0.85);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    font-family: var(--police-courant);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+  }
+
+  .langue {
+    color: #faf7f0;
+    opacity: 0.45;
+    text-decoration: none;
+    transition: opacity 0.25s ease, color 0.25s ease;
+  }
+
+  .langue.active {
+    color: #c4a03c;
+    opacity: 1;
+    font-weight: 500;
+  }
+
+  .langue:hover,
+  .langue:focus-visible {
+    opacity: 1;
+  }
+
+  .langue:focus-visible {
+    outline: 1px solid #c4a03c;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .separateur {
+    color: #faf7f0;
+    opacity: 0.3;
+  }
+</style>
+
+<script>
+  /* Le choix explicite est mémorisé pour la navigation suivante —
+     stockage local seulement, jamais transmis (clé alignée sur
+     CLE_LANGUE de src/i18n) */
+  for (const lien of document.querySelectorAll<HTMLAnchorElement>('.langues a[data-langue]')) {
+    lien.addEventListener('click', () => {
+      try {
+        localStorage.setItem('vestia-langue', lien.dataset.langue!);
+      } catch {
+        /* stockage indisponible : la navigation fonctionne sans mémoire */
+      }
+    });
+  }
+</script>

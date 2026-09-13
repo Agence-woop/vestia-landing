@@ -1,11 +1,17 @@
 ---
 import Sceau from './Sceau.astro';
+import { t, type Langue } from '../i18n';
 
 /*
  * Section 6 — Les engagements. Un contrat signé : les trois clauses aux
  * filets d'or à gauche, le sceau de maison à droite (desktop seulement),
- * la contresignature sous la dernière clause.
+ * la contresignature sous la dernière clause. Textes dans src/i18n.
  */
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).engagements;
 
 /* Sceau en évaluation — passer à false pour le retirer */
 const showSeal = true;
@@ -14,30 +20,17 @@ const showSeal = true;
 <section class="section section--voile" id="engagements">
   <div class="section__inner deux-colonnes">
     <div class="clauses">
-      <h2>Ce que Vestia vous doit</h2>
+      <h2>{dico.titre}</h2>
 
       <ul class="engagements">
-        <li>
-          <h3 class="etiquette-or">Compté, contresigné</h3>
-          <p>
-            Chaque pièce est comptée avec vous à la cueillette, recomptée avec vous au retour.
-          </p>
-        </li>
-        <li>
-          <h3 class="etiquette-or">Le soir qui vous convient</h3>
-          <p>
-            Votre créneau de cueillette est un rendez-vous, pas une estimation. Cueillette avant
-            9&nbsp;h&nbsp;: vos pièces peuvent revenir le soir même. Sinon, vous choisissez le soir
-            qui vous arrange.
-          </p>
-        </li>
-        <li>
-          <h3 class="etiquette-or">Payez à la livraison</h3>
-          <p>
-            Virement Interac une fois vos vêtements rendus. Aucune carte, aucun prépaiement, aucune
-            surprise.
-          </p>
-        </li>
+        {
+          dico.clauses.map((clause) => (
+            <li>
+              <h3 class="etiquette-or">{clause.titre}</h3>
+              <p>{clause.texte}</p>
+            </li>
+          ))
+        }
       </ul>
 
       <p class="signature">— <span class="griffe">Vestia</span></p>

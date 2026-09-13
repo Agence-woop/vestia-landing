@@ -7,28 +7,14 @@
  * chevron reprend la grammaire des médaillons numérotés du rituel
  * (même cercle, même filet, même ocre). Balisage FAQPage en JSON-LD.
  */
-const QUESTIONS = [
-  {
-    question: 'Que se passe-t-il si une pièce est abîmée?',
-    reponse:
-      'Chaque pièce est comptée avec vous à la cueillette et recomptée au retour. Si un dommage survenait de notre fait, signalez-le dans les 24 heures, photos à l\'appui, par courriel ou message texte. Notre responsabilité va jusqu\'à dix fois le tarif de traitement de la pièce.',
-  },
-  {
-    question: 'Comment se fait le paiement?',
-    reponse:
-      'À la livraison, par virement Interac ou en argent comptant. Prévoyez le montant exact: votre intendant n\'a pas de monnaie. Le pourboire reste à votre entière discrétion et n\'est jamais attendu.',
-  },
-  {
-    question: 'Et si je ne suis pas là au moment du retour?',
-    reponse:
-      'Vous choisissez le soir de votre retour au moment de la réservation, et un message vous annonce notre arrivée. Si un imprévu survient, écrivez-nous: nous convenons d\'un autre moment.',
-  },
-  {
-    question: 'Faut-il que mes vêtements soient lavés?',
-    reponse:
-      'Oui. Vestia repasse, mais ne lave pas. Vos pièces nous sont remises propres, prêtes à être pressées.',
-  },
-];
+import { t, type Langue } from '../i18n';
+
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).questions;
+const QUESTIONS = dico.entrees;
 
 const schemaFaq = {
   '@context': 'https://schema.org',
@@ -43,7 +29,7 @@ const schemaFaq = {
 
 <section class="section section--voile" id="questions">
   <div class="section__inner">
-    <h2>Questions d'usage</h2>
+    <h2>{dico.titre}</h2>
 
     <div class="entrees">
       {

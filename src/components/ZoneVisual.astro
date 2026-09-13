@@ -9,10 +9,15 @@
  * Sous la ligne de flottaison : chargement paresseux, dimensions
  * réservées (width/height + aspect-ratio, aucun saut de mise en page).
  */
+import { t, type Langue } from '../i18n';
+
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const tailles = '(min-width: 64rem) 55vw, 100vw';
-const alt =
-  'Carte de la zone desservie par Vestia : Griffintown, Cité du Multimédia, Vieux-Montréal et Vieux-Port, entre le canal de Lachine et le fleuve Saint-Laurent';
+const alt = t(langue).quartier.altCarte;
 ---
 
 <div class="zone-visuel">

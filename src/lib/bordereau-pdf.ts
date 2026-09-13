@@ -6,7 +6,12 @@
  * plein, bandeau de tableau nuit pétrole, filets or, deux blocs
  * d'attestation côte à côte (celui du retour reste vide sur le PDF de
  * cueillette), pied de page portant le lien de reprise sur la phrase
- * « L'intendance de votre quotidien ».
+ * de marque.
+ *
+ * Le document se génère en français ou en anglais (pastille FR | EN de
+ * /comptage) : libellés ci-dessous, formats de date, d'heure et de
+ * montant via src/lib/formats — l'interface de saisie, elle, reste
+ * française.
  */
 import { jsPDF } from 'jspdf';
 import {
@@ -17,9 +22,14 @@ import {
   POLICE_MONTSERRAT_MEDIUM,
 } from '../config/polices-pdf';
 import { TAXES, CATEGORIES, COORDONNEES } from '../config/comptage';
+import { t, type Langue } from '../i18n';
+import { dateComplete, formaterDateHeure, formaterMontant } from './formats';
+import { CRENEAUX_RETOUR } from './retour';
 
 export interface DonneesBordereau {
   mode: 'cueillette' | 'retour';
+  /* Langue du document — l'interface de saisie reste française */
+  langue: Langue;
   prenom: string;
   nom: string;
   adresse: string;
@@ -30,8 +40,11 @@ export interface DonneesBordereau {
   quantites: number[];
   /* En mode retour : le compte d'origine, pour faire apparaître l'écart */
   quantitesCueillette?: number[];
-  /* « Jeudi 17 septembre 2026 » ou « À convenir » — le créneau est fixe */
-  retourConvenu: string;
+  /* Retour convenu : AAAA-MM-JJ, ou '' pour « à convenir ». Absent sur
+     un lien antérieur à cette donnée — retourLegacy porte alors
+     l'ancienne chaîne d'affichage française, imprimée telle quelle. */
+  retourISO?: string;
+  retourLegacy?: string;
   paiement: string;
   notes: string;
   numero: string;
@@ -44,9 +57,84 @@ export interface DonneesBordereau {
   lienReprise?: string;
 }
 
-/* Accord en nombre : « 1 pièce confiée », « 2 pièces confiées » */
-const accorder = (n: number, singulier: string, pluriel: string) =>
-  `${n} ${n > 1 ? pluriel : singulier}`;
+/* Libellés du document par langue — les noms de catégories viennent du
+   dictionnaire du site (grille tarifaire), source unique */
+const TEXTES = {
+  fr: {
+    sousMarque: 'REPASSAGE · CUEILLETTE À DOMICILE',
+    bordereau: 'BORDEREAU',
+    client: 'CLIENT',
+    paiementAttendu: 'PAIEMENT ATTENDU',
+    modePaiement: 'MODE DE PAIEMENT',
+    retourConvenu: 'RETOUR CONVENU',
+    aConvenir: 'À convenir',
+    ville: 'Montréal (Québec)',
+    categorie: 'CATÉGORIE',
+    qte: 'QTÉ',
+    confiees: 'CONFIÉES',
+    traitees: 'TRAITÉES',
+    unite: 'UNITÉ',
+    sousTotal: 'SOUS-TOTAL',
+    piece: ['pièce', 'pièces'],
+    pieceTraitee: ['pièce traitée', 'pièces traitées'],
+    pieceConfiee: ['pièce confiée', 'pièces confiées'],
+    sansTraitement: ['pièce retournée sans traitement', 'pièces retournées sans traitement'],
+    reserve: 'Montant estimé, sous réserve que toutes les pièces puissent être traitées.',
+    ajuste: (c: string, t2: string) => `Compte ajusté au retour — ${c} · ${t2}.`,
+    motif: 'Motif',
+    notes: 'NOTES',
+    cueillette: 'CUEILLETTE',
+    livraisonRetour: 'LIVRAISON RETOUR',
+    signatureClient: 'Signature du client',
+    sousTotalTaxes: 'Sous-total avant taxes',
+    tps: 'TPS',
+    tvq: 'TVQ',
+    totalTaxes: 'Total taxes incluses',
+    numTaxes: (tps: string, tvq: string) => `TPS ${tps} · TVQ ${tvq}`,
+    phrase: 'L’intendance de votre quotidien',
+    paiements: {} as Record<string, string>,
+  },
+  en: {
+    sousMarque: 'IRONING · HOME PICKUP AND DELIVERY',
+    bordereau: 'COUNTING SLIP',
+    client: 'CLIENT',
+    paiementAttendu: 'EXPECTED PAYMENT',
+    modePaiement: 'PAYMENT METHOD',
+    retourConvenu: 'AGREED RETURN',
+    aConvenir: 'To be arranged',
+    ville: 'Montreal, Quebec',
+    categorie: 'CATEGORY',
+    qte: 'QTY',
+    confiees: 'ENTRUSTED',
+    traitees: 'PRESSED',
+    unite: 'UNIT',
+    sousTotal: 'SUBTOTAL',
+    piece: ['piece', 'pieces'],
+    pieceTraitee: ['piece pressed', 'pieces pressed'],
+    pieceConfiee: ['piece entrusted', 'pieces entrusted'],
+    sansTraitement: ['piece returned unpressed', 'pieces returned unpressed'],
+    reserve: 'Estimated amount, provided all pieces can be processed.',
+    ajuste: (c: string, t2: string) => `Count adjusted at return — ${c} · ${t2}.`,
+    motif: 'Reason',
+    notes: 'NOTES',
+    cueillette: 'PICKUP',
+    livraisonRetour: 'RETURN DELIVERY',
+    signatureClient: 'Client signature',
+    sousTotalTaxes: 'Subtotal before taxes',
+    tps: 'GST',
+    tvq: 'QST',
+    totalTaxes: 'Total, taxes included',
+    numTaxes: (tps: string, tvq: string) => `GST ${tps} · QST ${tvq}`,
+    /* ÉDITORIAL — la signature de marque anglaise sera arrêtée avec la copy */
+    phrase: 'Stewardship for your everyday',
+    paiements: {
+      Interac: 'Interac',
+      'Carte débit': 'Debit card',
+      'Carte crédit': 'Credit card',
+      Comptant: 'Cash',
+    } as Record<string, string>,
+  },
+};
 
 /* Palette de la maquette */
 const CREME = '#FAF6EE';
@@ -59,21 +147,6 @@ const PAGE_L = 612;
 const PAGE_H = 792;
 const MARGE = 54;
 const DROITE = PAGE_L - MARGE;
-
-export function formaterMontant(n: number): string {
-  const entier = Math.abs(n - Math.round(n)) < 0.005;
-  const texte = entier
-    ? String(Math.round(n))
-    : n.toFixed(2).replace('.', ',');
-  return `${texte} $`;
-}
-
-export function formaterDateHeure(iso: string): string {
-  const d = new Date(iso);
-  const date = d.toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `Le ${date}, ${d.getHours()} h ${minutes}`;
-}
 
 /* Largeur d'un texte, espacement des lettres compris */
 function largeur(doc: jsPDF, texte: string, espacement = 0): number {
@@ -95,6 +168,11 @@ function texteEspace(
 }
 
 export function genererBordereau(d: DonneesBordereau): Blob {
+  const langue = d.langue;
+  const L = TEXTES[langue];
+  const accorder = (n: number, formes: readonly string[]) => `${n} ${formes[n > 1 ? 1 : 0]}`;
+  const montantL = (n: number) => formaterMontant(n, langue);
+
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
 
   /* Polices de la marque, embarquées */
@@ -122,9 +200,9 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(6.8);
   doc.setTextColor(GRIS);
-  texteEspace(doc, 'REPASSAGE · CUEILLETTE À DOMICILE', MARGE, 106, 2);
+  texteEspace(doc, L.sousMarque, MARGE, 106, 2);
 
-  texteEspace(doc, 'BORDEREAU', DROITE, 78, 2.4, true);
+  texteEspace(doc, L.bordereau, DROITE, 78, 2.4, true);
   doc.setFont('Baskerville', 'normal');
   doc.setFontSize(13.5);
   doc.setTextColor(NUIT);
@@ -139,10 +217,10 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(7.2);
   doc.setTextColor(OCRE);
-  texteEspace(doc, 'CLIENT', MARGE, 150, 1.8);
+  texteEspace(doc, L.client, MARGE, 150, 1.8);
   /* À la cueillette le paiement est attendu ; à la livraison, c'est le
      mode retenu — même traitement visuel */
-  texteEspace(doc, d.mode === 'retour' ? 'MODE DE PAIEMENT' : 'PAIEMENT ATTENDU', 356, 150, 1.8);
+  texteEspace(doc, d.mode === 'retour' ? L.modePaiement : L.paiementAttendu, 356, 150, 1.8);
 
   doc.setTextColor(NUIT);
   doc.setFontSize(10.5);
@@ -151,15 +229,16 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFontSize(9.5);
   /* Adresse avec appartement, puis la ligne de ville portant le code
      postal ; téléphone, et courriel seulement s'il est renseigné */
+  const suffixeApp = langue === 'en' ? 'apt.' : 'app.';
   const lignesClient = [
-    d.appartement ? `${d.adresse}, app. ${d.appartement}` : d.adresse,
-    d.codePostal ? `Montréal (Québec) ${d.codePostal}` : 'Montréal (Québec)',
+    d.appartement ? `${d.adresse}, ${suffixeApp} ${d.appartement}` : d.adresse,
+    d.codePostal ? `${L.ville} ${d.codePostal}` : L.ville,
   ];
   if (d.telephone) lignesClient.push(d.telephone);
   if (d.courriel) lignesClient.push(d.courriel);
   lignesClient.forEach((ligne, i) => doc.text(ligne, MARGE, 183 + i * 14));
   doc.setFontSize(10.5);
-  doc.text(d.paiement, 356, 168);
+  doc.text(L.paiements[d.paiement] ?? d.paiement, 356, 168);
 
   /* Le retour convenu à la cueillette — conservé tel quel sur le PDF
      de livraison : mis en regard de l'horodatage de la signature de
@@ -167,14 +246,21 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(7.2);
   doc.setTextColor(OCRE);
-  texteEspace(doc, 'RETOUR CONVENU', 356, 190, 1.8);
+  texteEspace(doc, L.retourConvenu, 356, 190, 1.8);
   doc.setFont('Montserrat', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(NUIT);
-  doc.text(`${d.retourConvenu || 'À convenir'},`, 356, 206);
+  let retourAffiche = L.aConvenir;
+  if (d.retourISO) {
+    const [a, m, j] = d.retourISO.split('-').map(Number);
+    retourAffiche = dateComplete(new Date(a, m - 1, j), langue);
+  } else if (d.retourISO === undefined && d.retourLegacy) {
+    retourAffiche = d.retourLegacy;
+  }
+  doc.text(`${retourAffiche},`, 356, 206);
   doc.setFontSize(8.5);
   doc.setTextColor(GRIS);
-  doc.text('entre 17 h 30 et 19 h 30', 356, 219);
+  doc.text(CRENEAUX_RETOUR[langue], 356, 219);
 
   /* ---------- Tableau des pièces ---------- */
   const tableauY = Math.max(242, 183 + lignesClient.length * 14 + 26);
@@ -197,19 +283,21 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(7.2);
   doc.setTextColor(CREME);
-  texteEspace(doc, 'CATÉGORIE', MARGE + 12, tableauY + 15, 1.8);
+  texteEspace(doc, L.categorie, MARGE + 12, tableauY + 15, 1.8);
   if (ajuste) {
-    texteEspace(doc, 'CONFIÉES', colConfiees, tableauY + 15, 1.8, true);
-    texteEspace(doc, 'TRAITÉES', colTraitees, tableauY + 15, 1.8, true);
+    texteEspace(doc, L.confiees, colConfiees, tableauY + 15, 1.8, true);
+    texteEspace(doc, L.traitees, colTraitees, tableauY + 15, 1.8, true);
   } else {
-    texteEspace(doc, 'QTÉ', colQte, tableauY + 15, 1.8, true);
+    texteEspace(doc, L.qte, colQte, tableauY + 15, 1.8, true);
   }
-  texteEspace(doc, 'UNITÉ', colUnite, tableauY + 15, 1.8, true);
-  texteEspace(doc, 'SOUS-TOTAL', colSousTotal, tableauY + 15, 1.8, true);
+  texteEspace(doc, L.unite, colUnite, tableauY + 15, 1.8, true);
+  texteEspace(doc, L.sousTotal, colSousTotal, tableauY + 15, 1.8, true);
 
   /* Une ligne par catégorie ayant une quantité non nulle — au retour,
      une catégorie comptée à la cueillette reste visible même ramenée
-     à zéro, pour que l'écart se lise */
+     à zéro, pour que l'écart se lise. Les noms de catégories viennent
+     de la grille tarifaire du site, dans la langue du document. */
+  const nomsCategories = t(langue).grille.paliers.map((p) => p.nom);
   let y = tableauY + 24;
   let totalPieces = 0;
   let montant = 0;
@@ -224,15 +312,15 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     doc.setFont('Montserrat', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(NUIT);
-    doc.text(cat.nom, MARGE + 12, y - 8);
+    doc.text(nomsCategories[i] ?? cat.nom, MARGE + 12, y - 8);
     if (ajuste) {
       doc.text(String(avant), colConfiees, y - 8, { align: 'right' });
       doc.text(String(qte), colTraitees, y - 8, { align: 'right' });
     } else {
       doc.text(String(qte), colQte, y - 8, { align: 'right' });
     }
-    doc.text(formaterMontant(cat.prix), colUnite, y - 8, { align: 'right' });
-    doc.text(formaterMontant(qte * cat.prix), colSousTotal, y - 8, { align: 'right' });
+    doc.text(montantL(cat.prix), colUnite, y - 8, { align: 'right' });
+    doc.text(montantL(qte * cat.prix), colSousTotal, y - 8, { align: 'right' });
 
     doc.setDrawColor(FILET_CLAIR);
     doc.setLineWidth(0.6);
@@ -240,6 +328,8 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   });
 
   /* Taxes : structure prête, invisible tant que `TAXES.inscrit` est faux */
+  const pourcent = (taux: number) =>
+    `${(taux * 100).toLocaleString(langue === 'en' ? 'en-CA' : 'fr-CA')} %`;
   const lignesTaxes: Array<[string, string]> = [];
   let montantFinal = montant;
   if (TAXES.inscrit) {
@@ -247,9 +337,9 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     const tvq = montant * TAXES.tauxTVQ;
     montantFinal = montant + tps + tvq;
     lignesTaxes.push(
-      ['Sous-total avant taxes', formaterMontant(montant)],
-      [`TPS (${(TAXES.tauxTPS * 100).toLocaleString('fr-CA')} %)`, formaterMontant(tps)],
-      [`TVQ (${(TAXES.tauxTVQ * 100).toLocaleString('fr-CA')} %)`, formaterMontant(tvq)]
+      [L.sousTotalTaxes, montantL(montant)],
+      [`${L.tps} (${pourcent(TAXES.tauxTPS)})`, montantL(tps)],
+      [`${L.tvq} (${pourcent(TAXES.tauxTVQ)})`, montantL(tvq)]
     );
   }
   doc.setFont('Montserrat', 'normal');
@@ -266,20 +356,17 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Montserrat', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(NUIT);
-  const pieces = ajuste
-    ? accorder(totalPieces, 'pièce traitée', 'pièces traitées')
-    : accorder(totalPieces, 'pièce', 'pièces');
-  doc.text(pieces, MARGE + 12, y - 8);
+  doc.text(accorder(totalPieces, ajuste ? L.pieceTraitee : L.piece), MARGE + 12, y - 8);
   if (TAXES.inscrit) {
     doc.setFont('Montserrat', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(GRIS);
-    doc.text('Total taxes incluses', colUnite, y - 8, { align: 'right' });
+    doc.text(L.totalTaxes, colUnite, y - 8, { align: 'right' });
   }
   doc.setFont('Baskerville', 'normal');
   doc.setFontSize(16.5);
   doc.setTextColor(OCRE);
-  doc.text(formaterMontant(montantFinal), colSousTotal, y - 6, { align: 'right' });
+  doc.text(montantL(montantFinal), colSousTotal, y - 6, { align: 'right' });
 
   doc.setFont('Baskerville', 'italic');
   doc.setFontSize(8);
@@ -288,7 +375,7 @@ export function genererBordereau(d: DonneesBordereau): Blob {
      quantités sont ajustées et le montant est définitif */
   if (d.mode !== 'retour') {
     y += 14;
-    doc.text('Montant estimé, sous réserve que toutes les pièces puissent être traitées.', MARGE + 12, y);
+    doc.text(L.reserve, MARGE + 12, y);
   }
 
   /* Synthèse du retour : toutes les pièces confiées sont rendues —
@@ -296,21 +383,16 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   if (ajuste && anciennes) {
     const confiees = anciennes.reduce((s, n) => s + n, 0);
     const sansTraitement = confiees - totalPieces;
-    const segments = [
-      accorder(confiees, 'pièce confiée', 'pièces confiées'),
-      accorder(totalPieces, 'pièce traitée', 'pièces traitées'),
-    ];
+    const segments = [accorder(confiees, L.pieceConfiee), accorder(totalPieces, L.pieceTraitee)];
     if (sansTraitement > 0) {
-      segments.push(
-        accorder(sansTraitement, 'pièce retournée sans traitement', 'pièces retournées sans traitement')
-      );
+      segments.push(accorder(sansTraitement, L.sansTraitement));
     }
     y += 14;
     doc.text(segments.join(' · '), MARGE + 12, y);
     /* Le motif, s'il a été précisé — jamais de libellé orphelin */
     if (d.motif) {
       y += 12;
-      doc.text(`Motif — ${d.motif}`, MARGE + 12, y);
+      doc.text(`${L.motif} — ${d.motif}`, MARGE + 12, y);
     }
   }
 
@@ -320,7 +402,7 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     doc.setFont('Montserrat', 'bold');
     doc.setFontSize(7.2);
     doc.setTextColor(OCRE);
-    texteEspace(doc, 'NOTES', MARGE + 12, y, 1.8);
+    texteEspace(doc, L.notes, MARGE + 12, y, 1.8);
     doc.setFont('Montserrat', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(NUIT);
@@ -335,12 +417,7 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   const attL = 240;
   const attX2 = DROITE - attL;
 
-  const bloc = (
-    x: number,
-    titre: string,
-    horodatage?: string,
-    signature?: string
-  ) => {
+  const bloc = (x: number, titre: string, horodatage?: string, signature?: string) => {
     doc.setDrawColor(OCRE);
     doc.setLineWidth(0.8);
     doc.roundedRect(x, attY, attL, attH, 6, 6, 'S');
@@ -352,7 +429,7 @@ export function genererBordereau(d: DonneesBordereau): Blob {
       doc.setFont('Montserrat', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(NUIT);
-      doc.text(formaterDateHeure(horodatage), x + 16, attY + 38);
+      doc.text(formaterDateHeure(horodatage, langue), x + 16, attY + 38);
     }
     if (signature) {
       /* Encre nuit sur transparent : se pose telle quelle sur la crème */
@@ -364,13 +441,13 @@ export function genererBordereau(d: DonneesBordereau): Blob {
     doc.setFont('Montserrat', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(GRIS);
-    doc.text('Signature du client', x + 16, attY + attH - 14);
+    doc.text(L.signatureClient, x + 16, attY + attH - 14);
   };
 
-  bloc(MARGE, 'CUEILLETTE', d.horodatageCueillette, d.signatureCueillette);
+  bloc(MARGE, L.cueillette, d.horodatageCueillette, d.signatureCueillette);
   /* Sur le PDF de cueillette, le bloc du retour reste volontairement
      vide : il annonce au client la seconde signature à la livraison */
-  bloc(attX2, 'LIVRAISON RETOUR', d.horodatageRetour, d.signatureRetour);
+  bloc(attX2, L.livraisonRetour, d.horodatageRetour, d.signatureRetour);
 
   /* ---------- Pied de page ---------- */
   const piedY = 726;
@@ -384,7 +461,7 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.text(`${COORDONNEES.telephone} · ${COORDONNEES.courriel} · ${COORDONNEES.site}`, MARGE, piedY + 16);
   doc.text(COORDONNEES.quartiers, MARGE, piedY + 28);
   if (TAXES.inscrit) {
-    doc.text(`TPS ${TAXES.numeroTPS} · TVQ ${TAXES.numeroTVQ}`, MARGE, piedY + 40);
+    doc.text(L.numTaxes(TAXES.numeroTPS, TAXES.numeroTVQ), MARGE, piedY + 40);
   }
 
   /* La signature de marque — et, dessous, le lien de reprise invisible :
@@ -392,9 +469,8 @@ export function genererBordereau(d: DonneesBordereau): Blob {
   doc.setFont('Baskerville', 'italic');
   doc.setFontSize(11.5);
   doc.setTextColor(OCRE);
-  const phrase = 'L’intendance de votre quotidien';
-  const phraseL = doc.getTextWidth(phrase);
-  doc.text(phrase, DROITE, piedY + 22, { align: 'right' });
+  const phraseL = doc.getTextWidth(L.phrase);
+  doc.text(L.phrase, DROITE, piedY + 22, { align: 'right' });
   if (d.lienReprise) {
     doc.link(DROITE - phraseL, piedY + 11, phraseL, 14, { url: d.lienReprise });
   }

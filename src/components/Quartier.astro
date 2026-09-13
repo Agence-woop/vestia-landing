@@ -9,8 +9,15 @@ import ZoneVisual from './ZoneVisual.astro';
  * de la saisie, format canadien, validation par RTA contre
  * src/data/zones.json. Seul l'envoi « Prévenez-moi » (hors zone) part
  * vers Formspree, avec le code postal saisi pour cartographier la
- * demande par quartier.
+ * demande par quartier. Textes dans src/i18n.
  */
+import { ROUTES, t, type Langue } from '../i18n';
+
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).quartier;
 ---
 
 <section class="section section--voile" id="quartier">
@@ -18,19 +25,13 @@ import ZoneVisual from './ZoneVisual.astro';
     <!-- En mobile, le visuel (quand il existera) passe au-dessus du texte
          via `order` ; en desktop il occupe la colonne droite -->
     <div class="colonne-texte">
-      <h2>Un territoire choisi, des délais tenus</h2>
+      <h2>{dico.titre}</h2>
 
-      <p class="propos">
-        Un service de cette précision ne s'étend que là où il peut tenir parole. Vestia dessert
-        Griffintown, la Cité du Multimédia, le Vieux-Montréal et le Vieux-Port.
-      </p>
-      <p class="propos">
-        Du lundi au vendredi, cueillette au moment convenu, retour le jour même ou le lendemain;
-        jamais plus tard.
-      </p>
+      <p class="propos">{dico.propos1}</p>
+      <p class="propos">{dico.propos2}</p>
 
       <form class="verificateur" id="verificateur" novalidate>
-        <label class="etiquette" for="code-postal">Votre code postal</label>
+        <label class="etiquette" for="code-postal">{dico.etiquetteCodePostal}</label>
         <div class="saisie">
           <input
             class="champ"
@@ -41,44 +42,42 @@ import ZoneVisual from './ZoneVisual.astro';
             maxlength="7"
             placeholder="H3C 1A1"
           />
-          <Cta type="submit">Vérifier</Cta>
+          <Cta type="submit">{dico.verifier}</Cta>
         </div>
       </form>
 
       <div class="resultat" aria-live="polite">
-        <p class="message message--erreur" hidden>Veuillez saisir un code postal valide.</p>
+        <p class="message message--erreur" hidden>{dico.erreurCodePostal}</p>
 
         <div class="message message--desservi" hidden>
-          <p class="dore">Vestia dessert votre adresse.</p>
+          <p class="dore">{dico.desservi}</p>
           <div class="action">
-            <Cta href="/reserver">Réserver une cueillette</Cta>
+            <Cta href={ROUTES.reserver[langue]}>{t(langue).hero.cta}</Cta>
           </div>
         </div>
 
         <div class="message message--hors-zone" hidden>
-          <p class="promesse">
-            Votre quartier n'y est pas encore. Laissez-nous votre courriel, il viendra.
-          </p>
+          <p class="promesse">{dico.promesse}</p>
           <form class="prevenir" id="prevenir-quartier" novalidate>
             <input type="hidden" name="code_postal" id="prevenir-code-postal" />
-            <label class="visually-hidden" for="courriel-quartier">Votre courriel</label>
+            <label class="visually-hidden" for="courriel-quartier">{dico.votreCourriel}</label>
             <input
               class="champ"
               type="email"
               id="courriel-quartier"
               name="courriel"
-              placeholder="Votre courriel"
+              placeholder={dico.votreCourriel}
               autocomplete="email"
               required
             />
-            <button class="btn-secondaire" type="submit">Prévenez-moi</button>
+            <button class="btn-secondaire" type="submit">{dico.prevenezMoi}</button>
           </form>
           <p class="suite" hidden></p>
         </div>
       </div>
     </div>
 
-    <ZoneVisual />
+    <ZoneVisual langue={langue} />
   </div>
 </section>
 
@@ -261,12 +260,17 @@ import ZoneVisual from './ZoneVisual.astro';
 
 <script>
   import zones from '../data/zones.json';
+  import { langueDePage, t } from '../i18n';
 
   /* ----------------------------------------------------------------
      Endpoint Formspree — liste d'attente (« Prévenez-moi »), le même
      que le bloc hors zone de /reserver. Isolé ici volontairement.
   ---------------------------------------------------------------- */
   const FORMSPREE_PREVENEZ_MOI = 'https://formspree.io/f/mdeoaqoy';
+
+  /* Messages dans la langue de la page (portée par <html lang>) */
+  const LANGUE = langueDePage();
+  const DICO = t(LANGUE).quartier;
 
   const verificateur = document.getElementById('verificateur') as HTMLFormElement | null;
   const champ = document.getElementById('code-postal') as HTMLInputElement | null;
@@ -320,17 +324,19 @@ import ZoneVisual from './ZoneVisual.astro';
       const saisie = new FormData(prevenir);
       const courriel = String(saisie.get('courriel') ?? '').trim();
       if (!courriel || !courriel.includes('@')) {
-        suite.textContent = 'Veuillez saisir un courriel valide.';
+        suite.textContent = DICO.erreurCourriel;
         suite.classList.add('suite--erreur');
         suite.hidden = false;
         return;
       }
       /* Noms de champs lisibles tels quels dans le courriel, objet en
-         majuscules, réponse directe au client */
+         majuscules, réponse directe au client ; la langue choisie
+         voyage en champ caché pour le suivi */
       const donnees = new FormData();
       donnees.set('Courriel', courriel);
       donnees.set('Code postal', String(saisie.get('code_postal') ?? ''));
-      donnees.set('_subject', `LISTE D'ATTENTE — ${saisie.get('code_postal')}`);
+      donnees.set('Langue', LANGUE);
+      donnees.set('_subject', `${DICO.sujetListeAttente} — ${saisie.get('code_postal')}`);
       donnees.set('_replyto', courriel);
       try {
         const reponse = await fetch(FORMSPREE_PREVENEZ_MOI, {
@@ -340,10 +346,10 @@ import ZoneVisual from './ZoneVisual.astro';
         });
         if (!reponse.ok) throw new Error();
         prevenir.hidden = true;
-        suite.textContent = 'C’est noté. Vestia vous écrira.';
+        suite.textContent = DICO.note;
         suite.classList.remove('suite--erreur');
       } catch {
-        suite.textContent = 'L’envoi n’a pas abouti. Veuillez réessayer.';
+        suite.textContent = DICO.echecEnvoi;
         suite.classList.add('suite--erreur');
       }
       suite.hidden = false;

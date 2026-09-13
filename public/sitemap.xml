@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Plan du site bilingue - le site entier reste en noindex
+     jusqu'au lancement (voir robots.txt) -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://vestia.ca/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/en/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/reserver/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/reserver/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/book/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/reserver/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/en/book/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/reserver/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/book/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/reserver/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/conditions-utilisation/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/conditions-utilisation/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/conditions-utilisation/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/en/terms/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/conditions-utilisation/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/conditions-utilisation/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/politique-de-confidentialite/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/politique-de-confidentialite/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/politique-de-confidentialite/"/>
+  </url>
+  <url>
+    <loc>https://vestia.ca/en/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vestia.ca/politique-de-confidentialite/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vestia.ca/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vestia.ca/politique-de-confidentialite/"/>
+  </url>
+</urlset>

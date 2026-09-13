@@ -2,6 +2,7 @@
 import Base from './Base.astro';
 import Footer from '../components/Footer.astro';
 import Soie from '../components/Soie.astro';
+import { ROUTES, type CleRoute, type Langue } from '../i18n';
 
 /*
  * Gabarit des pages document (conditions, politique) : registre de
@@ -12,19 +13,21 @@ import Soie from '../components/Soie.astro';
 interface Props {
   title: string;
   description: string;
+  langue?: Langue;
+  route?: CleRoute;
 }
 
-const { title, description } = Astro.props;
+const { title, description, langue = 'fr', route = 'accueil' } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} langue={langue} route={route}>
   <Soie />
   <!-- section--voile : voile local supplémentaire, indispensable aux
        textes longs sur la soie -->
   <main class="document section--voile">
     <header class="entete">
-      <a class="marque" href={`${base}/`}>Vestia</a>
+      <a class="marque" href={`${base}${ROUTES.accueil[langue]}`}>Vestia</a>
     </header>
 
     <!-- Le conteneur standard des sections de l'accueil (section__inner) :
@@ -33,7 +36,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <slot />
     </article>
   </main>
-  <Footer />
+  <Footer langue={langue} />
 </Base>
 
 <style is:global>
