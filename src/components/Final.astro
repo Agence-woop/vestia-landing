@@ -1,14 +1,20 @@
 ---
 import Cta from './Cta.astro';
+import { ROUTES, t, type Langue } from '../i18n';
 /* Section 7 — Le final. Deux mots, un bouton, sur la soie parfaitement
-   tendue — aboutissement du scroll-scrubbing. */
+   tendue — aboutissement du scroll-scrubbing. Textes dans src/i18n. */
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).final;
 ---
 
 <section class="section" id="final">
   <div class="section__inner">
-    <h2 class="mot">Prêt-à-porter.</h2>
+    <h2 class="mot">{dico.mot}</h2>
     <div class="section__action">
-      <Cta href="/reserver">Réserver une cueillette</Cta>
+      <Cta href={ROUTES.reserver[langue]}>{dico.cta}</Cta>
     </div>
   </div>
 </section>

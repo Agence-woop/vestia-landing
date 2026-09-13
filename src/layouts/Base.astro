@@ -4,30 +4,42 @@ import '../styles/base.css';
 import '../styles/sections.css';
 import '../styles/lumiere.css';
 import Temoins from '../components/Temoins.astro';
+import SelecteurLangue from '../components/SelecteurLangue.astro';
+import { ROUTES, t, type CleRoute, type Langue } from '../i18n';
 
 interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /* Langue de la page — le français reste la langue par défaut */
+  langue?: Langue;
+  /* Paire d'adresses équivalentes (hreflang + sélecteur de langue) */
+  route?: CleRoute;
 }
 
+const { langue = 'fr', route = 'accueil' } = Astro.props;
+const dico = t(langue);
 const {
-  title = 'Vestia — Repassage et cueillette à domicile, Montréal',
-  description = 'Vos vêtements cueillis à votre porte, repassés à la main, rendus sur cintre. Griffintown, Cité du Multimédia, Vieux-Montréal.',
+  title = dico.meta.accueil.titre,
+  description = dico.meta.accueil.description,
   noindex = false,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const cheminFr = `${ROUTES[route].fr}`;
+const cheminEn = `${ROUTES[route].en}`;
 
 /* Partage (Open Graph / Twitter) : les plateformes exigent des URL
    absolues, construites depuis `site` (astro.config.mjs). */
 const urlCanonique = new URL(Astro.url.pathname, Astro.site).href;
+const urlFr = new URL(`${base}${cheminFr}`, Astro.site).href;
+const urlEn = new URL(`${base}${cheminEn}`, Astro.site).href;
 const imagePartage = new URL(`${base}/og-vestia.jpg`, Astro.site).href;
-const altPartage = 'Vestia — Repassage et cueillette à domicile';
+const altPartage = dico.meta.altPartage;
 ---
 
 <!doctype html>
-<html lang="fr" data-theme="nuit">
+<html lang={langue} data-theme="nuit">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,6 +53,12 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
     <!-- Fin du bloc à retirer au lancement -->
     {noindex && <meta name="robots" content="noindex" />}
 
+    <!-- Paires de langues réciproques ; x-default vers le français,
+         langue par défaut du site -->
+    <link rel="alternate" hreflang="fr" href={urlFr} />
+    <link rel="alternate" hreflang="en" href={urlEn} />
+    <link rel="alternate" hreflang="x-default" href={urlFr} />
+
     <!-- Partage — image unique 1200×630 pour tout le site -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={urlCanonique} />
@@ -50,7 +68,8 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={altPartage} />
-    <meta property="og:locale" content="fr_CA" />
+    <meta property="og:locale" content={langue === 'en' ? 'en_CA' : 'fr_CA'} />
+    <meta property="og:locale:alternate" content={langue === 'en' ? 'fr_CA' : 'en_CA'} />
     <meta property="og:site_name" content="Vestia" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
@@ -88,11 +107,31 @@ const altPartage = 'Vestia — Repassage et cueillette à domicile';
         }
       })();
     </script>
+
+    <script is:inline define:vars={{ langue, cheminFr, cheminEn, base }}>
+      /* Langue mémorisée : seul le choix EXPLICITE du visiteur (clic
+         sur la pastille FR | EN) est honoré à la navigation suivante —
+         jamais la langue du navigateur (primauté du français). */
+      (() => {
+        try {
+          const choix = localStorage.getItem('vestia-langue');
+          if ((choix === 'fr' || choix === 'en') && choix !== langue) {
+            const cible = base + (choix === 'en' ? cheminEn : cheminFr);
+            if (cible !== location.pathname) {
+              location.replace(cible + location.search + location.hash);
+            }
+          }
+        } catch {
+          /* stockage indisponible : la page s'affiche telle quelle */
+        }
+      })();
+    </script>
   </head>
   <body>
+    <SelecteurLangue langue={langue} cheminFr={cheminFr} cheminEn={cheminEn} />
     <slot />
     <!-- Consentement aux témoins (Loi 25) : bannière, modale et
          chargeur conditionnel des tags — sur toutes les pages -->
-    <Temoins />
+    <Temoins langue={langue} />
   </body>
 </html>

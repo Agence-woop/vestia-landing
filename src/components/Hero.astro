@@ -1,24 +1,30 @@
 ---
 import Cta from './Cta.astro';
 import Soie from './Soie.astro';
+import { ROUTES, t, type Langue } from '../i18n';
 
 /*
  * Mission 1 — Le hero. La soie (fond vidéo scrubbé) vit dans le
  * composant partagé Soie.astro ; elle reste nuit pétrole dans les
- * deux thèmes.
+ * deux thèmes. Textes dans src/i18n.
  */
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).hero;
 ---
 
 <Soie />
 
 <section class="hero">
-  <p class="kicker">Repassage · Cueillette à domicile</p>
+  <p class="kicker">{dico.kicker}</p>
   <h1 class="wordmark" data-text="Vestia">Vestia</h1>
-  <p class="tagline">L'intendance de votre quotidien</p>
+  <p class="tagline">{dico.tagline}</p>
   <div class="action">
-    <Cta href="/reserver">Réserver une cueillette</Cta>
+    <Cta href={ROUTES.reserver[langue]}>{dico.cta}</Cta>
   </div>
-  <p class="quartiers">Griffintown · Cité du Multimédia · Vieux-Montréal</p>
+  <p class="quartiers">{dico.quartiers}</p>
   <div class="indicateur" aria-hidden="true"></div>
 </section>
 

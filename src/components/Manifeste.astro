@@ -1,18 +1,19 @@
 ---
 /* Section 2 — Le manifeste. Trois phrases en Baskerville, rien d'autre,
-   posées sur la soie encore agitée. */
+   posées sur la soie encore agitée. Textes dans src/i18n. */
+import { t, type Langue } from '../i18n';
+
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).manifeste;
 ---
 
 <section class="section" id="manifeste">
   <div class="section__inner">
-    <p class="phrase">
-      Il y a des heures qu'on ne rattrape pas. Celles passées derrière une planche à repasser en
-      font partie.
-    </p>
-    <p class="phrase">
-      Vestia les reprend pour vous&nbsp;: votre garde-robe, prise en charge de la porte à la
-      penderie.
-    </p>
+    <p class="phrase">{dico.phrase1}</p>
+    <p class="phrase">{dico.phrase2}</p>
   </div>
 </section>
 

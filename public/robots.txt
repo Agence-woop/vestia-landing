@@ -1,3 +1,5 @@
 # À RETIRER AU LANCEMENT — exploration interdite avant l'ouverture officielle
 User-agent: *
 Disallow: /
+
+Sitemap: https://vestia.ca/sitemap.xml

@@ -35,6 +35,18 @@ Tous dans `assets-source/` :
   `public/comptage.webmanifest`. Réglage des taxes (TPS/TVQ, inscrit: false) dans
   `src/config/comptage.ts`
 
+- `src/i18n/` — infrastructure bilingue : dictionnaires `fr.ts` / `en.ts` (tout le texte visible du
+  site — plus aucun texte en dur dans les composants ; chaînes anglaises à reprendre balisées
+  « ÉDITORIAL »), routes équivalentes (`/` ⇄ `/en/`, `/reserver` ⇄ `/en/book`,
+  `/conditions-utilisation` ⇄ `/en/terms`, `/politique-de-confidentialite` ⇄ `/en/privacy`),
+  clé `vestia-langue` (stockage local — témoin essentiel, comme `vestia-consent`). Formats par
+  langue (montants, heures, dates, calendrier) centralisés dans `src/lib/formats.ts`. Sélecteur
+  FR | EN (`SelecteurLangue.astro`) en haut à droite des pages publiques, vers la page
+  équivalente ; **aucune détection de la langue du navigateur** (primauté du français).
+  `/comptage` reste intégralement français ; sa pastille FR | EN ne gouverne que la langue du PDF
+  (choix transporté par le lien de reprise). `hreflang` réciproques + `x-default` (français) dans
+  `Base.astro`, plan du site bilingue dans `public/sitemap.xml`.
+
 ## Décisions prises à l'intégration
 
 - Sans-serif définitive = **Montserrat** (remplace Figtree). Graisses chargées : 200, 400, 500 —

@@ -65,7 +65,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <div class="cadre section__inner">
         <div class="barre">
           <p class="mode" id="c-mode">Cueillette</p>
-          <p class="numero" id="c-numero" aria-live="polite"></p>
+          <div class="barre-droite">
+            <!-- Ne change que la langue du PDF généré : l'interface de
+                 saisie reste française en toutes circonstances -->
+            <div class="langue-pdf" role="group" aria-label="Langue du PDF">
+              <button type="button" class="langue-choix active" data-langue="fr" aria-pressed="true" lang="fr">FR</button>
+              <span class="langue-sep" aria-hidden="true">|</span>
+              <button type="button" class="langue-choix" data-langue="en" aria-pressed="false" lang="en">EN</button>
+            </div>
+            <p class="numero" id="c-numero" aria-live="polite"></p>
+          </div>
         </div>
 
         <h2 id="c-titre">Bordereau de comptage</h2>
@@ -251,7 +260,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </main>
 
     <script>
-      import { genererBordereau, formaterDateHeure, formaterMontant } from '../lib/bordereau-pdf';
+      import { genererBordereau } from '../lib/bordereau-pdf';
+      import { dateComplete, formaterDateHeure, formaterMontant } from '../lib/formats';
       import { CATEGORIES, MINIMUM_PIECES, TAXES } from '../config/comptage';
       import { CRENEAU_RETOUR, optionsRetour } from '../lib/retour';
       import joursIndisponibles from '../data/jours-indisponibles.json';
@@ -349,6 +359,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         codePostal.value = v;
       });
 
+      /* ================= Langue du PDF ================= */
+      /* La pastille FR | EN ne gouverne que le document généré ;
+         le français est présélectionné et le choix voyage dans le
+         lien de reprise */
+      let languePDF: 'fr' | 'en' = 'fr';
+      function poserLanguePDF(l: 'fr' | 'en') {
+        languePDF = l;
+        document.querySelectorAll('.langue-choix').forEach((b) => {
+          const actif = (b as HTMLElement).dataset.langue === l;
+          b.classList.toggle('active', actif);
+          b.setAttribute('aria-pressed', String(actif));
+        });
+      }
+      document.querySelectorAll('.langue-choix').forEach((b) => {
+        b.addEventListener('click', () => poserLanguePDF((b as HTMLElement).dataset.langue as 'fr' | 'en'));
+      });
+
       /* ================= Le retour ================= */
       /* Options calculées depuis maintenant : la cueillette a lieu au
          moment où le formulaire est rempli. Avant midi, le soir même
@@ -356,22 +383,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
          Fins de semaine, fériés et journées complètes sont sautés
          (logique partagée avec /reserver dans src/lib/retour.ts). */
       const JOURS_EXCLUS = new Set([...joursIndisponibles.feries, ...joursIndisponibles.complets]);
-      let retourEnClair = ''; /* « Jeudi 17 septembre 2026 » ou « À convenir » */
-
-      const dateComplete = (d: Date) => {
-        const t = d.toLocaleDateString('fr-CA', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
-        return t.charAt(0).toUpperCase() + t.slice(1);
+      /* Le retour convenu voyage en AAAA-MM-JJ ('' = à convenir) : le
+         PDF le compose ensuite dans sa langue */
+      let retourChoisi = false;
+      let retourDateISO = '';
+      const versISO = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const depuisISO = (iso: string) => {
+        const [a, m, j] = iso.split('-').map(Number);
+        return new Date(a, m - 1, j);
       };
 
       function rendreRetours() {
         const conteneur = $('#c-retours');
         conteneur.innerHTML = '';
-        retourEnClair = '';
+        retourChoisi = false;
+        retourDateISO = '';
         const maintenant = new Date();
         const jour = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate());
         for (const o of optionsRetour(jour, maintenant.getHours() < 12, JOURS_EXCLUS)) {
@@ -385,7 +412,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           label.append(input, pastille);
           conteneur.appendChild(label);
           input.addEventListener('change', () => {
-            retourEnClair = o.date ? dateComplete(o.date) : 'À convenir';
+            retourChoisi = true;
+            retourDateISO = o.date ? versISO(o.date) : '';
             ($('#c-erreur-retour') as HTMLElement).hidden = true;
           });
         }
@@ -537,10 +565,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           /* Le retour a été convenu à la cueillette : plus de choix à
              faire, la donnée s'affiche avec la référence */
           ($('#c-retour-groupe') as HTMLElement).hidden = true;
-          retourEnClair = d.retour || '';
-          if (d.retour) {
+          retourChoisi = d.retourISO !== undefined || !!d.retour;
+          retourDateISO = d.retourISO ?? '';
+          poserLanguePDF(d.langue === 'en' ? 'en' : 'fr');
+          /* Affichage français (interface) ; les anciens liens portent
+             encore la chaîne composée d.retour */
+          const retourEnClairFR =
+            d.retourISO !== undefined
+              ? d.retourISO
+                ? dateComplete(depuisISO(d.retourISO))
+                : 'À convenir'
+              : d.retour || '';
+          if (retourEnClairFR) {
             ($('#c-ref-retour') as HTMLElement).hidden = false;
-            $('#c-ref-retour').textContent = `Retour convenu — ${d.retour}, ${CRENEAU_RETOUR}`;
+            $('#c-ref-retour').textContent = `Retour convenu — ${retourEnClairFR}, ${CRENEAU_RETOUR}`;
           }
           /* La cueillette en lecture seule : horodatage et signature */
           ($('#c-ref') as HTMLElement).hidden = false;
@@ -610,8 +648,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         /* Le soir du retour se choisit explicitement — en mode retour,
            il vient du lien de reprise */
         if (!modeRetour()) {
-          ($('#c-erreur-retour') as HTMLElement).hidden = !!retourEnClair;
-          if (!retourEnClair) valide = false;
+          ($('#c-erreur-retour') as HTMLElement).hidden = retourChoisi;
+          if (!retourChoisi) valide = false;
         }
         ($('#c-erreur-signature') as HTMLElement).hidden = !signature.vide();
         if (signature.vide()) valide = false;
@@ -623,7 +661,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             v: 1,
             ...champs,
             quantites,
-            retour: retourEnClair,
+            retourISO: retourDateISO,
+            langue: languePDF,
             numero: numeroDuJour(),
             horodatageCueillette: maintenant,
             signatureCueillette: signature.exporter(),
@@ -631,9 +670,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           const lien = `${location.origin}${location.pathname}#r=${await encoderReprise(donnees)}`;
           const blob = genererBordereau({
             mode: 'cueillette',
+            langue: languePDF,
             ...champs,
             quantites,
-            retourConvenu: retourEnClair,
+            retourISO: retourDateISO,
             numero: donnees.numero,
             horodatageCueillette: maintenant,
             signatureCueillette: donnees.signatureCueillette,
@@ -641,7 +681,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           });
           partageConfirme = await partager(
             blob,
-            `CUEILLETTE - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
+            languePDF === 'en'
+              ? `PICKUP - Counting slip - ${champs.prenom} ${champs.nom}.pdf`
+              : `CUEILLETTE - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
           );
           ($('#c-lien') as HTMLInputElement).value = lien;
           ($('#c-reprise') as HTMLElement).hidden = false;
@@ -650,10 +692,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           const d = donneesCueillette;
           const blob = genererBordereau({
             mode: 'retour',
+            langue: languePDF,
             ...champs,
             quantites,
             quantitesCueillette: quantitesCueillette || undefined,
-            retourConvenu: d.retour || '',
+            retourISO: d.retourISO,
+            retourLegacy: d.retour || undefined,
             numero: d.numero,
             horodatageCueillette: d.horodatageCueillette,
             signatureCueillette: d.signatureCueillette,
@@ -665,7 +709,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           });
           partageConfirme = await partager(
             blob,
-            `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
+            languePDF === 'en'
+              ? `RETURN DELIVERY - Counting slip - ${champs.prenom} ${champs.nom}.pdf`
+              : `LIVRAISON RETOUR - Bordereau comptage - ${champs.prenom} ${champs.nom}.pdf`
           );
           ($('#c-apres') as HTMLElement).hidden = false;
         }
@@ -703,6 +749,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         ($('#c-retour-groupe') as HTMLElement).hidden = false;
         ($('#c-erreur-retour') as HTMLElement).hidden = true;
         rendreRetours();
+        poserLanguePDF('fr');
         $('#c-sign-titre').textContent = 'Signature du client';
         ($('#c-reprise') as HTMLElement).hidden = true;
         ($('#c-copie-ok') as HTMLElement).hidden = true;
@@ -828,6 +875,60 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         text-transform: uppercase;
         color: var(--or-trait);
         opacity: 0.75;
+      }
+
+      .barre-droite {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+      }
+
+      /* La pastille FR | EN du PDF : la même famille que le sélecteur
+         de langue du site public — contour ocre fin sur nuit pétrole,
+         coins pleinement arrondis, langue active en pleine couleur */
+      .langue-pdf {
+        display: flex;
+        align-items: center;
+        gap: 0.45em;
+        padding: 0.4em 0.95em;
+        border-radius: 999px;
+        border: 1px solid var(--or-trait);
+        background-color: rgba(9, 30, 53, 0.85);
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+      }
+
+      .langue-choix {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        color: var(--texte);
+        opacity: 0.45;
+        font: inherit;
+        letter-spacing: inherit;
+        transition: opacity 0.25s ease, color 0.25s ease;
+      }
+
+      .langue-choix.active {
+        color: var(--or-trait);
+        opacity: 1;
+        font-weight: 500;
+      }
+
+      .langue-choix:hover,
+      .langue-choix:focus-visible {
+        opacity: 1;
+      }
+
+      .langue-choix:focus-visible {
+        outline: 1px solid var(--or-trait);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      .langue-sep {
+        opacity: 0.3;
       }
 
       h2 {

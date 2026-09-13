@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import Hero from '../../components/Hero.astro';
+import Manifeste from '../../components/Manifeste.astro';
+import Rituel from '../../components/Rituel.astro';
+import Grille from '../../components/Grille.astro';
+import Quartier from '../../components/Quartier.astro';
+import Engagements from '../../components/Engagements.astro';
+import Questions from '../../components/Questions.astro';
+import Final from '../../components/Final.astro';
+import Footer from '../../components/Footer.astro';
+import { t } from '../../i18n';
+---
+
+<Base langue="en" route="accueil" title={t('en').meta.accueil.titre} description={t('en').meta.accueil.description}>
+  <main>
+    <Hero langue="en" />
+    <Manifeste langue="en" />
+    <Rituel langue="en" />
+    <Grille langue="en" />
+    <Quartier langue="en" />
+    <Engagements langue="en" />
+    <Questions langue="en" />
+    <Final langue="en" />
+  </main>
+  <Footer langue="en" />
+</Base>

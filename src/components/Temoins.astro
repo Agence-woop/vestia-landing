@@ -7,27 +7,31 @@
  * conditionnel des tags (GA4, pixel Meta) : aucun script tiers ne
  * part avant un consentement explicite. Refuser vaut accepter — même
  * poids visuel, même nombre de clics — et un refus est un choix
- * enregistré. Inclus par Base.astro sur toutes les pages.
+ * enregistré. Inclus par Base.astro sur toutes les pages, dans la
+ * langue de la page (textes dans src/i18n).
  */
+import { ROUTES, t, type Langue } from '../i18n';
+
+interface Props {
+  langue?: Langue;
+}
+
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue).temoins;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <div class="temoins-banniere" id="t-banniere" hidden>
-  <h2 class="t-titre">Témoins de navigation</h2>
-  <p class="t-texte">
-    Vestia utilise des témoins essentiels au fonctionnement du site, ainsi que des témoins de
-    mesure d'audience et de publicité, déposés uniquement avec votre consentement. Vous pouvez
-    modifier votre choix en tout temps depuis le lien «&nbsp;Gérer les témoins&nbsp;» au bas de
-    la page.
-  </p>
+  <h2 class="t-titre">{dico.titreBanniere}</h2>
+  <p class="t-texte">{dico.texteBanniere}</p>
   <p class="t-politique">
-    <a href={`${base}/politique-de-confidentialite`}>Politique de confidentialité</a>
+    <a href={`${base}${ROUTES.politique[langue]}`}>{dico.lienPolitique}</a>
   </p>
   <div class="t-actions">
-    <button type="button" class="btn-secondaire" id="t-accepter">Tout accepter</button>
-    <button type="button" class="btn-secondaire" id="t-refuser">Tout refuser</button>
+    <button type="button" class="btn-secondaire" id="t-accepter">{dico.toutAccepter}</button>
+    <button type="button" class="btn-secondaire" id="t-refuser">{dico.toutRefuser}</button>
   </div>
-  <button type="button" class="t-personnaliser" id="t-personnaliser">Personnaliser</button>
+  <button type="button" class="t-personnaliser" id="t-personnaliser">{dico.personnaliser}</button>
 </div>
 
 <div class="temoins-voile" id="t-voile" hidden>
@@ -38,25 +42,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     aria-modal="true"
     aria-labelledby="t-modale-titre"
   >
-    <button type="button" class="t-fermer" id="t-fermer" aria-label="Fermer">×</button>
-    <h2 class="t-titre" id="t-modale-titre">Gérer les témoins</h2>
+    <button type="button" class="t-fermer" id="t-fermer" aria-label={dico.fermer}>×</button>
+    <h2 class="t-titre" id="t-modale-titre">{dico.titreModale}</h2>
 
     <div class="t-categorie">
       <div class="t-cat-tete">
-        <h3>Témoins essentiels</h3>
+        <h3>{dico.essentielsTitre}</h3>
         <button type="button" class="t-inter verrou" role="switch" aria-checked="true" disabled>
           <span class="t-bille"></span>
         </button>
       </div>
-      <p>
-        Nécessaires au fonctionnement du site, dont la mémorisation de vos préférences de
-        témoins. Toujours actifs.
-      </p>
+      <p>{dico.essentielsTexte}</p>
     </div>
 
     <div class="t-categorie">
       <div class="t-cat-tete">
-        <h3 id="t-lib-analytics">Mesure d'audience</h3>
+        <h3 id="t-lib-analytics">{dico.analyticsTitre}</h3>
         <button
           type="button"
           class="t-inter"
@@ -68,12 +69,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <span class="t-bille"></span>
         </button>
       </div>
-      <p>Nous aident à comprendre la fréquentation du site (Google Analytics). Désactivé par défaut.</p>
+      <p>{dico.analyticsTexte}</p>
     </div>
 
     <div class="t-categorie">
       <div class="t-cat-tete">
-        <h3 id="t-lib-marketing">Publicité et médias sociaux</h3>
+        <h3 id="t-lib-marketing">{dico.marketingTitre}</h3>
         <button
           type="button"
           class="t-inter"
@@ -85,15 +86,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <span class="t-bille"></span>
         </button>
       </div>
-      <p>Permettent de mesurer l'efficacité de nos communications (Meta). Désactivé par défaut.</p>
+      <p>{dico.marketingTexte}</p>
     </div>
 
-    <p class="t-note" id="t-note" hidden>Le retrait prend effet au prochain chargement de page.</p>
+    <p class="t-note" id="t-note" hidden>{dico.noteRetrait}</p>
 
     <div class="t-actions t-actions-modale">
-      <button type="button" class="btn-secondaire" id="t-enregistrer">Enregistrer mes choix</button>
-      <button type="button" class="btn-secondaire" id="t-m-accepter">Tout accepter</button>
-      <button type="button" class="btn-secondaire" id="t-m-refuser">Tout refuser</button>
+      <button type="button" class="btn-secondaire" id="t-enregistrer">{dico.enregistrer}</button>
+      <button type="button" class="btn-secondaire" id="t-m-accepter">{dico.toutAccepter}</button>
+      <button type="button" class="btn-secondaire" id="t-m-refuser">{dico.toutRefuser}</button>
     </div>
   </div>
 </div>

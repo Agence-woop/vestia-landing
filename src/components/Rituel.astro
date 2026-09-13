@@ -1,46 +1,35 @@
 ---
 import Cta from './Cta.astro';
-/* Section 3 — Le rituel. Trois gestes, numérotés en or. */
+import { ROUTES, t, type Langue } from '../i18n';
+/* Section 3 — Le rituel. Trois gestes, numérotés en or. Textes dans src/i18n. */
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue);
+const NUMEROS = ['I', 'II', 'III'];
 ---
 
 <section class="section section--voile section--amorce" id="rituel">
   <div class="section__inner">
-    <h2>Le rituel Vestia</h2>
+    <h2>{dico.rituel.titre}</h2>
 
     <ol class="gestes">
-      <li>
-        <span class="numero" aria-hidden="true">I</span>
-        <div>
-          <h3 class="etiquette-or">La cueillette</h3>
-          <p>
-            Choisissez votre créneau. Nous passons à votre porte, comptons chaque pièce avec vous,
-            et prenons le relais.
-          </p>
-        </div>
-      </li>
-      <li>
-        <span class="numero" aria-hidden="true">II</span>
-        <div>
-          <h3 class="etiquette-or">Le soin</h3>
-          <p>
-            Chaque vêtement est repassé à la main, un à un, avec la minutie d'un atelier.
-          </p>
-        </div>
-      </li>
-      <li>
-        <span class="numero" aria-hidden="true">III</span>
-        <div>
-          <h3 class="etiquette-or">Le retour</h3>
-          <p>
-            Vos pièces reviennent sur cintre et sous housse de protection, à l'abri jusqu'à votre
-            penderie. Vous choisissez le soir du retour; un message annonce notre arrivée.
-          </p>
-        </div>
-      </li>
+      {
+        dico.rituel.gestes.map((geste, i) => (
+          <li>
+            <span class="numero" aria-hidden="true">{NUMEROS[i]}</span>
+            <div>
+              <h3 class="etiquette-or">{geste.titre}</h3>
+              <p>{geste.texte}</p>
+            </div>
+          </li>
+        ))
+      }
     </ol>
 
     <div class="section__action">
-      <Cta href="/reserver">Réserver une cueillette</Cta>
+      <Cta href={ROUTES.reserver[langue]}>{dico.hero.cta}</Cta>
     </div>
   </div>
 </section>

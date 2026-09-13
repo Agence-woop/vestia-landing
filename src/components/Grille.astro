@@ -1,43 +1,44 @@
 ---
 import Cta from './Cta.astro';
-/* Section 4 — La grille. Trois cartes sobres, prix en or aplat. */
+import { ROUTES, t, type Langue } from '../i18n';
+import { formaterMontant } from '../lib/formats';
+/* Section 4 — La grille. Trois cartes sobres, prix en or aplat.
+   Textes dans src/i18n, montants au format de la langue. */
+interface Props {
+  langue?: Langue;
+}
+const { langue = 'fr' } = Astro.props;
+const dico = t(langue);
+/* En français, l'espace avant le $ est insécable */
+const prixAffiche = (n: number) => formaterMontant(n, langue).replace(' $', ' $');
 ---
 
 <section class="section section--voile" id="grille">
   <div class="section__inner">
-    <h2>La clarté, jusque dans les prix</h2>
+    <h2>{dico.grille.titre}</h2>
 
     <div class="cartes">
-      <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce simple</span> <span class="prix">6&nbsp;$</span></p>
-        <p class="detail">T-shirt, coton ouaté, camisole, polo, legging, pantalon de jogging</p>
-      </article>
-      <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce standard</span> <span class="prix">9&nbsp;$</span></p>
-        <p class="detail">Chemise, blouse, pantalon, jean, jupe, short</p>
-      </article>
-      <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Pièce complexe</span> <span class="prix">15&nbsp;$</span></p>
-        <p class="detail">Robe, pièce en lin, jupe ou robe plissée</p>
-      </article>
-      <article class="carte surface-tuile">
-        <p class="titre"><span class="pill">Veston</span> <span class="prix">20&nbsp;$</span></p>
-        <p class="detail">Veston, blazer</p>
-      </article>
+      {
+        dico.grille.paliers.map((palier) => (
+          <article class="carte surface-tuile">
+            <p class="titre">
+              <span class="pill">{palier.nom}</span> <span class="prix">{prixAffiche(palier.prix)}</span>
+            </p>
+            <p class="detail">{palier.detail}</p>
+          </article>
+        ))
+      }
     </div>
 
     <p class="conditions">
-      Minimum de 8 pièces<br />Cueillette et livraison toujours incluses<br />
-      <span class="hors-liste">Ces exemples situent chaque palier; votre intendant classe les autres pièces à la cueillette.</span>
+      {dico.grille.condition1}<br />{dico.grille.condition2}<br />
+      <span class="hors-liste">{dico.grille.horsListe}</span>
     </p>
 
-    <p class="egards">
-      Nous déclinons avec égards la laine, le cachemire et les tricots à mailles lâches ou faits
-      main, ainsi que les pièces de haute couture. Ces étoffes méritent leur propre spécialiste.
-    </p>
+    <p class="egards">{dico.grille.egards}</p>
 
     <div class="section__action">
-      <Cta href="/reserver">Réserver une cueillette</Cta>
+      <Cta href={ROUTES.reserver[langue]}>{dico.hero.cta}</Cta>
     </div>
   </div>
 </section>
